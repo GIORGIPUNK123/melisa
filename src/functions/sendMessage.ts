@@ -1,4 +1,3 @@
-import { socket } from '../socket';
 import { api } from './instance';
 
 export const sendPrivate = async (
@@ -7,7 +6,7 @@ export const sendPrivate = async (
   reciever_id: number
 ) => {
   try {
-    socket.emit('txt-message', { text, sender_id, reciever_id });
+    // socket.emit('txt-message', { text, sender_id, reciever_id });
 
     // const response = await api.post('/sendprivate', {
     //   text,

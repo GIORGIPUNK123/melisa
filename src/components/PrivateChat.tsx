@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { getPersonById } from '../functions/getPersonById';
+// import { getPersonById } from '../functions/getPersonById';
 import { MessageBlock } from './MessageBlock';
-import { getUserMessages } from '../functions/getUserMessages';
+// import { getUserMessages } from '../functions/getUserMessages';
 import { MessageType, UserType } from '../types';
 import { sendPrivate } from '../functions/sendMessage';
-import { socket } from '../socket';
 
 export const PrivateChat = (props: { otherPersonId: number }) => {
   const { otherPersonId } = props;
@@ -30,17 +29,13 @@ export const PrivateChat = (props: { otherPersonId: number }) => {
   );
 
   useEffect(() => {
-    const getChatInfo = async () => {
-      setOtherPerson(await getPersonById(otherPersonId));
-      setOtherPersonMessages(await getUserMessages(otherPersonId, loggedInId));
-      setLoggedInMessages(await getUserMessages(loggedInId, otherPersonId));
-    };
-
+    // const getChatInfo = async () => {
+    //   setOtherPerson(await getPersonById(otherPersonId));
+    //   setOtherPersonMessages(await getUserMessages(otherPersonId, loggedInId));
+    //   setLoggedInMessages(await getUserMessages(loggedInId, otherPersonId));
+    // };
     // getChatInfo();
   }, [otherPersonId]);
-  socket.on(`${loggedInId + otherPersonId}`, (data) => {
-    console.log('data: ', data);
-  });
 
   console.log('mergedMessages:', mergedMessages);
   const sendMsg = async (

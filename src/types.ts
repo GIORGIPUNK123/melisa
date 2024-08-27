@@ -6,13 +6,16 @@ export interface MessageType {
   sent_datetime: string;
 }
 export interface UserType {
-  id: number;
-  first_name: string;
-  last_name: string;
-  nickname: string;
-  email: string;
-  number: number;
-  password: string;
-  verified: boolean;
-  locked: boolean;
+  user_auth_id: string;
+  user_email: string;
+  user_nickname: string;
+  user_username: string;
+}
+
+export interface FriendType {
+  sender_id: string;
+  receiver_id: string;
+  confirmed: boolean;
+  created_at: number;
+  confirmed_at: number;
 }
