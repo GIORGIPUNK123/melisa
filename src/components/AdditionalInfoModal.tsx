@@ -16,7 +16,7 @@ export const AdditionalInfoModal = (props: {
     useAdditionalInfo(props.user?.id);
   const handleConfirmation = () => {
     resetMessageResponse();
-    addAdditionalInfo(props.user, usernameInput.value, nicknameInput.value);
+    addAdditionalInfo(usernameInput.value, nicknameInput.value);
   };
   if (messageResponse === 'Additional info added successfully') {
     navigate(0);

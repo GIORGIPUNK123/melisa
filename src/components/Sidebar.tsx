@@ -1,7 +1,7 @@
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../db/supabase';
 import { useNavigate } from 'react-router';
-import { Notification } from '../types';
+import { NotificationT } from '../types';
 import { FriendsList } from './FriendsList';
 import { ConversationsList } from './ConversationsList';
 
@@ -11,7 +11,7 @@ export const Sidebar = (props: {
   user: User;
   nickname?: string;
   avatarUrl?: string | null;
-  notifications: Notification[];
+  notifications: NotificationT[];
   notificationsLoading?: boolean;
   onAddFriendClick: () => void;
   onFriendRequestsClick: () => void;

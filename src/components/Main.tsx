@@ -9,7 +9,7 @@ import { ChatArea } from './ChatArea';
 import { ChatInfo } from './ChatInfo';
 import { supabase } from '../db/supabase';
 import { SettingsModal } from './SettingsModal';
-import { UserT, ConversationMember } from '../types';
+import { UserT, ConversationMemberT } from '../types';
 import { useNotifications } from '../hooks/useNotifications';
 import { FriendRequestsModal } from './FriendRequestsModal';
 import { UserProfileModal } from './UserProfileModal';
@@ -26,8 +26,12 @@ export const Main = () => {
   const [friendRequestsOpen, setFriendRequestsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profile, setProfile] = useState<UserT | null>(null);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [conversationMembers, setConversationMembers] = useState<ConversationMember[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
+  const [conversationMembers, setConversationMembers] = useState<
+    ConversationMemberT[]
+  >([]);
   const [isChatInfoVisible, setIsChatInfoVisible] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<'chats' | 'friends'>('chats');
@@ -42,18 +46,29 @@ export const Main = () => {
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
   const [lastNotificationCount, setLastNotificationCount] = useState(0);
   const [lastMessageId, setLastMessageId] = useState<string | null>(null);
-  
+
   const userId = user && user !== 'loading' ? user.id : undefined;
   useAdditionalInfo(userId);
-  
-  const { notifications, isLoading: notificationsLoading } = useNotifications(userId);
+
+  const { notifications, isLoading: notificationsLoading } =
+    useNotifications(userId);
   const { unreadCounts } = useUnreadMessages(userId, activeConversationId);
   const { playSound: playMessageSound } = useAudioNotification(800, 0.3);
   const { playSound: playNotificationSound } = useAudioNotification(600, 0.5);
 
-  useMessageNotifications(userId, lastMessageId, setLastMessageId, playMessageSound);
+  useMessageNotifications(
+    userId,
+    lastMessageId,
+    setLastMessageId,
+    playMessageSound,
+  );
 
-  useMessageNotifications(userId, lastMessageId, setLastMessageId, playMessageSound);
+  useMessageNotifications(
+    userId,
+    lastMessageId,
+    setLastMessageId,
+    playMessageSound,
+  );
 
   useEffect(() => {
     if (!activeConversationId) {
@@ -62,7 +77,10 @@ export const Main = () => {
   }, [activeConversationId]);
 
   useEffect(() => {
-    if (notifications.length > lastNotificationCount && lastNotificationCount > 0) {
+    if (
+      notifications.length > lastNotificationCount &&
+      lastNotificationCount > 0
+    ) {
       playNotificationSound();
     }
     setLastNotificationCount(notifications.length);
@@ -92,7 +110,7 @@ export const Main = () => {
     setActiveConversationId(conversationId);
   };
 
-  const handleMembersChange = (members: ConversationMember[]) => {
+  const handleMembersChange = (members: ConversationMemberT[]) => {
     setConversationMembers(members);
   };
 
@@ -118,7 +136,8 @@ export const Main = () => {
 
     setConfirmModalData({
       title: 'Delete Chat',
-      message: 'Are you sure you want to delete this chat? This action cannot be undone.',
+      message:
+        'Are you sure you want to delete this chat? This action cannot be undone.',
       onConfirm: async () => {
         try {
           // Delete conversation member record for current user
@@ -176,7 +195,9 @@ export const Main = () => {
           isOpen={confirmModalOpen}
           title={confirmModalData?.title || ''}
           message={confirmModalData?.message || ''}
-          confirmText={confirmModalData?.title === 'Delete Chat' ? 'Delete' : 'Block'}
+          confirmText={
+            confirmModalData?.title === 'Delete Chat' ? 'Delete' : 'Block'
+          }
           cancelText='Cancel'
           danger={true}
           onConfirm={() => {

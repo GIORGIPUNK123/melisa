@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../db/supabase';
-import { Notification } from '../types';
+import { NotificationT } from '../types';
 
 export const useNotifications = (userId: string | undefined) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<NotificationT[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export const useNotifications = (userId: string | undefined) => {
         .limit(10);
 
       if (!error && data) {
-        setNotifications(data as Notification[]);
+        setNotifications(data as NotificationT[]);
       }
       setIsLoading(false);
     };
@@ -38,21 +38,21 @@ export const useNotifications = (userId: string | undefined) => {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setNotifications((prev) => [payload.new as Notification, ...prev]);
+            setNotifications((prev) => [payload.new as NotificationT, ...prev]);
           } else if (payload.eventType === 'UPDATE') {
             setNotifications((prev) =>
               prev.map((n) =>
-                n.id === (payload.new as Notification).id
-                  ? (payload.new as Notification)
-                  : n
-              )
+                n.id === (payload.new as NotificationT).id
+                  ? (payload.new as NotificationT)
+                  : n,
+              ),
             );
           } else if (payload.eventType === 'DELETE') {
             setNotifications((prev) =>
-              prev.filter((n) => n.id !== (payload.old as Notification).id)
+              prev.filter((n) => n.id !== (payload.old as NotificationT).id),
             );
           }
-        }
+        },
       )
       .subscribe();
 

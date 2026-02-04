@@ -1,5 +1,3 @@
-import { useEffect, useRef } from 'react';
-
 export const useAudioNotification = (
   frequency: number,
   duration: number = 0.3,

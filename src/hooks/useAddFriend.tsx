@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { User } from '@supabase/supabase-js';
 import { api } from '../functions/instance';
 
 export const useAddFriend = () => {
   const [messageResponse, setMessageResponse] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const addFriend = async (user: User, username: string) => {
+  const addFriend = async (username: string) => {
     setIsLoading(true);
     try {
-      const { data: sessionData } = await (window as any).supabase.auth.getSession();
+      const { data: sessionData } = await (
+        window as any
+      ).supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
       if (!token) {
@@ -25,12 +26,13 @@ export const useAddFriend = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       setMessageResponse(response.data.message || 'Friend request sent');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Failed to send friend request';
+      const errorMessage =
+        err.response?.data?.error || 'Failed to send friend request';
       setMessageResponse(errorMessage);
     } finally {
       setIsLoading(false);

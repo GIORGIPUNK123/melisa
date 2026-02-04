@@ -1,7 +1,7 @@
-import { ConversationMember } from '../../types';
+import { ConversationMemberT } from '../../types';
 
 interface ChatHeaderProps {
-  members: ConversationMember[];
+  members: ConversationMemberT[];
   currentUserId?: string;
   onToggleSidebar: () => void;
   onToggleChatInfo: () => void;

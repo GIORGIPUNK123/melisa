@@ -10,7 +10,7 @@ export interface UserT {
 }
 
 // Public user profile (without email)
-export interface PublicProfile {
+export interface PublicProfileT {
   id: string;
   username: string;
   nickname: string;
@@ -19,7 +19,7 @@ export interface PublicProfile {
 }
 
 // Friendship types
-export interface Friendship {
+export interface FriendshipT {
   id: string;
   user_id: string;
   receiver_id: string;
@@ -29,7 +29,7 @@ export interface Friendship {
 }
 
 // Block types
-export interface Block {
+export interface BlockT {
   id: string;
   blocker_id: string;
   blocked_user_id: string;
@@ -37,7 +37,7 @@ export interface Block {
 }
 
 // Conversation types
-export interface Conversation {
+export interface ConversationT {
   id: string;
   type: 'direct' | 'group';
   name?: string | null;
@@ -47,7 +47,7 @@ export interface Conversation {
 }
 
 // Conversation member types
-export interface ConversationMember {
+export interface ConversationMemberT {
   id: string;
   username: string;
   nickname: string;
@@ -55,16 +55,19 @@ export interface ConversationMember {
 }
 
 // Message types (with sender info)
-export interface Message {
+export interface MessageT {
   id: string;
-  content: string;
+  conversation_id: string;
   sender_id: string;
-  sender_name: string;
+  content: string;
+  message_type: 'text' | 'image' | 'file';
+  is_edited: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 // Notification types
-export interface Notification {
+export interface NotificationT {
   id: string;
   user_id: string;
   type: string;

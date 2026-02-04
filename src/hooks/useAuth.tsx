@@ -50,7 +50,7 @@ export const useAuth = () => {
       setUser('loading');
       setAuthError(null);
       try {
-        const response = await api.post('/auth/register', {
+        await api.post('/auth/register', {
           email,
           password,
           username,

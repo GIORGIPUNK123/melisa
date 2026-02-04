@@ -1,9 +1,9 @@
-import { Notification } from '../types';
+import { NotificationT } from '../types';
 
 export const NotificationsModal = (props: {
   isOpen: boolean;
   onClose: () => void;
-  notifications: Notification[];
+  notifications: NotificationT[];
   onMarkAsRead: (id: string) => void;
   onMarkAllAsRead: () => void;
 }) => {
@@ -75,7 +75,7 @@ export const NotificationsModal = (props: {
                         {notification.title}
                       </h3>
                       {!notification.is_read && (
-                        <span className='w-2 h-2 rounded-full bg-indigo-500'></span>
+                        <span className='w-2 h-2 bg-indigo-500 rounded-full'></span>
                       )}
                     </div>
                     {notification.message && (

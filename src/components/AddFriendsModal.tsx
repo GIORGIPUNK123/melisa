@@ -12,7 +12,7 @@ export const AddFriendsModal = (props: {
     useAddFriend();
   const userNameInput = useFormInput('', resetMessageResponse);
   const handleAddFriend = () => {
-    addFriend(props.user, userNameInput.value);
+    addFriend(userNameInput.value);
   };
 
   return (

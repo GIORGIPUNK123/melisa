@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../db/supabase';
-import { ConversationMember } from '../types';
+import { ConversationMemberT } from '../types';
 
 export const useConversationMembers = (
   conversationId: string | null | undefined,
 ) => {
-  const [members, setMembers] = useState<ConversationMember[]>([]);
+  const [members, setMembers] = useState<ConversationMemberT[]>([]);
 
   useEffect(() => {
     if (!conversationId) {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../db/supabase';
-import { ConversationMember } from '../types';
+import { ConversationMemberT, MessageT } from '../types';
 import { ChatHeader } from './chat/ChatHeader';
 import { MessageList } from './chat/MessageList';
 import { MessageInput } from './chat/MessageInput';
@@ -10,7 +10,7 @@ import { useConversationMembers } from '../hooks/useConversationMembers';
 
 export const ChatArea = (props: {
   conversationId?: string | null;
-  onMembersChange?: (members: ConversationMember[]) => void;
+  onMembersChange?: (members: ConversationMemberT[]) => void;
   onToggleChatInfo?: () => void;
   onToggleSidebar?: () => void;
 }) => {
@@ -61,13 +61,16 @@ export const ChatArea = (props: {
     setIsSending(true);
 
     const tempId = `temp-${Date.now()}`;
-    const tempMessage = {
+    const now = new Date().toISOString();
+    const tempMessage: MessageT = {
       id: tempId,
+      conversation_id: props.conversationId,
       content: messageContent,
       sender_id: currentUser.id,
-      sender_name:
-        currentUser.user_metadata?.nickname || currentUser.email || 'You',
-      created_at: new Date().toISOString(),
+      message_type: 'text',
+      is_edited: false,
+      created_at: now,
+      updated_at: now,
     };
 
     setMessages((prev) => [...prev, tempMessage]);
@@ -123,6 +126,7 @@ export const ChatArea = (props: {
       <div className='flex-1 p-4 space-y-4 overflow-y-auto md:p-6'>
         <MessageList
           messages={messages}
+          members={members}
           currentUserId={currentUser?.id}
           isLoading={isLoading}
           messagesEndRef={messagesEndRef}

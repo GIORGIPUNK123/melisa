@@ -1,7 +1,8 @@
-import { Message } from '../../types';
+import { MessageT, ConversationMemberT } from '../../types';
 
 interface MessageListProps {
-  messages: Message[];
+  messages: MessageT[];
+  members: ConversationMemberT[];
   currentUserId?: string;
   isLoading: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement>;
@@ -9,6 +10,7 @@ interface MessageListProps {
 
 export const MessageList = ({
   messages,
+  members,
   currentUserId,
   isLoading,
   messagesEndRef,
@@ -45,7 +47,9 @@ export const MessageList = ({
           >
             {msg.sender_id !== currentUserId && (
               <div className='mb-1 text-xs font-semibold text-slate-400'>
-                {msg.sender_name}
+                {members.find((m) => m.id === msg.sender_id)?.nickname ||
+                  members.find((m) => m.id === msg.sender_id)?.username ||
+                  'Unknown'}
               </div>
             )}
             <p className='text-sm break-words'>{msg.content}</p>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../db/supabase';
 import { UserT } from '../types';
-import { User } from '@supabase/supabase-js';
 import { api } from '../functions/instance';
 
 export const useAdditionalInfo = (userId: string | undefined) => {
@@ -30,11 +29,7 @@ export const useAdditionalInfo = (userId: string | undefined) => {
     }
   };
 
-  const addAdditionalInfo = async (
-    user: User,
-    username: string,
-    nickname: string,
-  ) => {
+  const addAdditionalInfo = async (username: string, nickname: string) => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
@@ -54,7 +49,7 @@ export const useAdditionalInfo = (userId: string | undefined) => {
           setHasUsername(true);
           setMessageResponse('Username already exists');
         } else {
-          const response = await api.put(
+          await api.put(
             '/friends/settings',
             { username, nickname },
             {
