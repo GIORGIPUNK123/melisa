@@ -1,44 +1,45 @@
 import { useState } from 'react';
-import { supabase } from '../db/supabase';
-import { UserType } from '../types';
-import { PostgrestError, User } from '@supabase/supabase-js';
+import { User } from '@supabase/supabase-js';
+import { api } from '../functions/instance';
 
 export const useAddFriend = () => {
   const [messageResponse, setMessageResponse] = useState<string>('');
-
-  const getOtherUser = async (
-    username: string
-  ): Promise<{ user: UserType | null; error: PostgrestError | null }> => {
-    const { data: user, error } = await supabase
-      .from('user')
-      .select()
-      .eq('user_username', username)
-      .single();
-
-    return { user, error };
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const addFriend = async (user: User, username: string) => {
-    console.log('username: ', username);
-    const { user: otherUser, error: otherUserError } = await getOtherUser(
-      username
-    );
+    setIsLoading(true);
+    try {
+      const { data: sessionData } = await (window as any).supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
 
-    if (otherUser) {
-      await supabase
-        .from('friends')
-        .insert([{ sender_id: user.id, receiver_id: otherUser.user_auth_id }])
-        .select();
+      if (!token) {
+        setMessageResponse('Not authenticated');
+        setIsLoading(false);
+        return;
+      }
 
-      setMessageResponse('Friend request sent');
-    } else {
-      console.log('error: ', otherUserError);
-      setMessageResponse('User not found');
+      const response = await api.post(
+        '/friends/add',
+        { username },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setMessageResponse(response.data.message || 'Friend request sent');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || 'Failed to send friend request';
+      setMessageResponse(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
+
   const resetMessageResponse = () => {
     setMessageResponse('');
   };
 
-  return { messageResponse, addFriend, resetMessageResponse };
+  return { messageResponse, addFriend, resetMessageResponse, isLoading };
 };
