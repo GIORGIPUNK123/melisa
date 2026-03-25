@@ -1,4 +1,4 @@
-import { NotificationT } from '../types';
+import { NotificationT } from '../../types';
 
 export const NotificationsModal = (props: {
   isOpen: boolean;

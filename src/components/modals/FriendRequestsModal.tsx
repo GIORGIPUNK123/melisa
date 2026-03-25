@@ -1,4 +1,4 @@
-import { usePendingRequests } from '../hooks/usePendingRequests';
+import { usePendingRequests } from '../../hooks/usePendingRequests';
 import { useState } from 'react';
 import { UserProfileModal } from './UserProfileModal';
 

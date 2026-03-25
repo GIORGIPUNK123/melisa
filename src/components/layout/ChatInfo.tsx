@@ -1,16 +1,9 @@
 import { useEffect, useState } from 'react';
-
-interface ConversationMember {
-  id: string;
-  username: string;
-  nickname: string;
-  avatar_url?: string;
-}
+import { PublicProfileT } from '../../types';
 
 export const ChatInfo = (props: {
   hasActiveConversation: boolean;
-  members?: ConversationMember[];
-  isVisible?: boolean;
+  members?: PublicProfileT[];
   onClose?: () => void;
   onViewProfile?: (username: string) => void;
   onBlockUser?: (username: string) => void;
@@ -115,6 +108,22 @@ export const ChatInfo = (props: {
                         <div className='text-xs text-slate-400'>
                           @{member.username}
                         </div>
+                        {member.status && (
+                          <div className='flex items-center gap-1 mt-1'>
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                member.status === 'online'
+                                  ? 'bg-green-500'
+                                  : member.status === 'away'
+                                    ? 'bg-yellow-500'
+                                    : 'bg-slate-500'
+                              }`}
+                            />
+                            <span className='text-xs capitalize text-slate-400'>
+                              {member.status}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       {member.id === currentUserId && (
                         <span className='px-2 py-1 text-xs text-white bg-indigo-600 rounded'>

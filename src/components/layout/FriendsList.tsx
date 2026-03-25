@@ -1,4 +1,4 @@
-import { useFriendsList } from '../hooks/useFriendsList';
+import { useFriendsList } from '../../hooks/useFriendsList';
 
 export const FriendsList = (props: {
   onFriendSelect: (conversationId: string) => void;

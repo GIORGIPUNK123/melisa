@@ -1,11 +1,11 @@
-import { TextInput } from '../atoms/TextInput';
-import { useFormInput } from '../hooks/useFormInput';
-import { useAddFriend } from '../hooks/useAddFriend';
+import { TextInput } from '../../atoms/TextInput';
+import { useFormInput } from '../../hooks/useFormInput';
+import { useAddFriend } from '../../hooks/useAddFriend';
 import { User } from '@supabase/supabase-js';
 
 export const AddFriendsModal = (props: {
   isOpen: boolean;
-  setIsOpen: any;
+  setIsOpen: (isOpen: boolean) => void;
   user: User;
 }) => {
   const { messageResponse, addFriend, resetMessageResponse, isLoading } =

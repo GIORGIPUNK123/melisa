@@ -1,4 +1,4 @@
-import { useUserProfile } from '../hooks/useUserProfile';
+import { usePublicProfile } from '../../hooks/usePublicProfile';
 
 export const UserProfileModal = (props: {
   isOpen: boolean;
@@ -6,7 +6,7 @@ export const UserProfileModal = (props: {
   onClose: () => void;
   onBlockUser?: (username: string) => void;
 }) => {
-  const { profile, isLoading, error } = useUserProfile(props.username);
+  const { profile, isLoading, error } = usePublicProfile(props.username);
 
   if (!props.isOpen) return null;
 

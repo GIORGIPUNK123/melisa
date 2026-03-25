@@ -1,7 +1,7 @@
 import { User } from '@supabase/supabase-js';
-import { supabase } from '../db/supabase';
+import { supabase } from '../../db/supabase';
 import { useNavigate } from 'react-router';
-import { NotificationT } from '../types';
+import { NotificationT } from '../../types';
 import { FriendsList } from './FriendsList';
 import { ConversationsList } from './ConversationsList';
 

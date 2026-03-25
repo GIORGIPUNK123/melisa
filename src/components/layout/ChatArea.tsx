@@ -1,16 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../db/supabase';
-import { ConversationMemberT, MessageT } from '../types';
-import { ChatHeader } from './chat/ChatHeader';
-import { MessageList } from './chat/MessageList';
-import { MessageInput } from './chat/MessageInput';
-import { EmptyChatState } from './chat/EmptyChatState';
-import { useMessages } from '../hooks/useMessages';
-import { useConversationMembers } from '../hooks/useConversationMembers';
+import { supabase } from '../../db/supabase';
+import { PublicProfileT, MessageT } from '../../types';
+import { ChatHeader } from '../chat/ChatHeader';
+import { MessageList } from '../chat/MessageList';
+import { MessageInput } from '../chat/MessageInput';
+import { EmptyChatState } from '../chat/EmptyChatState';
+import { useMessages } from '../../hooks/useMessages';
+import { useConversationMembers } from '../../hooks/useConversationMembers';
 
 export const ChatArea = (props: {
   conversationId?: string | null;
-  onMembersChange?: (members: ConversationMemberT[]) => void;
+  onMembersChange?: (members: PublicProfileT[]) => void;
   onToggleChatInfo?: () => void;
   onToggleSidebar?: () => void;
 }) => {

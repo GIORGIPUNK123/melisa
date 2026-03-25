@@ -1,12 +1,10 @@
 // User types
-export interface UserT {
-  id: string;
+export interface UserT extends PublicProfileT {
   email: string;
-  username: string;
-  nickname: string;
-  avatar_url?: string | null;
-  status?: string;
-  created_at?: string;
+  iv: string;
+  salt: string;
+  encrypted_private_key: string;
+  public_key: string;
 }
 
 // Public user profile (without email)
@@ -14,8 +12,10 @@ export interface PublicProfileT {
   id: string;
   username: string;
   nickname: string;
-  avatar_url?: string | null;
-  status?: string;
+  avatar_url?: string;
+  status: 'online' | 'offline' | 'away';
+  created_at: string;
+  updated_at: string;
 }
 
 // Friendship types
@@ -26,6 +26,14 @@ export interface FriendshipT {
   status: 'pending' | 'accepted';
   created_at: string;
   updated_at: string;
+}
+export interface FriendT {
+  friendshipId: string;
+  userId: string;
+  username: string;
+  nickname: string;
+  avatarUrl?: string;
+  status: 'online' | 'offline' | 'away';
 }
 
 // Block types
@@ -45,15 +53,13 @@ export interface ConversationT {
   created_at: string;
   updated_at: string;
 }
-
-// Conversation member types
-export interface ConversationMemberT {
-  id: string;
-  username: string;
-  nickname: string;
-  avatar_url?: string;
-}
-
+// export interface ConversationMemberT {
+//   id: string;
+//   conversation_id: string;
+//   user_id: string;
+//   joined_at: string;
+//   last_read_at: string;
+// }
 // Message types (with sender info)
 export interface MessageT {
   id: string;

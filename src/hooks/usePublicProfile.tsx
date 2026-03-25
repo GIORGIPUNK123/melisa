@@ -9,7 +9,7 @@ export interface UserProfile {
   createdAt: string;
 }
 
-export const useUserProfile = (username: string | null) => {
+export const usePublicProfile = (username: string | null) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

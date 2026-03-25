@@ -1,18 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../functions/instance';
 import { supabase } from '../db/supabase';
-
-export interface Friend {
-  friendshipId: string;
-  userId: string;
-  username: string;
-  nickname: string;
-  avatarUrl?: string | null;
-  status?: string;
-}
+import { FriendT } from '../types';
 
 export const useFriendsList = () => {
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friends, setFriends] = useState<FriendT[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchFriends = async () => {
@@ -104,6 +96,44 @@ export const useFriendsList = () => {
       });
     };
   }, []);
+
+  // Subscribe to status changes of all friends
+  useEffect(() => {
+    if (friends.length === 0) return;
+
+    const friendIds = friends.map((f) => f.userId);
+
+    const statusChannel = supabase
+      .channel('friends-status')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'public_profiles',
+        },
+        (payload) => {
+          const { id, status } = payload.new as {
+            id: string;
+            status: 'online' | 'offline' | 'away';
+          };
+
+          // Only update if this user is in our friends list
+          if (friendIds.includes(id)) {
+            setFriends((prev) =>
+              prev.map((friend) =>
+                friend.userId === id ? { ...friend, status } : friend,
+              ),
+            );
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(statusChannel);
+    };
+  }, [friends]);
 
   return {
     friends,

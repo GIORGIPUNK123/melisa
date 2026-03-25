@@ -1,8 +1,8 @@
-import { MessageT, ConversationMemberT } from '../../types';
+import { MessageT, PublicProfileT } from '../../types';
 
 interface MessageListProps {
   messages: MessageT[];
-  members: ConversationMemberT[];
+  members: PublicProfileT[];
   currentUserId?: string;
   isLoading: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement>;

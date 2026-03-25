@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '../db/supabase';
-import { UserT } from '../types';
-import { api } from '../functions/instance';
+import { supabase } from '../../db/supabase';
+import { UserT } from '../../types';
+import { api } from '../../functions/instance';
 
 export const SettingsModal = (props: {
   isOpen: boolean;

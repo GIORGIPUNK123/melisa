@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../db/supabase';
-import { MessageT, ConversationMemberT } from '../types';
+import { MessageT, PublicProfileT } from '../types';
 
 export const useMessages = (conversationId: string | null | undefined) => {
   const [messages, setMessages] = useState<MessageT[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const membersRef = useRef<ConversationMemberT[]>([]);
+  const membersRef = useRef<PublicProfileT[]>([]);
 
   useEffect(() => {
     if (!conversationId) {
@@ -92,7 +92,7 @@ export const useMessages = (conversationId: string | null | undefined) => {
     };
   }, [conversationId]);
 
-  const updateMembersRef = (members: ConversationMemberT[]) => {
+  const updateMembersRef = (members: PublicProfileT[]) => {
     membersRef.current = members;
   };
 

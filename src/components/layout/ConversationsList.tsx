@@ -1,4 +1,4 @@
-import { useConversations } from '../hooks/useConversations';
+import { useConversations } from '../../hooks/useConversations';
 import { User } from '@supabase/supabase-js';
 
 export const ConversationsList = (props: {

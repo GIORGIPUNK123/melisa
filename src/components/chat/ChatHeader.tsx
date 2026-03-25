@@ -1,7 +1,7 @@
-import { ConversationMemberT } from '../../types';
+import { PublicProfileT } from '../../types';
 
 interface ChatHeaderProps {
-  members: ConversationMemberT[];
+  members: PublicProfileT[];
   currentUserId?: string;
   onToggleSidebar: () => void;
   onToggleChatInfo: () => void;
@@ -57,7 +57,9 @@ export const ChatHeader = ({
               <h2 className='text-sm font-semibold text-white truncate sm:text-base'>
                 {otherMember.nickname || otherMember.username}
               </h2>
-              <p className='text-xs text-slate-400'>Online</p>
+              <p className='text-xs capitalize text-slate-400'>
+                {otherMember.status || 'offline'}
+              </p>
             </div>
           </>
         )}
