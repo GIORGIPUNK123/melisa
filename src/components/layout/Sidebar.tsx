@@ -39,6 +39,10 @@ export const Sidebar = (props: {
     }
   };
 
+  const handleNotificationsClick = () => {
+    props.onNotificationsClick?.();
+  };
+
   return (
     <>
       {/* Mobile overlay */}
@@ -127,7 +131,7 @@ export const Sidebar = (props: {
         {/* Notifications */}
         <div className='px-4 pb-4'>
           <button
-            onClick={props.onNotificationsClick}
+            onClick={handleNotificationsClick}
             className='flex items-center justify-between w-full mb-2 transition-colors hover:text-white'
           >
             <h3 className='text-sm tracking-wider uppercase text-slate-400'>
@@ -144,7 +148,10 @@ export const Sidebar = (props: {
               </span>
             </div>
           </button>
-          <div className='pr-1 space-y-2 overflow-y-auto max-h-40'>
+          <div
+            className='pr-1 space-y-2 overflow-y-auto max-h-40'
+            onClick={handleNotificationsClick}
+          >
             {props.notificationsLoading ? (
               <div className='text-sm text-slate-500'>Loading...</div>
             ) : props.notifications.filter((n) => !n.is_read).length === 0 ? (
@@ -158,7 +165,7 @@ export const Sidebar = (props: {
                 .map((n) => (
                   <div
                     key={n.id}
-                    className='p-3 text-white transition-colors border rounded-lg bg-slate-800 border-indigo-500/40'
+                    className='p-3 text-white transition-colors border rounded-lg bg-slate-800 border-indigo-500/40 hover:bg-slate-700/60 cursor-pointer'
                   >
                     <div className='text-sm font-medium'>{n.title}</div>
                     {n.message && (

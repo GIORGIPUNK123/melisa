@@ -80,7 +80,7 @@ export const useAdditionalInfo = (userId: string | undefined) => {
 
     const checkForUsername = async () => {
       const { user: currUser } = await getUser();
-      console.log('check for username currUser: ', currUser);
+      // console.log('check for username currUser: ', currUser);
       if ((currUser && !currUser.username) || !currUser) {
         console.log(`username doesn't exist`);
         setHasUsername(false); // Username doesn't exist, open modal

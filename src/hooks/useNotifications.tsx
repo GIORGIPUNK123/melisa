@@ -61,5 +61,43 @@ export const useNotifications = (userId: string | undefined) => {
     };
   }, [userId]);
 
-  return { notifications, isLoading };
+  const markNotificationAsRead = async (notificationId: string) => {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notificationId);
+
+    if (error) {
+      console.error('Failed to mark notification as read:', error);
+      return;
+    }
+
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n)),
+    );
+  };
+
+  const markAllNotificationsAsRead = async () => {
+    if (!userId) return;
+
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', userId)
+      .eq('is_read', false);
+
+    if (error) {
+      console.error('Failed to mark all notifications as read:', error);
+      return;
+    }
+
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+  };
+
+  return {
+    notifications,
+    isLoading,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+  };
 };

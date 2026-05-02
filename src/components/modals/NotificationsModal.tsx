@@ -12,9 +12,15 @@ export const NotificationsModal = (props: {
   const unreadCount = props.notifications.filter((n) => !n.is_read).length;
 
   return (
-    <div className='fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'>
-      <div className='w-full max-w-2xl h-[600px] overflow-hidden border shadow-2xl rounded-2xl border-slate-700/50 bg-slate-900 flex flex-col'>
-        <div className='flex items-center justify-between px-6 py-4 border-b border-slate-700'>
+    <div
+      className='fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4'
+      onClick={props.onClose}
+    >
+      <div
+        className='w-full max-w-2xl h-[75vh] sm:h-[600px] max-h-[85vh] overflow-hidden border shadow-2xl rounded-xl sm:rounded-2xl border-slate-700/50 bg-slate-900 flex flex-col'
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className='flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-700'>
           <div className='flex items-center gap-3'>
             <h2 className='text-xl font-semibold text-white'>Notifications</h2>
             {unreadCount > 0 && (
@@ -23,7 +29,7 @@ export const NotificationsModal = (props: {
               </span>
             )}
           </div>
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-2 flex-wrap sm:flex-nowrap'>
             {unreadCount > 0 && (
               <button
                 onClick={props.onMarkAllAsRead}
@@ -42,7 +48,7 @@ export const NotificationsModal = (props: {
           </div>
         </div>
 
-        <div className='flex-1 p-6 space-y-3 overflow-y-auto'>
+        <div className='flex-1 p-4 sm:p-6 space-y-3 overflow-y-auto'>
           {props.notifications.length === 0 ? (
             <div className='flex flex-col items-center justify-center h-full text-center text-slate-400'>
               <div className='mb-2 text-5xl'>🔔</div>
@@ -53,7 +59,7 @@ export const NotificationsModal = (props: {
             props.notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 rounded-lg border transition-all ${
+                className={`p-3 sm:p-4 rounded-lg border transition-all ${
                   notification.is_read
                     ? 'bg-slate-800/60 border-slate-700'
                     : 'bg-slate-800 border-indigo-500/40 shadow-lg shadow-indigo-500/10'
