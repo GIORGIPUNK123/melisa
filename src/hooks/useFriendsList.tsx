@@ -51,8 +51,9 @@ export const useFriendsList = () => {
     // Set up real-time subscription for friendships table
     const setupSubscription = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return;
 
       const channel = supabase

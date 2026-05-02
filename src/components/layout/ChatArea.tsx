@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../db/supabase';
 import { PublicProfileT, MessageT } from '../../types';
 import { ChatHeader } from '../chat/ChatHeader';
@@ -7,12 +7,24 @@ import { MessageInput } from '../chat/MessageInput';
 import { EmptyChatState } from '../chat/EmptyChatState';
 import { useMessages } from '../../hooks/useMessages';
 import { useConversationMembers } from '../../hooks/useConversationMembers';
+import {
+  box,
+  box_open,
+  randomBytes,
+  decodeUTF8,
+  encodeUTF8,
+  encodeBase64,
+  decodeBase64,
+} from 'tweetnacl-ts';
+import { api } from '../../functions/instance';
 
 export const ChatArea = (props: {
   conversationId?: string | null;
   onMembersChange?: (members: PublicProfileT[]) => void;
   onToggleChatInfo?: () => void;
   onToggleSidebar?: () => void;
+  privateKey: string;
+  onIncomingMessage?: (message: MessageT) => void;
 }) => {
   const [messageInput, setMessageInput] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -20,17 +32,139 @@ export const ChatArea = (props: {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // E2EE enabled: decrypt messages for display
+
+  const decryptMessageContent = useCallback(
+    async (message: MessageT, membersList: PublicProfileT[]) => {
+      if (!message.content.startsWith('enc:')) {
+        return message.content;
+      }
+
+      if (!currentUser || !props.privateKey) {
+        return '[Encrypted message: locked]';
+      }
+
+      const senderId = message.sender_id;
+      const senderPublicKey = membersList.find((m) => m.id === senderId)
+        ?.public_key;
+      const selfPublicKey = membersList.find((m) => m.id === currentUser.id)
+        ?.public_key;
+
+      if (!senderPublicKey || !selfPublicKey) {
+        return '[Encrypted message: missing key]';
+      }
+
+      if (message.content.startsWith('enc:v2:')) {
+        const parts = message.content.split(':');
+        if (parts.length < 6) {
+          return '[Encrypted message: invalid payload]';
+        }
+
+        const nonceSelf = decodeBase64(parts[2]);
+        const cipherSelf = decodeBase64(parts[3]);
+        const noncePeer = decodeBase64(parts[4]);
+        const cipherPeer = decodeBase64(parts[5]);
+
+        const nonce = senderId === currentUser.id ? nonceSelf : noncePeer;
+        const cipher = senderId === currentUser.id ? cipherSelf : cipherPeer;
+        const pubKey = senderId === currentUser.id ? selfPublicKey : senderPublicKey;
+
+        const opened = box_open(
+          cipher,
+          nonce,
+          decodeBase64(pubKey),
+          decodeBase64(props.privateKey),
+        );
+
+        if (!opened) {
+          return '[Encrypted message: failed to decrypt]';
+        }
+
+        return encodeUTF8(opened);
+      }
+
+      if (message.content.startsWith('enc:v1:')) {
+        const parts = message.content.split(':');
+        if (parts.length < 4) {
+          return '[Encrypted message: invalid payload]';
+        }
+
+        if (senderId === currentUser.id) {
+          return '[Encrypted message: sender copy not available]';
+        }
+
+        const nonce = decodeBase64(parts[2]);
+        const cipher = decodeBase64(parts[3]);
+        const opened = box_open(
+          cipher,
+          nonce,
+          decodeBase64(senderPublicKey),
+          decodeBase64(props.privateKey),
+        );
+
+        if (!opened) {
+          return '[Encrypted message: failed to decrypt]';
+        }
+
+        return encodeUTF8(opened);
+      }
+
+      return '[Encrypted message: unknown format]';
+    },
+    [currentUser, props.privateKey],
+  );
+
+  const handleIncomingMessage = useCallback(
+    (message: MessageT) => {
+      if (!currentUser) return;
+      if (message.sender_id !== currentUser.id) {
+        props.onIncomingMessage?.(message);
+      }
+    },
+    [currentUser, props.onIncomingMessage],
+  );
+
   const { messages, setMessages, isLoading, updateMembersRef } = useMessages(
     props.conversationId,
+    decryptMessageContent,
+    handleIncomingMessage,
   );
-  const { members } = useConversationMembers(props.conversationId);
+  const { members, setMembers } = useConversationMembers(props.conversationId);
+
+  const ensurePublicKey = useCallback(
+    async (userId: string) => {
+      const existing = members.find((m) => m.id === userId)?.public_key;
+      if (existing) return existing;
+
+      try {
+        const { data } = await api.get<
+          { result?: { public_key?: string | null } } | { public_key?: string | null }
+        >(`/userinfo/${userId}`);
+        const publicKey =
+          (data as { public_key?: string | null }).public_key ??
+          (data as { result?: { public_key?: string | null } }).result
+            ?.public_key ??
+          null;
+        if (publicKey) {
+          setMembers((prev) =>
+            prev.map((m) => (m.id === userId ? { ...m, public_key: publicKey } : m)),
+          );
+        }
+        return publicKey;
+      } catch (err) {
+        console.error('Failed to fetch public key:', err);
+        return null;
+      }
+    },
+    [members, setMembers],
+  );
 
   useEffect(() => {
     const getUser = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setCurrentUser(user);
+        data: { session },
+      } = await supabase.auth.getSession();
+      setCurrentUser(session?.user ?? null);
     };
     getUser();
   }, []);
@@ -52,11 +186,55 @@ export const ChatArea = (props: {
     }
   }, [props.conversationId]);
 
+  // console.log('currentUser:', currentUser);
+  // console.log('privateKey: ', privateKey);
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim() || !props.conversationId || !currentUser) return;
 
     const messageContent = messageInput.trim();
+    const recipient = members.find((m) => m.id !== currentUser.id);
+    if (!recipient) {
+      alert('No recipient found for this conversation.');
+      return;
+    }
+
+    const senderPublicKey = await ensurePublicKey(currentUser.id);
+    const recipientPublicKey = await ensurePublicKey(recipient.id);
+
+    if (!senderPublicKey || !recipientPublicKey) {
+      alert('Missing encryption keys for this conversation.');
+      return;
+    }
+
+    let encryptedContent = '';
+    try {
+      const nonceSelf = randomBytes(24);
+      const noncePeer = randomBytes(24);
+
+      const cipherSelf = box(
+        decodeUTF8(messageContent),
+        nonceSelf,
+        decodeBase64(senderPublicKey),
+        decodeBase64(props.privateKey),
+      );
+
+      const cipherPeer = box(
+        decodeUTF8(messageContent),
+        noncePeer,
+        decodeBase64(recipientPublicKey),
+        decodeBase64(props.privateKey),
+      );
+
+      encryptedContent = `enc:v2:${encodeBase64(nonceSelf)}:${encodeBase64(
+        cipherSelf,
+      )}:${encodeBase64(noncePeer)}:${encodeBase64(cipherPeer)}`;
+    } catch (err) {
+      console.error('Encryption failed:', err);
+      alert('Failed to encrypt message.');
+      return;
+    }
+
     setMessageInput('');
     setIsSending(true);
 
@@ -72,7 +250,6 @@ export const ChatArea = (props: {
       created_at: now,
       updated_at: now,
     };
-
     setMessages((prev) => [...prev, tempMessage]);
 
     try {
@@ -81,7 +258,7 @@ export const ChatArea = (props: {
         .insert({
           conversation_id: props.conversationId,
           sender_id: currentUser.id,
-          content: messageContent,
+          content: encryptedContent,
           message_type: 'text',
         })
         .select()

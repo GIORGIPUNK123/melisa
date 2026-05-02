@@ -20,7 +20,7 @@ export const useConversationMembers = (
         const token = sessionData?.session?.access_token;
         const response = await api.get<{
           conversationMembers: PublicProfileT[];
-        }>(`/conversations/members/${conversationId}`, {
+        }>(`/friends/conversation/${conversationId}/members`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -67,16 +67,14 @@ export const useConversationMembers = (
           table: 'users',
         },
         (payload) => {
-          const { id, status } = payload.new as {
-            id: string;
-            status: 'online' | 'offline' | 'away';
-          };
+          const newRow = payload.new as Partial<PublicProfileT> & { id: string };
+          const { id } = newRow;
 
           // Only update if this user is a member of the conversation
           if (memberIds.includes(id)) {
             setMembers((prev) =>
               prev.map((member) =>
-                member.id === id ? { ...member, status } : member,
+                member.id === id ? { ...member, ...newRow } : member,
               ),
             );
           }
@@ -89,5 +87,5 @@ export const useConversationMembers = (
     };
   }, [conversationId, members]);
 
-  return { members };
+  return { members, setMembers };
 };

@@ -1,4 +1,3 @@
-const { subtle } = globalThis.crypto;
 import { encodeBase64 } from 'tweetnacl-ts';
 
 export const AESGCMEncrypt = async (

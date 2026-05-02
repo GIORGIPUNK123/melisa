@@ -3,13 +3,40 @@ import { User } from '@supabase/supabase-js';
 import { AxiosError } from 'axios';
 import { supabase } from '../db/supabase';
 import { api } from '../functions/instance';
-import { AESGCMDecrypt } from '../functions/cryptoFunctions';
+import { AESGCMDecrypt, AESGCMEncrypt } from '../functions/cryptoFunctions';
 import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
+import { box_keyPair, encodeBase64 } from 'tweetnacl-ts';
+
+const isInvalidSessionError = (error: any): boolean => {
+  const status = error?.status ?? error?.statusCode ?? error?.__isAuthError;
+  const message = String(error?.message ?? '').toLowerCase();
+
+  return (
+    status === 401 ||
+    status === 403 ||
+    message.includes('jwt') ||
+    message.includes('session') ||
+    message.includes('invalid') ||
+    message.includes('forbidden')
+  );
+};
+
 export const useAuth = () => {
   const [user, setUser] = useState<'loading' | User | null>('loading');
   const [authError, setAuthError] = useState<string | null>(null);
 
   const [privateKey, setPrivateKey] = useState<string | null>(null);
+  const [generatedPublicKey, setGeneratedPublicKey] = useState<string | null>(
+    null,
+  );
+  const [generatedSalt, setGeneratedSalt] = useState<string | null>(null);
+  const [derivedEncryptionKey, setDerivedEncryptionKey] = useState<
+    string | null
+  >(null);
+  const [generatedIv, setGeneratedIv] = useState<string | null>(null);
+  const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<string | null>(
+    null,
+  );
 
   // Decode base64 to Uint8Array in browser
   const base64ToUint8Array = useCallback(
@@ -49,7 +76,10 @@ export const useAuth = () => {
           iv: string;
           salt: string;
         };
-        const { data: userData } = await api.get<userDataT>(`/users/${userId}`);
+        const { data: responseData } = await api.get<
+          userDataT | { result: userDataT }
+        >(`/userinfo/${userId}`);
+        const userData = 'result' in responseData ? responseData.result : responseData;
         if (!userData) throw new Error('Failed to fetch user data');
         if (!userData.salt || !userData.iv || !userData.encrypted_private_key) {
           throw new Error(
@@ -105,8 +135,36 @@ export const useAuth = () => {
 
   // Fetch the current user from Supabase
   const fetchUser = useCallback(async () => {
-    const { data } = await supabase.auth.getUser();
-    setUser(data.user);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        setUser(null);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error || !data.user) {
+        if (error && isInvalidSessionError(error)) {
+          await supabase.auth.signOut({ scope: 'local' });
+          setUser(null);
+          return;
+        }
+
+        setUser(data.user ?? null);
+        return;
+      }
+
+      setUser(data.user);
+    } catch (error: any) {
+      if (isInvalidSessionError(error)) {
+        await supabase.auth.signOut({ scope: 'local' });
+      }
+      setUser(null);
+    }
   }, []);
 
   // Handle login
@@ -142,6 +200,26 @@ export const useAuth = () => {
     [fetchPrivateKey],
   );
 
+  // Re-unlock / re-decrypt private key using password (for reloads or redirects)
+  const authUnlock = useCallback(
+    async (password: string) => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+        if (!userId) return false;
+
+        const key = await fetchPrivateKey(userId, password);
+        return key !== null;
+      } catch (err) {
+        console.error('authUnlock failed:', err);
+        return false;
+      }
+    },
+    [fetchPrivateKey],
+  );
+
   // Handle registration
   const authRegister = useCallback(
     async (
@@ -153,11 +231,48 @@ export const useAuth = () => {
       setUser('loading');
       setAuthError(null);
       try {
+        const keyPair = box_keyPair();
+        const publicKeyBase64 = encodeBase64(keyPair.publicKey);
+        const privateKeyBase64 = encodeBase64(keyPair.secretKey);
+
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const hashResult = await argon2.hash({
+          pass: password,
+          salt,
+          time: 3,
+          mem: 65536,
+          hashLen: 32,
+          parallelism: 4,
+          type: argon2.ArgonType.Argon2id,
+        });
+        const passwordKey = new Uint8Array(hashResult.hash);
+        const saltBase64 = encodeBase64(salt);
+        const passwordKeyBase64 = encodeBase64(passwordKey);
+
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ivBase64 = encodeBase64(iv);
+        const encryptedPrivateKeyBase64 = await AESGCMEncrypt(
+          privateKeyBase64,
+          passwordKey,
+          iv,
+        );
+
+        setGeneratedPublicKey(publicKeyBase64);
+        setPrivateKey(privateKeyBase64);
+        setGeneratedSalt(saltBase64);
+        setDerivedEncryptionKey(passwordKeyBase64);
+        setGeneratedIv(ivBase64);
+        setEncryptedPrivateKey(encryptedPrivateKeyBase64);
+
         await api.post('/auth/register', {
           email,
           password,
           username,
           nickname,
+          public_key: publicKeyBase64,
+          encrypted_private_key: encryptedPrivateKeyBase64,
+          iv: ivBase64,
+          salt: saltBase64,
         });
 
         setUser(null); // User needs to verify email first
@@ -177,6 +292,13 @@ export const useAuth = () => {
   // Handle logout
   const authLogout = useCallback(async () => {
     await supabase.auth.signOut();
+    // Clear sensitive state on logout
+    setPrivateKey(null);
+    setEncryptedPrivateKey(null);
+    setGeneratedIv(null);
+    setGeneratedSalt(null);
+    setDerivedEncryptionKey(null);
+    setGeneratedPublicKey(null);
     setUser(null);
   }, []);
 
@@ -203,5 +325,11 @@ export const useAuth = () => {
     authRegister,
     user,
     privateKey,
+    authUnlock,
+    generatedPublicKey,
+    generatedSalt,
+    derivedEncryptionKey,
+    generatedIv,
+    encryptedPrivateKey,
   };
 };

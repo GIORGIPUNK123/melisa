@@ -16,6 +16,7 @@ export interface PublicProfileT {
   status: 'online' | 'offline' | 'away';
   created_at: string;
   updated_at: string;
+  public_key?: string;
 }
 
 // Friendship types

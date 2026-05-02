@@ -14,8 +14,9 @@ export const ChatInfo = (props: {
   useEffect(() => {
     const getUser = async () => {
       const {
-        data: { user },
-      } = await (window as any).supabase.auth.getUser();
+        data: { session },
+      } = await (window as any).supabase.auth.getSession();
+      const user = session?.user;
       if (user) setCurrentUserId(user.id);
     };
     getUser();

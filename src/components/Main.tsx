@@ -9,7 +9,6 @@ import { ChatInfo } from './layout/ChatInfo';
 import { useNotifications } from '../hooks/useNotifications';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useAudioNotification } from '../hooks/useAudioNotification';
-import { useMessageNotifications } from '../hooks/useMessageNotifications';
 import { useModals } from '../hooks/useModals';
 import { useChatState } from '../hooks/useChatState';
 import { useCurrentUserProfile } from '../hooks/useCurrentUserProfile';
@@ -18,10 +17,12 @@ import { useNotificationSound } from '../hooks/useNotificationSound';
 import { ModalsContainer } from './main/ModalsContainer';
 
 export const Main = () => {
-  const { user, privateKey } = useAuth();
-  console.log('privateKey: ', privateKey);
+  const { user, authUnlock, privateKey } = useAuth();
   const navigate = useNavigate();
   const [lastMessageId, setLastMessageId] = useState<string | null>(null);
+  const [unlockPassword, setUnlockPassword] = useState('');
+  const [unlockError, setUnlockError] = useState<string | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
 
   const userId = user && user !== 'loading' ? user.id : undefined;
 
@@ -40,16 +41,13 @@ export const Main = () => {
   );
 
   // Audio notifications
-  const { playSound: playMessageSound } = useAudioNotification(800, 0.3);
-  const { playSound: playNotificationSound } = useAudioNotification(600, 0.5);
+  const {
+    playSound: playMessageSound,
+    ensureEnabled: ensureMessageSoundEnabled,
+  } = useAudioNotification(800, 0.3);
+  const { playSound: playNotificationSound, ensureEnabled: ensureNotificationSound } = useAudioNotification(600, 0.5);
 
   // Message and notification handlers
-  useMessageNotifications(
-    userId,
-    lastMessageId,
-    setLastMessageId,
-    playMessageSound,
-  );
   useNotificationSound(notifications.length, playNotificationSound);
 
   // Chat actions
@@ -67,7 +65,51 @@ export const Main = () => {
     return <Loading />;
   }
 
-  if (user != null) {
+  if (user != null && privateKey == null) {
+    return (
+      <div className='flex items-center justify-center w-screen h-screen bg-slate-900'>
+        <div className='p-6 bg-slate-800 rounded shadow'>
+          <h3 className='text-white mb-3'>Unlock your private key</h3>
+          <input
+            type='password'
+            placeholder='Enter password'
+            value={unlockPassword}
+            onChange={(e) => setUnlockPassword(e.target.value)}
+            className='w-full p-2 mb-3 rounded'
+            autoFocus
+          />
+          <div className='flex gap-2'>
+            <button
+              onClick={async () => {
+                setUnlocking(true);
+                setUnlockError(null);
+                  const ok = await authUnlock(unlockPassword);
+                setUnlocking(false);
+                if (!ok) setUnlockError('Invalid password');
+                else setUnlockPassword('');
+                // Try to prime/resume AudioContext via this user gesture (unlock)
+                try {
+                  void ensureMessageSoundEnabled?.();
+                  void ensureNotificationSound?.();
+                } catch (err) {
+                  console.warn('Failed to prime audio on unlock:', err);
+                }
+              }}
+              disabled={unlocking || !unlockPassword}
+              className='px-3 py-2 bg-blue-600 text-white rounded'
+            >
+              {unlocking ? 'Unlocking...' : 'Unlock'}
+            </button>
+          </div>
+          {unlockError && (
+            <div className='mt-2 text-red-400'>{unlockError}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (user != null && privateKey != null) {
     return (
       <div className='flex w-screen h-screen bg-slate-900'>
         {/* All Modals */}
@@ -124,6 +166,14 @@ export const Main = () => {
           onMembersChange={chatState.handleMembersChange}
           onToggleChatInfo={chatState.toggleChatInfo}
           onToggleSidebar={chatState.toggleSidebar}
+          privateKey={privateKey}
+          onIncomingMessage={(message) => {
+            if (!userId) return;
+            if (message.sender_id !== userId && message.id !== lastMessageId) {
+              setLastMessageId(message.id);
+              playMessageSound();
+            }
+          }}
         />
 
         {/* Right Sidebar - Chat Info */}
