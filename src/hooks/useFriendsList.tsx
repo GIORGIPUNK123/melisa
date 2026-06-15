@@ -5,7 +5,7 @@ import { FriendT } from '../types';
 
 export const useFriendsList = () => {
   const [friends, setFriends] = useState<FriendT[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchFriends = async () => {
     setIsLoading(true);
@@ -48,93 +48,51 @@ export const useFriendsList = () => {
   useEffect(() => {
     fetchFriends();
 
-    // Set up real-time subscription for friendships table
-    const setupSubscription = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const user = session?.user;
-      if (!user) return;
-
-      const channel = supabase
-        .channel(`friendships:${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'friendships',
-            filter: `or(user_id.eq.${user.id},receiver_id.eq.${user.id})`,
-          },
-          () => {
-            // Refetch when friendships change
-            fetchFriends();
-          },
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'DELETE',
-            schema: 'public',
-            table: 'friendships',
-            filter: `or(user_id.eq.${user.id},receiver_id.eq.${user.id})`,
-          },
-          () => {
-            // Refetch when friendships are deleted
-            fetchFriends();
-          },
-        )
-        .subscribe();
-
-      return channel;
-    };
-
-    let channelPromise = setupSubscription();
-
-    return () => {
-      channelPromise.then((channel) => {
-        if (channel) supabase.removeChannel(channel);
-      });
-    };
-  }, []);
-
-  // Subscribe to status changes of all friends
-  useEffect(() => {
-    if (friends.length === 0) return;
-
-    const friendIds = friends.map((f) => f.userId);
-
     const statusChannel = supabase
-      .channel('friends-status')
+      .channel('friends_status_updates')
       .on(
         'postgres_changes',
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'public_profiles',
+          table: 'users',
         },
         (payload) => {
-          const { id, status } = payload.new as {
-            id: string;
-            status: 'online' | 'offline' | 'away';
-          };
+          if (!payload?.old || !payload?.new) return;
 
-          // Only update if this user is in our friends list
-          if (friendIds.includes(id)) {
-            setFriends((prev) =>
-              prev.map((friend) =>
-                friend.userId === id ? { ...friend, status } : friend,
-              ),
+          // 1. Check if last_seen_at actually changed
+          const timeChanged =
+            payload.old.last_seen_at !== payload.new.last_seen_at;
+          const privacyChanged =
+            payload.old.appear_offline !== payload.new.appear_offline;
+
+          // If neither of these presence tokens changed, drop the execution early!
+          if (!timeChanged && !privacyChanged) return;
+
+          // 2. Only update state if it passes the presence check
+          setFriends((currentFriends) => {
+            const friendExists = currentFriends.some(
+              (f) => f.userId === payload.new.id,
             );
-          }
+            if (!friendExists) return currentFriends;
+
+            return currentFriends.map((friend) =>
+              friend.userId === payload.new.id
+                ? {
+                    ...friend,
+                    last_seen_at: payload.new.last_seen_at,
+                    appear_offline: payload.new.appear_offline,
+                  }
+                : friend,
+            );
+          });
         },
       )
       .subscribe();
-
     return () => {
-      supabase.removeChannel(statusChannel);
+      void supabase.removeChannel(statusChannel);
     };
-  }, [friends]);
+  }, []);
 
   return {
     friends,

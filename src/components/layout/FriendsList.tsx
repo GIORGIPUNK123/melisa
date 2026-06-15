@@ -1,29 +1,146 @@
-import { useFriendsList } from '../../hooks/useFriendsList';
+import { MouseEvent, useEffect, useState } from 'react';
+import { FriendT } from '../../types';
+
+const ONLINE_WINDOW_MS = 2 * 60 * 1000;
+const STATUS_REFRESH_MS = 10 * 1000;
+
+const getFriendStatus = (
+  nowMs: number,
+  lastSeenAt?: string | null,
+  appearOffline?: boolean,
+) => {
+  if (appearOffline || !lastSeenAt) return false;
+
+  const lastSeenMs = new Date(lastSeenAt).getTime();
+  if (Number.isNaN(lastSeenMs)) return false;
+
+  return nowMs - lastSeenMs <= ONLINE_WINDOW_MS;
+};
+
+const getInitials = (nickname: string) => nickname.charAt(0).toUpperCase();
+
+const FriendRow = ({
+  friend,
+  nowMs,
+  onFriendSelect,
+  onViewProfile,
+  onOpenConversation,
+}: {
+  friend: FriendT;
+  nowMs: number;
+  onFriendSelect: (conversationId: string) => void;
+  onViewProfile: (username: string) => void;
+  onOpenConversation: (friendUserId: string) => Promise<string | null>;
+}) => {
+  const isOnline = getFriendStatus(
+    nowMs,
+    friend.last_seen_at,
+    friend.appear_offline,
+  );
+
+  const handleFriendClick = async () => {
+    if (friend.conversationId) {
+      onFriendSelect(friend.conversationId);
+      return;
+    }
+
+    const conversationId = await onOpenConversation(friend.userId);
+    if (conversationId) {
+      onFriendSelect(conversationId);
+    }
+  };
+
+  const handleViewProfile = (e: MouseEvent) => {
+    e.stopPropagation();
+    onViewProfile(friend.username);
+  };
+
+  return (
+    <div className='relative group'>
+      <button
+        onClick={handleFriendClick}
+        className='flex items-center w-full gap-3 p-3 text-left transition-colors rounded-lg hover:bg-slate-800'
+      >
+        {friend.avatarUrl ? (
+          <img
+            src={friend.avatarUrl}
+            alt={friend.nickname}
+            className='flex-shrink-0 object-cover w-10 h-10 rounded-full'
+          />
+        ) : (
+          <div className='flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600'>
+            {getInitials(friend.nickname)}
+          </div>
+        )}
+        <div className='flex-1 min-w-0'>
+          <div className='font-medium text-white truncate'>
+            {friend.nickname}
+          </div>
+          <div className='text-xs truncate text-slate-400'>
+            @{friend.username}
+          </div>
+        </div>
+        <div
+          className={`h-2 w-2 rounded-full flex-shrink-0 ${
+            isOnline ? 'bg-emerald-500' : 'bg-slate-500'
+          }`}
+          title={isOnline ? 'online' : 'offline'}
+        />
+      </button>
+
+      <button
+        onClick={handleViewProfile}
+        className='absolute p-2 transition-all -translate-y-1/2 rounded-lg opacity-0 right-2 top-1/2 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white group-hover:opacity-100'
+        title='View Profile'
+      >
+        <svg
+          className='w-4 h-4'
+          fill='none'
+          stroke='currentColor'
+          viewBox='0 0 24 24'
+        >
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            strokeWidth={2}
+            d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
+          />
+        </svg>
+      </button>
+    </div>
+  );
+};
 
 export const FriendsList = (props: {
   onFriendSelect: (conversationId: string) => void;
   onViewProfile: (username: string) => void;
+  ensureTargetSubscription?: (userId: string) => void;
+  friends: FriendT[];
+  isLoading: boolean;
+  getOrCreateConversation: (friendUserId: string) => Promise<string | null>;
 }) => {
-  const { friends, isLoading, getOrCreateConversation } = useFriendsList();
+  const {
+    friends,
+    isLoading,
+    getOrCreateConversation,
+    onViewProfile,
+    onFriendSelect,
+  } = props;
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
-  const handleFriendClick = async (friend: (typeof friends)[0]) => {
-    const conversationId = await getOrCreateConversation(friend.userId);
-    if (conversationId) {
-      props.onFriendSelect(conversationId);
-    }
-  };
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, STATUS_REFRESH_MS);
 
-  const handleViewProfile = (
-    e: React.MouseEvent,
-    friend: (typeof friends)[0],
-  ) => {
-    e.stopPropagation();
-    props.onViewProfile(friend.username);
-  };
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   return (
     <div className='flex flex-col h-full'>
-      <h3 className='text-sm uppercase tracking-wider text-slate-400 px-4 py-3 border-b border-slate-700'>
+      <h3 className='px-4 py-3 text-sm tracking-wider uppercase border-b text-slate-400 border-slate-700'>
         Friends ({friends.length})
       </h3>
 
@@ -32,62 +149,20 @@ export const FriendsList = (props: {
           Loading friends...
         </div>
       ) : friends.length === 0 ? (
-        <div className='flex items-center justify-center py-8 text-slate-400 text-sm'>
+        <div className='flex items-center justify-center py-8 text-sm text-slate-400'>
           No friends yet
         </div>
       ) : (
-        <div className='flex-1 overflow-y-auto space-y-1 p-2'>
+        <div className='flex-1 p-2 space-y-1 overflow-y-auto'>
           {friends.map((friend) => (
-            <div key={friend.friendshipId} className='relative group'>
-              <button
-                onClick={() => handleFriendClick(friend)}
-                className='w-full flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 transition-colors text-left'
-              >
-                {friend.avatarUrl ? (
-                  <img
-                    src={friend.avatarUrl}
-                    alt={friend.nickname}
-                    className='w-10 h-10 rounded-full object-cover flex-shrink-0'
-                  />
-                ) : (
-                  <div className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0'>
-                    {friend.nickname.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div className='flex-1 min-w-0'>
-                  <div className='text-white font-medium truncate'>
-                    {friend.nickname}
-                  </div>
-                  <div className='text-slate-400 text-xs truncate'>
-                    @{friend.username}
-                  </div>
-                </div>
-                {friend.status === 'online' && (
-                  <div className='w-2 h-2 rounded-full bg-green-500 flex-shrink-0'></div>
-                )}
-              </button>
-
-              {/* View Profile Button */}
-              <button
-                onClick={(e) => handleViewProfile(e, friend)}
-                className='absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-all opacity-0 group-hover:opacity-100'
-                title='View Profile'
-              >
-                <svg
-                  className='w-4 h-4'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-                  />
-                </svg>
-              </button>
-            </div>
+            <FriendRow
+              key={friend.friendshipId}
+              friend={friend}
+              nowMs={nowMs}
+              onFriendSelect={onFriendSelect}
+              onViewProfile={onViewProfile}
+              onOpenConversation={getOrCreateConversation}
+            />
           ))}
         </div>
       )}

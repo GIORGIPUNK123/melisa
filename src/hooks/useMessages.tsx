@@ -17,9 +17,24 @@ export const useMessages = (
   const membersRef = useRef<PublicProfileT[]>([]);
   const rawMessagesRef = useRef<MessageT[]>([]);
   const lastMessageAtRef = useRef<string | null>(null);
+  const initialLoadDoneRef = useRef(false);
+  const decryptMessageRef = useRef<DecryptMessageFn | undefined>(
+    decryptMessage,
+  );
+  const onMessageInsertedRef = useRef(onMessageInserted);
+
+  useEffect(() => {
+    decryptMessageRef.current = decryptMessage;
+  }, [decryptMessage]);
+
+  useEffect(() => {
+    onMessageInsertedRef.current = onMessageInserted;
+  }, [onMessageInserted]);
 
   const decryptAndSet = async (rawMessages: MessageT[]) => {
-    if (!decryptMessage) {
+    const activeDecryptMessage = decryptMessageRef.current;
+
+    if (!activeDecryptMessage) {
       setMessages(rawMessages);
       return;
     }
@@ -29,7 +44,7 @@ export const useMessages = (
         try {
           return {
             ...message,
-            content: await decryptMessage(message, membersRef.current),
+            content: await activeDecryptMessage(message, membersRef.current),
           };
         } catch (err) {
           console.error('Failed to decrypt message:', err);
@@ -54,6 +69,8 @@ export const useMessages = (
       setMessages([]);
       return;
     }
+
+    initialLoadDoneRef.current = false;
 
     const fetchMessages = async () => {
       setIsLoading(true);
@@ -81,8 +98,11 @@ export const useMessages = (
 
         rawMessagesRef.current = formatted;
         lastMessageAtRef.current =
-          formatted.length > 0 ? formatted[formatted.length - 1].created_at : null;
+          formatted.length > 0
+            ? formatted[formatted.length - 1].created_at
+            : null;
         await decryptAndSet(formatted);
+        initialLoadDoneRef.current = true;
       } catch (err) {
         console.error('Failed to fetch messages:', err);
       } finally {
@@ -132,7 +152,9 @@ export const useMessages = (
 
           upsertRawMessage(rawMessage);
           decryptAndSet(rawMessagesRef.current);
-          onMessageInserted?.(rawMessage);
+          if (initialLoadDoneRef.current) {
+            onMessageInsertedRef.current?.(rawMessage);
+          }
         },
       )
       .subscribe();
@@ -142,6 +164,7 @@ export const useMessages = (
     const startPolling = () => {
       intervalId = window.setInterval(async () => {
         if (!conversationId) return;
+        if (!initialLoadDoneRef.current) return;
 
         try {
           let query = supabase
@@ -175,7 +198,7 @@ export const useMessages = (
 
           newRows.forEach((row) => {
             upsertRawMessage(row);
-            onMessageInserted?.(row);
+            onMessageInsertedRef.current?.(row);
           });
 
           lastMessageAtRef.current = newRows[newRows.length - 1].created_at;
@@ -192,7 +215,7 @@ export const useMessages = (
       supabase.removeChannel(channel);
       if (intervalId) window.clearInterval(intervalId);
     };
-  }, [conversationId, decryptMessage, onMessageInserted]);
+  }, [conversationId]);
 
   const updateMembersRef = (members: PublicProfileT[]) => {
     membersRef.current = members;

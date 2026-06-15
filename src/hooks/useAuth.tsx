@@ -1,4 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { User } from '@supabase/supabase-js';
 import { AxiosError } from 'axios';
 import { supabase } from '../db/supabase';
@@ -21,7 +29,31 @@ const isInvalidSessionError = (error: any): boolean => {
   );
 };
 
-export const useAuth = () => {
+type AuthContextValue = {
+  authLogin: (email: string, password: string) => Promise<boolean>;
+  authLogout: () => Promise<void>;
+  authError: string | null;
+  fetchUser: () => Promise<void>;
+  fetchPrivateKey: (userId: string, password: string) => Promise<string | null>;
+  authRegister: (
+    email: string,
+    password: string,
+    username: string,
+    nickname: string,
+  ) => Promise<boolean>;
+  user: 'loading' | User | null;
+  privateKey: string | null;
+  authUnlock: (password: string) => Promise<boolean>;
+  generatedPublicKey: string | null;
+  generatedSalt: string | null;
+  derivedEncryptionKey: string | null;
+  generatedIv: string | null;
+  encryptedPrivateKey: string | null;
+};
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<'loading' | User | null>('loading');
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -79,7 +111,8 @@ export const useAuth = () => {
         const { data: responseData } = await api.get<
           userDataT | { result: userDataT }
         >(`/userinfo/${userId}`);
-        const userData = 'result' in responseData ? responseData.result : responseData;
+        const userData =
+          'result' in responseData ? responseData.result : responseData;
         if (!userData) throw new Error('Failed to fetch user data');
         if (!userData.salt || !userData.iv || !userData.encrypted_private_key) {
           throw new Error(
@@ -103,7 +136,9 @@ export const useAuth = () => {
           passwordKey = new Uint8Array(hashResult.hash);
         } catch (e: any) {
           console.error('Argon2 key derivation failed:', e?.message ?? e);
-          throw new Error('Key derivation failed. Try a different browser or device.');
+          throw new Error(
+            'Key derivation failed. Try a different browser or device.',
+          );
         }
 
         let decryptedPrivateKey: string;
@@ -302,7 +337,6 @@ export const useAuth = () => {
     setUser(null);
   }, []);
 
-  // Fetch user on initial mount
   useEffect(() => {
     fetchUser();
 
@@ -316,20 +350,48 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, [fetchUser]);
 
-  return {
-    authLogin,
-    authLogout,
-    authError,
-    fetchUser,
-    fetchPrivateKey,
-    authRegister,
-    user,
-    privateKey,
-    authUnlock,
-    generatedPublicKey,
-    generatedSalt,
-    derivedEncryptionKey,
-    generatedIv,
-    encryptedPrivateKey,
-  };
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      authLogin,
+      authLogout,
+      authError,
+      fetchUser,
+      fetchPrivateKey,
+      authRegister,
+      user,
+      privateKey,
+      authUnlock,
+      generatedPublicKey,
+      generatedSalt,
+      derivedEncryptionKey,
+      generatedIv,
+      encryptedPrivateKey,
+    }),
+    [
+      authLogin,
+      authLogout,
+      authError,
+      fetchUser,
+      fetchPrivateKey,
+      authRegister,
+      user,
+      privateKey,
+      authUnlock,
+      generatedPublicKey,
+      generatedSalt,
+      derivedEncryptionKey,
+      generatedIv,
+      encryptedPrivateKey,
+    ],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return ctx;
 };

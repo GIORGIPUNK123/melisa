@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Loading } from './Loading';
 import { useAdditionalInfo } from '../hooks/useAdditionalInfo';
 import { useAuth } from '../hooks/useAuth';
 import { Sidebar } from './layout/Sidebar';
-import { ChatArea } from './layout/ChatArea';
 import { ChatInfo } from './layout/ChatInfo';
 import { useNotifications } from '../hooks/useNotifications';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
@@ -14,12 +13,17 @@ import { useChatState } from '../hooks/useChatState';
 import { useCurrentUserProfile } from '../hooks/useCurrentUserProfile';
 import { useChatActions } from '../hooks/useChatActions';
 import { useNotificationSound } from '../hooks/useNotificationSound';
+import { supabase } from '../db/supabase';
+import { api } from '../functions/instance';
 import { ModalsContainer } from './main/ModalsContainer';
+import { UnlockWithPassword } from './UnlockWithPassword';
+import { EmptyChatState } from './chat/EmptyChatState';
+import { Test } from './layout/Test';
+import { useHeartbeat } from '../hooks/useHeartbeat';
 
 export const Main = () => {
   const { user, authUnlock, privateKey } = useAuth();
   const navigate = useNavigate();
-  const [lastMessageId, setLastMessageId] = useState<string | null>(null);
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
@@ -47,7 +51,6 @@ export const Main = () => {
   const modals = useModals();
   const chatState = useChatState();
   const { profile, setProfile } = useCurrentUserProfile(userId);
-
   // Data hooks
   useAdditionalInfo(userId);
   const {
@@ -61,12 +64,18 @@ export const Main = () => {
     chatState.activeConversationId,
   );
 
+  // use Heartbeat to update user's last_seen_at and manage presence
+  useHeartbeat(userId);
+
   // Audio notifications
+  const { ensureEnabled: ensureMessageSoundEnabled } = useAudioNotification(
+    800,
+    0.3,
+  );
   const {
-    playSound: playMessageSound,
-    ensureEnabled: ensureMessageSoundEnabled,
-  } = useAudioNotification(800, 0.3);
-  const { playSound: playNotificationSound, ensureEnabled: ensureNotificationSound } = useAudioNotification(600, 0.5);
+    playSound: playNotificationSound,
+    ensureEnabled: ensureNotificationSound,
+  } = useAudioNotification(600, 0.5);
 
   // Message and notification handlers
   useNotificationSound(notifications.length, playNotificationSound);
@@ -76,6 +85,38 @@ export const Main = () => {
     userId,
     modals.openConfirmModal,
     chatState.clearActiveConversation,
+  );
+
+  const handleMessageUser = useCallback(
+    async (friendUserId: string) => {
+      if (!userId || chatState.isOpeningConversation) return;
+
+      chatState.beginConversationTransition();
+
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+
+        if (!token) return;
+
+        const response = await api.get(
+          `/friends/conversation/${friendUserId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+
+        const conversationId = response.data.conversationId;
+        if (conversationId) {
+          chatState.handleFriendSelect(conversationId);
+        }
+      } catch (err) {
+        console.error('Failed to open conversation from profile:', err);
+      } finally {
+        chatState.endConversationTransition();
+      }
+    },
+    [chatState, userId],
   );
 
   useEffect(() => {
@@ -88,51 +129,15 @@ export const Main = () => {
 
   if (user != null && privateKey == null) {
     return (
-      <div className='flex items-center justify-center w-screen h-screen bg-slate-900 px-4'>
-        <div className='w-full max-w-sm rounded-2xl border border-slate-700/60 bg-slate-900/70 p-6 shadow-2xl'>
-          <div className='mb-5 flex items-center gap-3'>
-            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600/20 text-indigo-300'>
-              🔐
-            </div>
-            <div>
-              <h3 className='text-lg font-semibold text-white'>Unlock your private key</h3>
-              <p className='text-sm text-slate-400'>Enter your password to continue.</p>
-            </div>
-          </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void handleUnlock();
-            }}
-          >
-            <label className='block text-xs font-medium uppercase tracking-wide text-slate-400'>
-              Password
-            </label>
-            <input
-              type='password'
-              placeholder='Enter password'
-              value={unlockPassword}
-              onChange={(e) => setUnlockPassword(e.target.value)}
-              className='mt-2 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30'
-              autoFocus
-              required
-            />
-            {unlockError && (
-              <div className='mt-3 text-sm text-red-400'>{unlockError}</div>
-            )}
-            <button
-              type='submit'
-              disabled={unlocking || !unlockPassword}
-              className='mt-4 w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-indigo-600/60'
-            >
-              {unlocking ? 'Unlocking...' : 'Unlock'}
-            </button>
-          </form>
-        </div>
-      </div>
+      <UnlockWithPassword
+        unlockPassword={unlockPassword}
+        setUnlockPassword={setUnlockPassword}
+        unlockError={unlockError}
+        unlocking={unlocking}
+        handleUnlock={handleUnlock}
+      />
     );
   }
-
   if (user != null && privateKey != null) {
     return (
       <div className='flex w-screen h-screen bg-slate-900'>
@@ -151,6 +156,7 @@ export const Main = () => {
           selectedUsername={modals.selectedUsername}
           closeUserProfileModal={modals.closeUserProfileModal}
           onBlockUser={chatActions.handleBlockUser}
+          onMessageUser={handleMessageUser}
           confirmModalOpen={modals.confirmModalOpen}
           confirmModalData={modals.confirmModalData}
           closeConfirmModal={modals.closeConfirmModal}
@@ -168,6 +174,8 @@ export const Main = () => {
           setActiveTab={chatState.setActiveTab}
           nickname={profile?.nickname}
           avatarUrl={profile?.avatar_url || null}
+          // presenceById={presenceById}
+          // ensureTargetSubscription={ensureTargetSubscription}
           notifications={notifications}
           notificationsLoading={notificationsLoading}
           onAddFriendClick={modals.openAddFriendModal}
@@ -183,25 +191,30 @@ export const Main = () => {
         />
 
         {/* Main Chat Area */}
-        <ChatArea
-          conversationId={chatState.activeConversationId}
-          onMembersChange={chatState.handleMembersChange}
-          onToggleChatInfo={chatState.toggleChatInfo}
-          onToggleSidebar={chatState.toggleSidebar}
-          privateKey={privateKey}
-          onIncomingMessage={(message) => {
-            if (!userId) return;
-            if (message.sender_id !== userId && message.id !== lastMessageId) {
-              setLastMessageId(message.id);
-              playMessageSound();
-            }
-          }}
-        />
 
+        {!chatState.activeConversationId ? (
+          <EmptyChatState />
+        ) : (
+          <Test
+            onToggleSidebar={chatState.toggleSidebar}
+            onToggleChatInfo={chatState.toggleChatInfo}
+            conversationId={chatState.activeConversationId}
+            currentUserId={user?.id}
+          />
+          // <ChatArea
+          //   conversationId={chatState.activeConversationId}
+          //   onMembersChange={chatState.handleMembersChange}
+          //   onToggleChatInfo={chatState.toggleChatInfo}
+          //   onToggleSidebar={chatState.toggleSidebar}
+          //   privateKey={privateKey}
+          //   // presenceById={presenceById}
+          //   // ensureTargetSubscription={ensureTargetSubscription}
+          //   onIncomingMessage={handleIncomingMessage}
+          // />
+        )}
         {/* Right Sidebar - Chat Info */}
         {chatState.isChatInfoVisible && (
           <ChatInfo
-            hasActiveConversation={!!chatState.activeConversationId}
             members={chatState.conversationMembers}
             onClose={chatState.closeChatInfo}
             onViewProfile={modals.openUserProfileModal}

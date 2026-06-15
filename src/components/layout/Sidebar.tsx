@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router';
 import { NotificationT } from '../../types';
 import { FriendsList } from './FriendsList';
 import { ConversationsList } from './ConversationsList';
+import { useConversations } from '../../hooks/useConversations';
+import { useFriendsList } from '../../hooks/useFriendsList';
 
 export const Sidebar = (props: {
   activeTab: 'chats' | 'friends';
@@ -11,6 +13,7 @@ export const Sidebar = (props: {
   user: User;
   nickname?: string;
   avatarUrl?: string | null;
+  ensureTargetSubscription?: (userId: string) => void;
   notifications: NotificationT[];
   notificationsLoading?: boolean;
   onAddFriendClick: () => void;
@@ -26,6 +29,15 @@ export const Sidebar = (props: {
 }) => {
   const navigate = useNavigate();
 
+  const { conversations, isLoading: conversationLoading } = useConversations(
+    props.user.id,
+  );
+  const {
+    friends,
+    isLoading: friendsLoading,
+    getOrCreateConversation,
+  } = useFriendsList();
+  console.log('conversations: ', conversations);
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/login');
@@ -80,9 +92,11 @@ export const Sidebar = (props: {
               <h1 className='text-2xl font-bold text-transparent bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text'>
                 Chats
               </h1>
-              <p className='text-sm text-slate-400'>
-                {props.nickname || 'User'}
-              </p>
+              <div className='flex items-center gap-2'>
+                <p className='text-sm text-slate-400'>
+                  {props.nickname || 'User'}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -115,15 +129,20 @@ export const Sidebar = (props: {
         <div className='flex-1 overflow-y-auto'>
           {props.activeTab === 'chats' ? (
             <ConversationsList
-              user={props.user}
               onConversationSelect={props.onFriendSelect}
               activeConversationId={props.activeConversationId}
               unreadCounts={props.unreadCounts || {}}
+              conversations={conversations}
+              isLoading={conversationLoading}
             />
           ) : (
             <FriendsList
+              friends={friends}
+              isLoading={friendsLoading}
+              getOrCreateConversation={getOrCreateConversation}
               onFriendSelect={props.onFriendSelect}
               onViewProfile={props.onViewProfile}
+              ensureTargetSubscription={props.ensureTargetSubscription}
             />
           )}
         </div>
@@ -165,7 +184,7 @@ export const Sidebar = (props: {
                 .map((n) => (
                   <div
                     key={n.id}
-                    className='p-3 text-white transition-colors border rounded-lg bg-slate-800 border-indigo-500/40 hover:bg-slate-700/60 cursor-pointer'
+                    className='p-3 text-white transition-colors border rounded-lg cursor-pointer bg-slate-800 border-indigo-500/40 hover:bg-slate-700/60'
                   >
                     <div className='text-sm font-medium'>{n.title}</div>
                     {n.message && (

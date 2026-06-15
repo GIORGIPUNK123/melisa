@@ -11,6 +11,7 @@ export const useChatState = () => {
   const [isChatInfoVisible, setIsChatInfoVisible] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<'chats' | 'friends'>('chats');
+  const [isOpeningConversation, setIsOpeningConversation] = useState(false);
 
   // Auto-show sidebar when no conversation is active
   useEffect(() => {
@@ -29,6 +30,16 @@ export const useChatState = () => {
 
   const toggleChatInfo = () => {
     setIsChatInfoVisible(!isChatInfoVisible);
+  };
+
+  const beginConversationTransition = () => {
+    setActiveTab('chats');
+    setIsSidebarVisible(false);
+    setIsOpeningConversation(true);
+  };
+
+  const endConversationTransition = () => {
+    setIsOpeningConversation(false);
   };
 
   const toggleSidebar = () => {
@@ -52,6 +63,7 @@ export const useChatState = () => {
   const clearActiveConversation = () => {
     setActiveConversationId(null);
     setConversationMembers([]);
+    setIsOpeningConversation(false);
   };
 
   return {
@@ -67,6 +79,9 @@ export const useChatState = () => {
     toggleSidebar,
     closeSidebar,
     closeChatInfo,
+    beginConversationTransition,
+    endConversationTransition,
+    isOpeningConversation,
     selectConversationAndSwitchToChats,
     clearActiveConversation,
   };

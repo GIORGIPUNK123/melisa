@@ -5,6 +5,7 @@ export interface UserT extends PublicProfileT {
   salt: string;
   encrypted_private_key: string;
   public_key: string;
+  appear_offline: boolean;
 }
 
 // Public user profile (without email)
@@ -35,6 +36,9 @@ export interface FriendT {
   nickname: string;
   avatarUrl?: string;
   status: 'online' | 'offline' | 'away';
+  last_seen_at?: string | null;
+  appear_offline?: boolean;
+  conversationId?: string | null;
 }
 
 // Block types
@@ -48,19 +52,21 @@ export interface BlockT {
 // Conversation types
 export interface ConversationT {
   id: string;
-  type: 'direct' | 'group';
-  name?: string | null;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
+  type: string;
+  name?: string;
+  otherUserNickname: string;
+  otherUserAvatar?: string;
+  otherUserId: string;
+  lastMessageTime?: string;
 }
-// export interface ConversationMemberT {
-//   id: string;
-//   conversation_id: string;
-//   user_id: string;
-//   joined_at: string;
-//   last_read_at: string;
-// }
+export interface ConversationMemberT {
+  id: string;
+  conversation_id: string;
+  user_id: string;
+  joined_at: string;
+  last_read_at: string;
+  last_message_at: string;
+}
 // Message types (with sender info)
 export interface MessageT {
   id: string;
@@ -83,4 +89,11 @@ export interface NotificationT {
   link?: string | null;
   is_read: boolean;
   created_at: string;
+}
+export interface ConversationMemberT {
+  conversation_id: string;
+  user_id: string;
+  last_read_at: string;
+  id: number;
+  joined_at: string;
 }

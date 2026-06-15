@@ -1,15 +1,13 @@
-import { useConversations } from '../../hooks/useConversations';
-import { User } from '@supabase/supabase-js';
+import { ConversationT } from '../../types';
 
 export const ConversationsList = (props: {
-  user: User;
   onConversationSelect: (conversationId: string) => void;
   activeConversationId?: string | null;
   unreadCounts: Record<string, number>;
+  conversations: ConversationT[];
+  isLoading: boolean;
 }) => {
-  const userId = props.user?.id;
-  const { conversations, isLoading } = useConversations(userId);
-
+  const { conversations, isLoading } = props;
   return (
     <div className='flex flex-col h-full'>
       {isLoading ? (
@@ -17,11 +15,11 @@ export const ConversationsList = (props: {
           Loading chats...
         </div>
       ) : conversations.length === 0 ? (
-        <div className='flex items-center justify-center py-8 text-slate-400 text-sm'>
+        <div className='flex items-center justify-center py-8 text-sm text-slate-400'>
           No chats yet. Add friends to start chatting!
         </div>
       ) : (
-        <div className='flex-1 overflow-y-auto space-y-1 p-2'>
+        <div className='flex-1 p-2 space-y-1 overflow-y-auto'>
           {conversations.map((conv) => (
             <button
               key={conv.id}
@@ -36,10 +34,10 @@ export const ConversationsList = (props: {
                 <img
                   src={conv.otherUserAvatar}
                   alt={conv.otherUserNickname}
-                  className='w-10 h-10 rounded-full object-cover flex-shrink-0'
+                  className='flex-shrink-0 object-cover w-10 h-10 rounded-full'
                 />
               ) : (
-                <div className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0'>
+                <div className='flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600'>
                   {conv.otherUserNickname.charAt(0).toUpperCase()}
                 </div>
               )}

@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { api } from '../functions/instance';
 
 export interface UserProfile {
+  id: string;
   username: string;
   nickname: string;
   avatarUrl?: string | null;
   status?: string;
   createdAt: string;
+  lastSeenAt?: string | null;
+  appearOffline?: boolean;
 }
 
 export const usePublicProfile = (username: string | null) => {
@@ -25,7 +28,18 @@ export const usePublicProfile = (username: string | null) => {
       setError(null);
       try {
         const response = await api.get(`/friends/profile/${username}`);
-        setProfile(response.data.user);
+        const user = response.data.user;
+
+        setProfile({
+          id: user.id,
+          username: user.username,
+          nickname: user.nickname,
+          avatarUrl: user.avatar_url,
+          status: user.status,
+          createdAt: user.created_at,
+          lastSeenAt: user.last_seen_at,
+          appearOffline: user.appear_offline,
+        });
       } catch (err: any) {
         setError(err.response?.data?.error || 'Failed to load profile');
         setProfile(null);
