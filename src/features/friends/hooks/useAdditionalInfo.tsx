@@ -74,13 +74,11 @@ export const useAdditionalInfo = (userId: string | undefined) => {
     setMessageResponse('');
   };
 
-  // Automatically check for username when the hook is initialized
   useEffect(() => {
-    if (!userId) return; // Skip if userId is undefined
+    if (!userId) return;
 
     const checkForUsername = async () => {
       const { user: currUser } = await getUser();
-      // console.log('check for username currUser: ', currUser);
       if ((currUser && !currUser.username) || !currUser) {
         console.log(`username doesn't exist`);
         setHasUsername(false); // Username doesn't exist, open modal

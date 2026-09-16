@@ -7,6 +7,8 @@ import { Loading } from '../components/Loading';
 import * as yup from 'yup';
 import { registerSchema } from '../features/auth/schemas/registerSchema';
 import { handleBackdropClick } from '../shared/utils/modal';
+import { BrandMark } from '../atoms/BrandMark';
+import { APP_NAME } from '../shared/constants';
 
 const EmailVerificationModal = (props: {
   isOpen: boolean;
@@ -156,13 +158,12 @@ export const Register = () => {
           navigate={navigate}
         />
         <div className='w-full max-w-xl px-8 py-10 border shadow-xl rounded-2xl border-slate-800 bg-slate-900/70 backdrop-blur'>
-          <div className='flex flex-col items-center text-center'>
-            <h2 className='text-3xl font-semibold text-white'>
-              Create account
+          <BrandMark subtitle='Private messaging' />
+          <div className='mt-6 text-center'>
+            <h2 className='text-xl font-semibold text-white'>
+              Create your {APP_NAME} account
             </h2>
-            <p className='mt-2 text-slate-400'>
-              Join the conversation in seconds
-            </p>
+            <p className='mt-1 text-slate-400'>Join in a few seconds</p>
           </div>
 
           <div className='grid grid-cols-1 gap-4 mt-8 md:grid-cols-2'>
@@ -218,6 +219,18 @@ export const Register = () => {
               {authError}
             </p>
           ) : null}
+
+          <div className='mt-6 text-center'>
+            <p className='text-sm text-slate-400'>
+              Already have an account?{' '}
+              <button
+                onClick={() => navigate('/login')}
+                className='font-medium text-indigo-400 hover:text-indigo-300'
+              >
+                Sign in
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     );

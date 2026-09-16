@@ -1,3 +1,5 @@
+import { BrandMark } from '../../../atoms/BrandMark';
+
 export const UnlockWithPassword = (props: {
   unlockPassword: string;
   setUnlockPassword: (password: string) => void;
@@ -15,6 +17,9 @@ export const UnlockWithPassword = (props: {
   return (
     <div className='flex items-center justify-center w-screen h-screen bg-slate-900 px-4'>
       <div className='w-full max-w-sm rounded-2xl border border-slate-700/60 bg-slate-900/70 p-6 shadow-2xl'>
+        <div className='mb-6'>
+          <BrandMark size='sm' subtitle='Unlock to continue' />
+        </div>
         <div className='mb-5 flex items-center gap-3'>
           <div className='flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600/20 text-indigo-300'>
             🔐

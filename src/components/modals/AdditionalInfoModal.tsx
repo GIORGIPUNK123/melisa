@@ -3,10 +3,10 @@ import { useFormInput } from '../../shared/hooks/useFormInput';
 import { TextInput } from '../../atoms/TextInput';
 import { useAdditionalInfo } from '../../features/friends/hooks/useAdditionalInfo';
 import { useNavigate } from 'react-router';
+import { APP_NAME } from '../../shared/constants';
 
 export const AdditionalInfoModal = (props: {
   isOpen: boolean;
-  // setIsOpen: any;
   user: User;
 }) => {
   const navigate = useNavigate();
@@ -53,10 +53,10 @@ export const AdditionalInfoModal = (props: {
             {/* Header */}
             <div className='space-y-2 text-center'>
               <h2 className='text-2xl font-bold text-white'>
-                Complete Your Profile
+                Welcome to {APP_NAME}
               </h2>
               <p className='text-sm text-slate-400'>
-                Let's get you started with a username and nickname
+                Pick a username and nickname to get started
               </p>
             </div>
 

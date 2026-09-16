@@ -4,6 +4,7 @@ import { useAuth } from '../features/auth/hooks/useAuth';
 import { useNavigate } from 'react-router';
 import { useEffect, useState } from 'react';
 import { Loading } from '../components/Loading';
+import { BrandMark } from '../atoms/BrandMark';
 
 export const Login = () => {
   const { user, authLogin, authError } = useAuth();
@@ -37,10 +38,7 @@ export const Login = () => {
     return (
       <div className='min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex justify-center items-center px-4 py-12'>
         <div className='w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur px-8 py-10 shadow-xl'>
-          <div className='flex flex-col items-center text-center'>
-            <h2 className='text-white text-3xl font-semibold'>Welcome back</h2>
-            <p className='text-slate-400 mt-2'>Sign in to your account</p>
-          </div>
+          <BrandMark subtitle='Private messaging' />
 
           <form onSubmit={handleSubmit} className='mt-8 space-y-4'>
             <TextInput

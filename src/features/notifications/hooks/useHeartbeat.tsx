@@ -24,5 +24,5 @@ export const useHeartbeat = (currentUserId: string | undefined) => {
     return () => {
       clearInterval(interval);
     };
-  }, [currentUserId]); // 👈 Safe. React can track this array consistently across all renders.
+  }, [currentUserId]);
 };

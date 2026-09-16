@@ -17,14 +17,12 @@ export const useChatState = () => {
   const [activeTab, setActiveTab] = useState<'chats' | 'friends'>('chats');
   const [isOpeningConversation, setIsOpeningConversation] = useState(false);
 
-  // Auto-show sidebar when no conversation is active
   useEffect(() => {
     if (!activeConversationId) {
       setIsSidebarVisible(true);
     }
   }, [activeConversationId]);
 
-  // Centralized Real-time sync for conversation members
   useEffect(() => {
     if (!activeConversationId) {
       setConversationMembers([]);
@@ -46,7 +44,7 @@ export const useChatState = () => {
         const { data: profiles, error: profilesError } = await supabase
           .from('public_profiles')
           .select(
-            'id, username, nickname, avatar_url, status, created_at, last_seen_at, appear_offline, public_key',
+            'id, username, nickname, avatar_url, status, created_at, updated_at, last_seen_at, appear_offline, public_key',
           )
           .in('id', userIds);
 
@@ -54,7 +52,7 @@ export const useChatState = () => {
           console.error('Failed to fetch member profiles:', profilesError);
           return;
         }
-        if (!cancelled) {
+        if (!cancelled && profiles) {
           setConversationMembers(profiles);
           setMembersConversationId(activeConversationId);
         }

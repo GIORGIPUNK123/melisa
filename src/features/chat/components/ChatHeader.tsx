@@ -1,5 +1,4 @@
 import { PublicProfileT } from '../../../types';
-// import type { PresenceMap } from '../../hooks/usePresence';
 
 interface ChatHeaderProps {
   members: PublicProfileT[];
@@ -8,7 +7,6 @@ interface ChatHeaderProps {
   onToggleChatInfo: () => void;
   fallbackName?: string;
   fallbackAvatar?: string;
-  // presenceById?: PresenceMap;
 }
 
 export const ChatHeader = ({
@@ -18,16 +16,12 @@ export const ChatHeader = ({
   onToggleChatInfo,
   fallbackName,
   fallbackAvatar,
-  // presenceById,
 }: ChatHeaderProps) => {
   const otherMember = members.find((m) => m.id !== currentUserId);
   const displayName =
     otherMember?.nickname || otherMember?.username || fallbackName;
   const displayAvatar = otherMember?.avatar_url || fallbackAvatar;
   const displayInitial = (displayName || '?').charAt(0).toUpperCase();
-  // const visibleStatus = otherMember
-  //   ? presenceById?.[otherMember.id] ?? otherMember.status ?? 'offline'
-  //   : 'offline';
 
   return (
     <div className='flex items-center justify-between px-3 py-3 border-b sm:px-4 md:px-6 border-slate-700 bg-slate-900'>

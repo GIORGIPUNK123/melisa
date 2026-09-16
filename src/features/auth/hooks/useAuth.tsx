@@ -209,7 +209,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setAuthError(null);
 
       try {
-        // 1️⃣ Sign in with Supabase
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -217,7 +216,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) throw new Error(error.message);
         if (!data.user) throw new Error('Login failed');
 
-        // 2️⃣ Fetch and decrypt private key
         const key = await fetchPrivateKey(data.user.id, password);
         if (key === null) {
           setUser(null);

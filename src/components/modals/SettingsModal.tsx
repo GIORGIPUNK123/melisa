@@ -85,7 +85,7 @@ export const SettingsModal = (props: {
   };
 
   const fieldClassName =
-    'w-full min-w-0 rounded-lg bg-slate-800/70 border border-slate-700 text-white px-3 py-2.5 text-base sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+    'w-full min-w-0 rounded-lg bg-slate-800/70 border border-slate-700 text-white px-3 py-2 text-base sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500';
 
   if (!props.isOpen) return null;
 
@@ -104,48 +104,48 @@ export const SettingsModal = (props: {
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4'
+      className='fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4'
       onClick={(event) => handleBackdropClick(event, props.onClose)}
     >
-      <div className='flex h-[100dvh] w-full max-w-3xl flex-col overflow-hidden border-slate-700/60 bg-slate-900 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:border'>
+      <div className='flex h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border-slate-700/60 bg-slate-900 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:border'>
         <div className='h-1 w-full flex-shrink-0 bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500' />
-        <div className='flex flex-shrink-0 items-start justify-between gap-3 border-b border-slate-800 px-4 py-3 sm:px-6 sm:py-4'>
+        <div className='flex flex-shrink-0 items-center justify-between gap-3 border-b border-slate-800 px-4 py-2.5 sm:px-6 sm:py-4'>
           <div className='min-w-0'>
-            <h2 className='text-lg font-semibold text-white sm:text-xl'>
+            <h2 className='text-base font-semibold text-white sm:text-xl'>
               Settings
             </h2>
-            <p className='text-xs text-slate-400'>
+            <p className='hidden text-xs text-slate-400 sm:block'>
               Personalize your profile and privacy.
             </p>
           </div>
           <button
             onClick={props.onClose}
-            className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-800 hover:text-white'
+            className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-800 hover:text-white sm:h-10 sm:w-10'
             aria-label='Close settings'
           >
             ✕
           </button>
         </div>
 
-        <div className='min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:space-y-6 sm:p-6'>
-          <div className='rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-4 sm:p-5'>
-            <h3 className='mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400'>
+        <div className='min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-3 sm:space-y-6 sm:p-6'>
+          <div className='rounded-xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-3 sm:rounded-2xl sm:p-5'>
+            <h3 className='mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 sm:mb-4 sm:text-sm'>
               Profile
             </h3>
-            <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
+            <div className='flex items-center gap-3 sm:gap-4'>
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
                   alt='Avatar'
-                  className='h-16 w-16 flex-shrink-0 rounded-full object-cover border border-slate-700'
+                  className='h-12 w-12 flex-shrink-0 rounded-full object-cover border border-slate-700 sm:h-16 sm:w-16'
                 />
               ) : (
-                <div className='flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-rose-500 to-indigo-500 text-xl font-bold text-white'>
+                <div className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-rose-500 to-indigo-500 text-lg font-bold text-white sm:h-16 sm:w-16 sm:text-xl'>
                   {fallbackInitial}
                 </div>
               )}
               <div className='min-w-0 flex-1'>
-                <label className='mb-1 block text-sm text-slate-400'>
+                <label className='mb-1 block text-xs text-slate-400 sm:text-sm'>
                   Avatar URL
                 </label>
                 <input
@@ -157,9 +157,9 @@ export const SettingsModal = (props: {
               </div>
             </div>
 
-            <div className='mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2'>
+            <div className='mt-3 grid grid-cols-2 gap-3 sm:mt-5 sm:gap-4'>
               <div className='min-w-0'>
-                <label className='mb-1 block text-sm text-slate-400'>
+                <label className='mb-1 block text-xs text-slate-400 sm:text-sm'>
                   Username
                 </label>
                 <input
@@ -169,7 +169,7 @@ export const SettingsModal = (props: {
                 />
               </div>
               <div className='min-w-0'>
-                <label className='mb-1 block text-sm text-slate-400'>
+                <label className='mb-1 block text-xs text-slate-400 sm:text-sm'>
                   Nickname
                 </label>
                 <input
@@ -181,14 +181,14 @@ export const SettingsModal = (props: {
             </div>
           </div>
 
-          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-            <div className='rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5'>
-              <h3 className='mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400'>
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4'>
+            <div className='rounded-xl border border-slate-800 bg-slate-900/80 p-3 sm:rounded-2xl sm:p-5'>
+              <h3 className='mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 sm:mb-4 sm:text-sm'>
                 Account
               </h3>
-              <div className='space-y-4'>
+              <div className='space-y-3 sm:space-y-4'>
                 <div className='min-w-0'>
-                  <label className='mb-1 block text-sm text-slate-400'>
+                  <label className='mb-1 block text-xs text-slate-400 sm:text-sm'>
                     Email
                   </label>
                   <input
@@ -199,7 +199,7 @@ export const SettingsModal = (props: {
                   />
                 </div>
                 <div className='min-w-0'>
-                  <label className='mb-1 block text-sm text-slate-400'>
+                  <label className='mb-1 block text-xs text-slate-400 sm:text-sm'>
                     New Password
                   </label>
                   <input
@@ -213,11 +213,11 @@ export const SettingsModal = (props: {
               </div>
             </div>
 
-            <div className='rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5'>
-              <h3 className='mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400'>
+            <div className='rounded-xl border border-slate-800 bg-slate-900/80 p-3 sm:rounded-2xl sm:p-5'>
+              <h3 className='mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400 sm:mb-4 sm:text-sm'>
                 Presence
               </h3>
-              <div className='flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-3 sm:px-4 sm:py-4'>
+              <div className='flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2.5 sm:px-4 sm:py-4'>
                 <div className='min-w-0'>
                   <div className='text-sm font-semibold text-white'>
                     Appear offline
@@ -256,17 +256,17 @@ export const SettingsModal = (props: {
           )}
         </div>
 
-        <div className='flex flex-shrink-0 flex-col-reverse gap-2 border-t border-slate-700 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:justify-end sm:gap-3 sm:px-6 sm:py-4'>
+        <div className='flex flex-shrink-0 gap-2 border-t border-slate-700 px-4 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center sm:justify-end sm:gap-3 sm:px-6 sm:py-4'>
           <button
             onClick={props.onClose}
-            className='w-full rounded-lg px-4 py-2.5 text-slate-300 hover:bg-slate-800 sm:w-auto'
+            className='w-full rounded-lg px-4 py-2 text-slate-300 hover:bg-slate-800 sm:w-auto sm:py-2.5'
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className='w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-white hover:bg-indigo-500 disabled:opacity-50 sm:w-auto'
+            className='w-full rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500 disabled:opacity-50 sm:w-auto sm:py-2.5'
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </button>

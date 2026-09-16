@@ -26,7 +26,6 @@ export const ChatInfo = (props: {
     getUser();
   }, []);
 
-  // Safely memoize the sorting operation to float 'You' to the top index cleanly
   const sortedMembers = useMemo(() => {
     if (!props.members) return [];
     return [...props.members].sort((a, b) => {
@@ -41,28 +40,24 @@ export const ChatInfo = (props: {
 
   return (
     <>
-      {/* Mobile overlay */}
       <div
-        className='fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden'
+        className='fixed inset-0 z-30 bg-black/50 lg:hidden'
         onClick={props.onClose}
       />
 
-      {/* Chat Info Panel */}
-      <div
-        className={`
-          fixed lg:relative inset-y-0 right-0 z-30
-          flex flex-col w-72 sm:w-80 lg:w-72 h-screen border-l border-slate-700 bg-slate-800 p-4 sm:p-6
-          transform transition-transform duration-300 ease-in-out
-        `}
-      >
-        <div className='flex items-center justify-between mb-6'>
-          <h3 className='text-lg font-bold text-white'>Chat Info</h3>
+      <div className='fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] w-full flex-col rounded-t-2xl border-t border-slate-700 bg-slate-800 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:relative lg:inset-auto lg:h-screen lg:max-h-none lg:w-72 lg:rounded-none lg:border-l lg:border-t-0 lg:p-6'>
+        <div className='mx-auto mb-3 h-1 w-10 rounded-full bg-slate-600 lg:hidden' />
+        <div className='mb-4 flex items-center justify-between lg:mb-6'>
+          <h3 className='text-base font-bold text-white lg:text-lg'>
+            Chat Info
+          </h3>
           <button
             onClick={props.onClose}
-            className='p-1 transition-colors rounded lg:hidden text-slate-400 hover:text-white hover:bg-slate-800'
+            className='p-1 transition-colors rounded text-slate-400 hover:text-white hover:bg-slate-700'
+            aria-label='Close chat info'
           >
             <svg
-              className='w-6 h-6'
+              className='w-5 h-5'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'
@@ -77,12 +72,12 @@ export const ChatInfo = (props: {
           </button>
         </div>
 
-        <div className='flex-1 pr-1 space-y-4 overflow-y-auto'>
+        <div className='min-h-0 flex-1 space-y-4 overflow-y-auto pr-1'>
           <div>
-            <p className='text-sm tracking-wider uppercase text-slate-400'>
+            <p className='text-xs tracking-wider uppercase text-slate-400 lg:text-sm'>
               Members ({sortedMembers.length})
             </p>
-            <div className='mt-3 space-y-2'>
+            <div className='mt-2 space-y-1.5 lg:mt-3 lg:space-y-2'>
               {sortedMembers.length > 0 ? (
                 sortedMembers.map((member) => {
                   const online = isUserOnline(
@@ -102,7 +97,7 @@ export const ChatInfo = (props: {
                           props.onViewProfile(member.username);
                         }
                       }}
-                      className={`flex items-center gap-3 p-3 transition-colors rounded-lg ${
+                      className={`flex items-center gap-3 p-2.5 transition-colors rounded-lg lg:p-3 ${
                         member.id !== currentUserId
                           ? 'cursor-pointer bg-slate-700 hover:bg-slate-600'
                           : 'bg-slate-800'
@@ -112,10 +107,10 @@ export const ChatInfo = (props: {
                         <img
                           src={member.avatar_url}
                           alt={member.nickname}
-                          className='object-cover w-10 h-10 rounded-full'
+                          className='object-cover w-9 h-9 rounded-full lg:w-10 lg:h-10'
                         />
                       ) : (
-                        <div className='flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600'>
+                        <div className='flex items-center justify-center flex-shrink-0 w-9 h-9 text-sm font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600 lg:w-10 lg:h-10'>
                           {member.nickname.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -126,7 +121,7 @@ export const ChatInfo = (props: {
                         <div className='text-xs truncate text-slate-400'>
                           @{member.username}
                         </div>
-                        <div className='flex items-center gap-1 mt-1'>
+                        <div className='flex items-center gap-1 mt-0.5'>
                           <span
                             className={`w-2 h-2 rounded-full ${
                               online ? 'bg-green-500' : 'bg-slate-500'
@@ -151,16 +146,16 @@ export const ChatInfo = (props: {
             </div>
           </div>
 
-          <div className='pt-4 border-t border-slate-700'>
-            <p className='text-sm tracking-wider uppercase text-slate-400'>
+          <div className='border-t border-slate-700 pt-3 lg:pt-4'>
+            <p className='text-xs tracking-wider uppercase text-slate-400 lg:text-sm'>
               Actions
             </p>
-            <div className='mt-3 space-y-2'>
+            <div className='mt-2 grid grid-cols-2 gap-1.5 lg:mt-3 lg:grid-cols-1 lg:space-y-0 lg:gap-2'>
               <button className='w-full px-3 py-2 text-sm text-left transition-colors rounded-lg text-slate-300 hover:bg-slate-700'>
                 📌 Pin Chat
               </button>
               <button className='w-full px-3 py-2 text-sm text-left transition-colors rounded-lg text-slate-300 hover:bg-slate-700'>
-                🔔 Mute Notifications
+                🔔 Mute
               </button>
               {otherUser && (
                 <button

@@ -11,34 +11,22 @@ import { ConfirmModalData } from '../../shared/hooks/useModals';
 interface ModalsContainerProps {
   user: User;
   profile: UserT | null;
-
-  // Add Friend Modal
   addFriendModalOpen: boolean;
   closeAddFriendModal: () => void;
-
-  // Friend Requests Modal
   friendRequestsOpen: boolean;
   closeFriendRequestsModal: () => void;
-
-  // Settings Modal
   settingsOpen: boolean;
   closeSettingsModal: () => void;
   onProfileUpdated: (profile: UserT) => void;
-
-  // User Profile Modal
   userProfileModalOpen: boolean;
   selectedUsername: string | null;
   closeUserProfileModal: () => void;
   onBlockUser: (username: string, userId?: string) => void;
   onMessageUser: (userId: string) => void;
   isBlocked?: (userId?: string | null) => boolean;
-
-  // Confirm Modal
   confirmModalOpen: boolean;
   confirmModalData: ConfirmModalData | null;
   closeConfirmModal: () => void;
-
-  // Notifications Modal
   notificationsModalOpen: boolean;
   closeNotificationsModal: () => void;
   notifications: NotificationT[];

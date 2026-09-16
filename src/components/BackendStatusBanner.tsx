@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/instance';
+import { APP_NAME } from '../shared/constants';
 
 const isBackendUnavailable = (error: any) => {
   return (
@@ -72,7 +73,7 @@ export const BackendStatusBanner = () => {
     <div className='fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 text-white'>
       <div className='mx-4 w-full max-w-md rounded-lg border border-red-500/60 bg-slate-900 p-6 text-center shadow-2xl'>
         <h2 className='text-xl font-semibold text-red-300'>
-          Service Unavailable
+          {APP_NAME} is unavailable
         </h2>
         <p className='mt-3 text-sm text-slate-200'>{userFriendlyMessage}</p>
       </div>

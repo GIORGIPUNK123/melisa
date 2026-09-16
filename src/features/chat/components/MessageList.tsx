@@ -15,21 +15,18 @@ export const MessageList = ({
   currentUserId,
   isLoading,
 }: MessageListProps) => {
-  // 1. Create a reference anchor to attach to the bottom element
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = (behavior: 'smooth' | 'auto' = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
-  // 2. Snap instantly to the bottom when the message room first completely finishes loading
   useEffect(() => {
     if (!isLoading && messages.length > 0) {
       scrollToBottom('auto');
     }
   }, [isLoading]);
 
-  // 3. Smoothly animate down when the live message count changes (new messages incoming)
   useEffect(() => {
     if (messages.length > 0) {
       scrollToBottom('smooth');

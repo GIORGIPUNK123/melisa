@@ -20,7 +20,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
-    // You can also log to an error reporting service here
   }
 
   handleReload = () => {
@@ -53,7 +52,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center'>
-              Oops! Something went wrong
+              Something went wrong
             </h2>
 
             <p className='text-gray-600 dark:text-gray-400 mb-6 text-center'>

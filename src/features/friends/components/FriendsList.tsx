@@ -76,7 +76,7 @@ const FriendRow = ({
 
       <button
         onClick={handleViewProfile}
-        className='absolute p-2 transition-all -translate-y-1/2 rounded-lg opacity-0 right-2 top-1/2 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white group-hover:opacity-100'
+        className='absolute p-2 transition-all -translate-y-1/2 rounded-lg right-2 top-1/2 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white opacity-100 lg:opacity-0 lg:group-hover:opacity-100'
         title='View Profile'
       >
         <svg

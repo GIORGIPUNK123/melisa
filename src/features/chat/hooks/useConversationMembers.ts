@@ -10,7 +10,6 @@ export const useConversationMembers = (
   const [activeUserIds, setActiveUserIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 1. Fetch initial members and listen for database changes (someone getting added/removed)
   useEffect(() => {
     if (!conversationId) {
       setMembers([]);
@@ -92,7 +91,6 @@ export const useConversationMembers = (
     };
   }, [conversationId]);
 
-  // 2. Track Presence (Who is actively looking at this chat window right now)
   useEffect(() => {
     if (!conversationId || !currentUserId) return;
 
@@ -122,14 +120,13 @@ export const useConversationMembers = (
     };
   }, [conversationId, currentUserId]);
 
-  // Always sort the logged-in user to the top index automatically for simple display rendering
   const sortedMembers = useMemo(() => {
     return [...members].sort((a, b) => {
       if (a.id === currentUserId) return -1;
       if (b.id === currentUserId) return 1;
       return 0;
     });
-  }, [members, currentUserId]); // Only runs if the actual raw array data changes!
+  }, [members, currentUserId]);
 
   return {
     members: sortedMembers,

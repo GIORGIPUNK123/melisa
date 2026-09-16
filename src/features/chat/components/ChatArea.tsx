@@ -12,7 +12,7 @@ interface Props {
   onToggleSidebar?: () => void;
   onToggleChatInfo?: () => void;
   privateKey: string;
-  members: PublicProfileT[]; // Clean prop array mapping
+  members: PublicProfileT[];
   conversationPreview?: ConversationT;
   onConversationActivity?: (conversationId: string) => void;
   onIncomingMessageSound?: () => void;
@@ -36,7 +36,6 @@ export const ChatArea = ({
     }
   };
 
-  // 1. Unpack 'sendMessage' and 'isSending' directly from the custom hook!
   const { messages, isLoading, sendMessage } = useMessages(
     conversationId,
     members,
