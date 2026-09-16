@@ -1,7 +1,7 @@
 import { User } from '@supabase/supabase-js';
-import { useFormInput } from '../../hooks/useFormInput';
+import { useFormInput } from '../../shared/hooks/useFormInput';
 import { TextInput } from '../../atoms/TextInput';
-import { useAdditionalInfo } from '../../hooks/useAdditionalInfo';
+import { useAdditionalInfo } from '../../features/friends/hooks/useAdditionalInfo';
 import { useNavigate } from 'react-router';
 
 export const AdditionalInfoModal = (props: {

@@ -1,3 +1,5 @@
+import { handleBackdropClick } from '../../shared/utils/modal';
+
 export const ConfirmModal = (props: {
   isOpen: boolean;
   title: string;
@@ -11,7 +13,10 @@ export const ConfirmModal = (props: {
   if (!props.isOpen) return null;
 
   return (
-    <div className='fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'>
+    <div
+      className='fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'
+      onClick={(event) => handleBackdropClick(event, props.onCancel)}
+    >
       <div className='w-full max-w-md overflow-hidden border shadow-2xl rounded-2xl border-slate-700/50 bg-slate-900'>
         <div className='px-6 py-4 border-b border-slate-700'>
           <h2 className='text-xl font-semibold text-white'>{props.title}</h2>

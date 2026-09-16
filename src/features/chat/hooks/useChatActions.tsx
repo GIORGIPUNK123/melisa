@@ -1,0 +1,100 @@
+import { supabase } from '../../../db/supabase';
+import { getUserIdByUsername } from '../../friends/api/getUserIdByUsername';
+import { useBlockedUsers } from '../../friends/hooks/useBlockedUsers';
+
+export const useChatActions = (
+  userId: string | undefined,
+  openConfirmModal: (data: {
+    title: string;
+    message: string;
+    confirmText?: string;
+    onConfirm: () => void;
+  }) => void,
+  clearActiveConversation: () => void,
+) => {
+  const { isBlocked, blockUser, unblockUser } = useBlockedUsers(userId);
+
+  const handleBlockUser = (username: string, targetUserId?: string) => {
+    const currentlyBlocked = isBlocked(targetUserId);
+
+    openConfirmModal({
+      title: currentlyBlocked ? 'Unblock User' : 'Block User',
+      message: currentlyBlocked
+        ? `Unblock @${username}? They will be able to message you again.`
+        : `Are you sure you want to block @${username}? They will no longer be able to send you messages or see your profile.`,
+      confirmText: currentlyBlocked ? 'Unblock' : 'Block',
+      onConfirm: async () => {
+        try {
+          const blockedUserId =
+            targetUserId || (await getUserIdByUsername(username));
+          if (!blockedUserId) {
+            throw new Error('User not found');
+          }
+
+          if (currentlyBlocked) {
+            await unblockUser(blockedUserId);
+          } else {
+            await blockUser(blockedUserId);
+            clearActiveConversation();
+          }
+        } catch (error) {
+          console.error('Failed to update block:', error);
+          alert(
+            currentlyBlocked
+              ? 'Failed to unblock user. Please try again.'
+              : 'Failed to block user. Please try again.',
+          );
+        }
+      },
+    });
+  };
+
+  const handleDeleteChat = async (activeConversationId: string | null) => {
+    if (!activeConversationId || !userId) return;
+
+    openConfirmModal({
+      title: 'Delete Chat',
+      message:
+        'Are you sure you want to delete this chat? This action cannot be undone.',
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        try {
+          await supabase
+            .from('conversation_members')
+            .delete()
+            .eq('conversation_id', activeConversationId)
+            .eq('user_id', userId);
+
+          clearActiveConversation();
+        } catch (error) {
+          console.error('Failed to delete chat:', error);
+          alert('Failed to delete chat. Please try again.');
+        }
+      },
+    });
+  };
+
+  const handleMarkNotificationAsRead = async (notificationId: string) => {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notificationId);
+  };
+
+  const handleMarkAllNotificationsAsRead = async () => {
+    if (!userId) return;
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', userId)
+      .eq('is_read', false);
+  };
+
+  return {
+    isBlocked,
+    handleBlockUser,
+    handleDeleteChat,
+    handleMarkNotificationAsRead,
+    handleMarkAllNotificationsAsRead,
+  };
+};

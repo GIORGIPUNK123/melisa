@@ -1,11 +1,10 @@
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../db/supabase';
 import { useNavigate } from 'react-router';
-import { NotificationT } from '../../types';
-import { FriendsList } from './FriendsList';
+import { ConversationT, NotificationT } from '../../types';
+import { FriendsList } from '../../features/friends/components/FriendsList';
 import { ConversationsList } from './ConversationsList';
-import { useConversations } from '../../hooks/useConversations';
-import { useFriendsList } from '../../hooks/useFriendsList';
+import { useFriendsList } from '../../features/friends/hooks/useFriendsList';
 
 export const Sidebar = (props: {
   activeTab: 'chats' | 'friends';
@@ -26,18 +25,16 @@ export const Sidebar = (props: {
   isVisible?: boolean;
   onClose?: () => void;
   unreadCounts?: Record<string, number>;
+  conversations: ConversationT[];
+  conversationLoading?: boolean;
 }) => {
   const navigate = useNavigate();
-
-  const { conversations, isLoading: conversationLoading } = useConversations(
-    props.user.id,
-  );
   const {
     friends,
     isLoading: friendsLoading,
     getOrCreateConversation,
   } = useFriendsList();
-  console.log('conversations: ', conversations);
+  // console.log('conversations: ', conversations);
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/login');
@@ -132,8 +129,8 @@ export const Sidebar = (props: {
               onConversationSelect={props.onFriendSelect}
               activeConversationId={props.activeConversationId}
               unreadCounts={props.unreadCounts || {}}
-              conversations={conversations}
-              isLoading={conversationLoading}
+              conversations={props.conversations}
+              isLoading={props.conversationLoading || false}
             />
           ) : (
             <FriendsList

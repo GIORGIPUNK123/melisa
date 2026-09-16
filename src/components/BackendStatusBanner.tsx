@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../functions/instance';
+import { api } from '../api/instance';
 
 const isBackendUnavailable = (error: any) => {
   return (
@@ -24,14 +24,12 @@ export const BackendStatusBanner = () => {
       }
 
       try {
-        await api.get('/auth/check-username?username=server_status_probe', {
+        await api.get('/health', {
           timeout: 4000,
         });
         setIsBackendDown(false);
-      } catch (error: any) {
-        if (isBackendUnavailable(error)) {
-          setIsBackendDown(true);
-        }
+      } catch {
+        setIsBackendDown(true);
       } finally {
         setIsChecking(false);
       }

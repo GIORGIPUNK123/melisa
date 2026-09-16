@@ -1,12 +1,12 @@
 import { User } from '@supabase/supabase-js';
-import { AddFriendsModal } from '../modals/AddFriendsModal';
-import { FriendRequestsModal } from '../modals/FriendRequestsModal';
+import { AddFriendsModal } from '../../features/friends/modals/AddFriendsModal';
+import { FriendRequestsModal } from '../../features/friends/modals/FriendRequestsModal';
 import { SettingsModal } from '../modals/SettingsModal';
-import { UserProfileModal } from '../modals/UserProfileModal';
+import { UserProfileModal } from '../../features/friends/modals/UserProfileModal';
 import { ConfirmModal } from '../modals/ConfirmModal';
-import { NotificationsModal } from '../modals/NotificationsModal';
+import { NotificationsModal } from '../../features/notifications/modals/NotificationsModal';
 import { UserT, NotificationT } from '../../types';
-import { ConfirmModalData } from '../../hooks/useModals';
+import { ConfirmModalData } from '../../shared/hooks/useModals';
 
 interface ModalsContainerProps {
   user: User;
@@ -29,8 +29,9 @@ interface ModalsContainerProps {
   userProfileModalOpen: boolean;
   selectedUsername: string | null;
   closeUserProfileModal: () => void;
-  onBlockUser: (username: string) => void;
+  onBlockUser: (username: string, userId?: string) => void;
   onMessageUser: (userId: string) => void;
+  isBlocked?: (userId?: string | null) => boolean;
 
   // Confirm Modal
   confirmModalOpen: boolean;
@@ -60,6 +61,7 @@ export const ModalsContainer = ({
   closeUserProfileModal,
   onBlockUser,
   onMessageUser,
+  isBlocked,
   confirmModalOpen,
   confirmModalData,
   closeConfirmModal,
@@ -77,19 +79,19 @@ export const ModalsContainer = ({
         username={selectedUsername}
         onBlockUser={onBlockUser}
         onMessageUser={onMessageUser}
+        isBlocked={isBlocked}
       />
 
       <ConfirmModal
         isOpen={confirmModalOpen}
         title={confirmModalData?.title || ''}
         message={confirmModalData?.message || ''}
-        confirmText={
-          confirmModalData?.title === 'Delete Chat' ? 'Delete' : 'Block'
-        }
+        confirmText={confirmModalData?.confirmText || 'Confirm'}
         cancelText='Cancel'
         danger={true}
         onConfirm={() => {
           confirmModalData?.onConfirm();
+          closeConfirmModal();
         }}
         onCancel={closeConfirmModal}
       />

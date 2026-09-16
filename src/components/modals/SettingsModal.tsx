@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../db/supabase';
 import { UserT } from '../../types';
-import { api } from '../../functions/instance';
+import { api } from '../../api/instance';
+import { handleBackdropClick } from '../../shared/utils/modal';
 
 export const SettingsModal = (props: {
   isOpen: boolean;
@@ -83,11 +84,17 @@ export const SettingsModal = (props: {
     }
   };
 
+  const fieldClassName =
+    'w-full min-w-0 rounded-lg bg-slate-800/70 border border-slate-700 text-white px-3 py-2.5 text-base sm:px-4 sm:py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+
   if (!props.isOpen) return null;
 
   if (!props.profile) {
     return (
-      <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'>
+      <div
+        className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4'
+        onClick={(event) => handleBackdropClick(event, props.onClose)}
+      >
         <div className='w-full max-w-md rounded-2xl border border-slate-700/50 bg-slate-900 p-6 text-center text-slate-300'>
           Loading profile...
         </div>
@@ -96,100 +103,103 @@ export const SettingsModal = (props: {
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-black/70 via-slate-900/70 to-black/70 backdrop-blur-sm p-4'>
-      <div className='w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900 shadow-2xl'>
-        <div className='h-1 w-full bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500' />
-        <div className='flex items-center justify-between px-6 py-4 border-b border-slate-800'>
-          <div>
-            <h2 className='text-xl font-semibold text-white'>Settings</h2>
+    <div
+      className='fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4'
+      onClick={(event) => handleBackdropClick(event, props.onClose)}
+    >
+      <div className='flex h-[100dvh] w-full max-w-3xl flex-col overflow-hidden border-slate-700/60 bg-slate-900 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:border'>
+        <div className='h-1 w-full flex-shrink-0 bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500' />
+        <div className='flex flex-shrink-0 items-start justify-between gap-3 border-b border-slate-800 px-4 py-3 sm:px-6 sm:py-4'>
+          <div className='min-w-0'>
+            <h2 className='text-lg font-semibold text-white sm:text-xl'>
+              Settings
+            </h2>
             <p className='text-xs text-slate-400'>
               Personalize your profile and privacy.
             </p>
           </div>
           <button
             onClick={props.onClose}
-            className='text-slate-400 hover:text-white'
+            className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-800 hover:text-white'
             aria-label='Close settings'
           >
             ✕
           </button>
         </div>
 
-        <div className='p-6 space-y-6'>
-          <div className='rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-5'>
-            <div className='mb-4 flex items-center justify-between'>
-              <h3 className='text-sm font-semibold uppercase tracking-wider text-slate-400'>
-                Profile
-              </h3>
-            </div>
-            <div className='flex flex-col gap-4 md:flex-row md:items-center'>
+        <div className='min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:space-y-6 sm:p-6'>
+          <div className='rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-4 sm:p-5'>
+            <h3 className='mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400'>
+              Profile
+            </h3>
+            <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
                   alt='Avatar'
-                  className='h-16 w-16 rounded-full object-cover border border-slate-700'
+                  className='h-16 w-16 flex-shrink-0 rounded-full object-cover border border-slate-700'
                 />
               ) : (
-                <div className='h-16 w-16 rounded-full bg-gradient-to-br from-amber-400 via-rose-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xl'>
+                <div className='flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-rose-500 to-indigo-500 text-xl font-bold text-white'>
                   {fallbackInitial}
                 </div>
               )}
-              <div className='flex-1'>
-                <label className='block text-sm text-slate-400 mb-1'>
+              <div className='min-w-0 flex-1'>
+                <label className='mb-1 block text-sm text-slate-400'>
                   Avatar URL
                 </label>
                 <input
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
                   placeholder='https://...'
-                  className='w-full rounded-lg bg-slate-800/70 border border-slate-700 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  className={fieldClassName}
                 />
               </div>
             </div>
 
-            <div className='mt-5 grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm text-slate-400 mb-1'>
+            <div className='mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2'>
+              <div className='min-w-0'>
+                <label className='mb-1 block text-sm text-slate-400'>
                   Username
                 </label>
                 <input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className='w-full rounded-lg bg-slate-800/70 border border-slate-700 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  className={fieldClassName}
                 />
               </div>
-              <div>
-                <label className='block text-sm text-slate-400 mb-1'>
+              <div className='min-w-0'>
+                <label className='mb-1 block text-sm text-slate-400'>
                   Nickname
                 </label>
                 <input
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  className='w-full rounded-lg bg-slate-800/70 border border-slate-700 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  className={fieldClassName}
                 />
               </div>
             </div>
           </div>
 
-          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-            <div className='rounded-2xl border border-slate-800 bg-slate-900/80 p-5'>
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+            <div className='rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5'>
               <h3 className='mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400'>
                 Account
               </h3>
               <div className='space-y-4'>
-                <div>
-                  <label className='block text-sm text-slate-400 mb-1'>
+                <div className='min-w-0'>
+                  <label className='mb-1 block text-sm text-slate-400'>
                     Email
                   </label>
                   <input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     type='email'
-                    className='w-full rounded-lg bg-slate-800/70 border border-slate-700 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                    className={fieldClassName}
                   />
                 </div>
-                <div>
-                  <label className='block text-sm text-slate-400 mb-1'>
+                <div className='min-w-0'>
+                  <label className='mb-1 block text-sm text-slate-400'>
                     New Password
                   </label>
                   <input
@@ -197,18 +207,18 @@ export const SettingsModal = (props: {
                     onChange={(e) => setPassword(e.target.value)}
                     type='password'
                     placeholder='Leave blank to keep current'
-                    className='w-full rounded-lg bg-slate-800/70 border border-slate-700 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                    className={fieldClassName}
                   />
                 </div>
               </div>
             </div>
 
-            <div className='rounded-2xl border border-slate-800 bg-slate-900/80 p-5'>
+            <div className='rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5'>
               <h3 className='mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400'>
                 Presence
               </h3>
-              <div className='flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/40 px-4 py-4'>
-                <div>
+              <div className='flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-3 sm:px-4 sm:py-4'>
+                <div className='min-w-0'>
                   <div className='text-sm font-semibold text-white'>
                     Appear offline
                   </div>
@@ -216,7 +226,7 @@ export const SettingsModal = (props: {
                     Others will always see you as offline.
                   </div>
                 </div>
-                <label className='inline-flex cursor-pointer items-center'>
+                <label className='inline-flex flex-shrink-0 cursor-pointer items-center'>
                   <input
                     type='checkbox'
                     className='sr-only'
@@ -240,23 +250,23 @@ export const SettingsModal = (props: {
           </div>
 
           {message && (
-            <div className='text-sm text-center text-slate-200 bg-slate-800 border border-slate-700 rounded-lg py-2'>
+            <div className='rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-center text-sm text-slate-200'>
               {message}
             </div>
           )}
         </div>
 
-        <div className='flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700'>
+        <div className='flex flex-shrink-0 flex-col-reverse gap-2 border-t border-slate-700 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:justify-end sm:gap-3 sm:px-6 sm:py-4'>
           <button
             onClick={props.onClose}
-            className='px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800'
+            className='w-full rounded-lg px-4 py-2.5 text-slate-300 hover:bg-slate-800 sm:w-auto'
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className='px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50'
+            className='w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-white hover:bg-indigo-500 disabled:opacity-50 sm:w-auto'
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </button>

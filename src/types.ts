@@ -17,7 +17,9 @@ export interface PublicProfileT {
   status: 'online' | 'offline' | 'away';
   created_at: string;
   updated_at: string;
-  public_key?: string;
+  public_key: string;
+  last_seen_at?: string | null;
+  appear_offline?: boolean;
 }
 
 // Friendship types
@@ -89,11 +91,4 @@ export interface NotificationT {
   link?: string | null;
   is_read: boolean;
   created_at: string;
-}
-export interface ConversationMemberT {
-  conversation_id: string;
-  user_id: string;
-  last_read_at: string;
-  id: number;
-  joined_at: string;
 }

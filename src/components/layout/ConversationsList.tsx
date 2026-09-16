@@ -8,6 +8,7 @@ export const ConversationsList = (props: {
   isLoading: boolean;
 }) => {
   const { conversations, isLoading } = props;
+
   return (
     <div className='flex flex-col h-full'>
       {isLoading ? (
@@ -52,7 +53,8 @@ export const ConversationsList = (props: {
                   {conv.otherUserNickname}
                 </div>
               </div>
-              {props.unreadCounts[conv.id] > 0 && (
+              {props.unreadCounts[conv.id] > 0 &&
+                props.activeConversationId !== conv.id && (
                 <div className='flex items-center justify-center px-2 py-1 text-xs font-bold text-white bg-red-600 rounded-full min-w-[1.5rem]'>
                   {props.unreadCounts[conv.id]}
                 </div>
