@@ -26,7 +26,7 @@ const ReactionPlusIcon = () => (
   <svg
     viewBox='0 0 20 20'
     fill='none'
-    className='h-3.5 w-3.5'
+    className='h-4 w-4'
     aria-hidden='true'
   >
     <path
@@ -163,9 +163,9 @@ export const MessageList = ({
                     current === msg.id ? null : msg.id,
                   );
                 }}
-                className={`hidden h-6 w-6 items-center justify-center rounded-md text-slate-500 opacity-0 transition hover:bg-slate-800 hover:text-slate-200 group-hover:opacity-100 md:flex ${
+                className={`hidden h-7 w-7 items-center justify-center rounded-md text-slate-500 opacity-0 transition-all duration-150 hover:bg-slate-700 hover:text-slate-100 group-hover:opacity-100 md:flex ${
                   pickerOpen
-                    ? '!flex !opacity-100 bg-slate-800 text-slate-200'
+                    ? '!flex !opacity-100 bg-slate-700 text-slate-100'
                     : ''
                 }`}
                 title='Add reaction'
@@ -179,7 +179,7 @@ export const MessageList = ({
         const picker =
           pickerOpen && canReact && catalog.length > 0 ? (
             <div
-              className={`absolute bottom-full z-20 mb-2 flex items-center gap-0.5 rounded-lg border border-slate-600/50 bg-slate-800/70 p-1 shadow-lg backdrop-blur-md ${
+              className={`absolute bottom-full z-20 mb-2 flex items-center gap-1 rounded-xl border border-slate-600/60 bg-slate-800/90 px-1.5 py-1.5 shadow-xl backdrop-blur-md ${
                 isSelf
                   ? 'reaction-picker-in-right right-0'
                   : 'reaction-picker-in-left left-0'
@@ -195,7 +195,7 @@ export const MessageList = ({
                     onSetReaction?.(msg.id, reaction.uid);
                     setPickerForMessageId(null);
                   }}
-                  className='flex h-8 w-8 items-center justify-center rounded-md text-[16px] transition active:scale-90 hover:bg-slate-700/60'
+                  className='flex h-10 w-10 items-center justify-center rounded-lg text-[22px] leading-none transition hover:bg-slate-700/80 hover:scale-110 active:scale-95'
                   title={reaction.name}
                 >
                   {reaction.reaction}
@@ -207,13 +207,13 @@ export const MessageList = ({
         return (
           <div
             key={msg.id}
-            className={`group flex gap-2 ${isSelf ? 'justify-end' : 'justify-start'}`}
+            className={`group flex gap-1.5 py-0.5 ${isSelf ? 'justify-end' : 'justify-start'}`}
           >
             {isSelf && addButton}
 
             <div
               className={`relative max-w-[75%] sm:max-w-sm md:max-w-md ${
-                chips.length ? 'mb-3' : ''
+                chips.length ? 'mb-4' : ''
               }`}
             >
               {picker}
@@ -248,10 +248,10 @@ export const MessageList = ({
                 }}
                 onTouchEnd={clearLongPress}
                 onTouchCancel={clearLongPress}
-                className={`select-none rounded-lg px-3 py-2 [-webkit-touch-callout:none] ${
+                className={`select-none rounded-lg px-3 py-2 transition-colors duration-150 [-webkit-touch-callout:none] ${
                   isSelf
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-800 text-slate-100'
+                    ? 'bg-indigo-600 text-white group-hover:bg-indigo-500'
+                    : 'bg-slate-800 text-slate-100 group-hover:bg-slate-700'
                 }`}
               >
                 {!isSelf && (
@@ -273,7 +273,7 @@ export const MessageList = ({
 
               {chips.length > 0 && (
                 <div
-                  className={`absolute -bottom-3 flex flex-wrap gap-1 ${
+                  className={`absolute -bottom-3.5 flex flex-wrap gap-1 ${
                     isSelf ? 'left-1' : 'right-1'
                   }`}
                 >
@@ -288,7 +288,7 @@ export const MessageList = ({
                           onRemoveMyReaction?.(msg.id);
                         }
                       }}
-                      className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[11px] shadow-sm transition ${
+                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[13px] leading-none shadow-sm transition ${
                         chip.reactedByMe
                           ? 'border-indigo-400/40 bg-slate-900/95 text-slate-100'
                           : 'border-slate-600 bg-slate-900/95 text-slate-200'
@@ -299,9 +299,11 @@ export const MessageList = ({
                           : `${chip.count} ${chip.name}`
                       }
                     >
-                      <span>{chip.emoji}</span>
+                      <span className='text-[15px] leading-none'>
+                        {chip.emoji}
+                      </span>
                       {chip.count > 1 && (
-                        <span className='font-medium opacity-80'>
+                        <span className='text-[12px] font-medium opacity-80'>
                           {chip.count}
                         </span>
                       )}

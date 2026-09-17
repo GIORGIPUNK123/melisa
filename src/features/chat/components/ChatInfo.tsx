@@ -37,27 +37,32 @@ export const ChatInfo = (props: {
 
   const otherUser = sortedMembers.find((member) => member.id !== currentUserId);
   const nowMs = useTickingNow();
+  const otherOnline = otherUser
+    ? isUserOnline(otherUser.last_seen_at, otherUser.appear_offline, nowMs)
+    : false;
 
   return (
     <>
       <div
-        className='fixed inset-0 z-30 bg-black/50 lg:hidden'
+        className='fixed inset-0 z-30 bg-slate-950/60 backdrop-blur-[2px]'
         onClick={props.onClose}
       />
 
-      <div className='fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] w-full flex-col rounded-t-2xl border-t border-slate-700 bg-slate-800 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:relative lg:inset-auto lg:h-screen lg:max-h-none lg:w-72 lg:rounded-none lg:border-l lg:border-t-0 lg:p-6'>
-        <div className='mx-auto mb-3 h-1 w-10 rounded-full bg-slate-600 lg:hidden' />
-        <div className='mb-4 flex items-center justify-between lg:mb-6'>
-          <h3 className='text-base font-bold text-white lg:text-lg'>
-            Chat Info
-          </h3>
+      <aside className='fixed inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-slate-700/80 bg-slate-900 shadow-2xl'>
+        <div className='flex items-center justify-between border-b border-slate-800 px-5 py-4'>
+          <div>
+            <h3 className='text-sm font-semibold tracking-wide text-white'>
+              Conversation
+            </h3>
+            <p className='mt-0.5 text-xs text-slate-500'>Details and actions</p>
+          </div>
           <button
             onClick={props.onClose}
-            className='p-1 transition-colors rounded text-slate-400 hover:text-white hover:bg-slate-700'
+            className='rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
             aria-label='Close chat info'
           >
             <svg
-              className='w-5 h-5'
+              className='h-5 w-5'
               fill='none'
               stroke='currentColor'
               viewBox='0 0 24 24'
@@ -65,19 +70,49 @@ export const ChatInfo = (props: {
               <path
                 strokeLinecap='round'
                 strokeLinejoin='round'
-                strokeWidth={2}
+                strokeWidth={1.8}
                 d='M6 18L18 6M6 6l12 12'
               />
             </svg>
           </button>
         </div>
 
-        <div className='min-h-0 flex-1 space-y-4 overflow-y-auto pr-1'>
-          <div>
-            <p className='text-xs tracking-wider uppercase text-slate-400 lg:text-sm'>
-              Members ({sortedMembers.length})
+        <div className='min-h-0 flex-1 overflow-y-auto'>
+          {otherUser && (
+            <div className='border-b border-slate-800 px-5 py-6'>
+              <div className='flex flex-col items-center text-center'>
+                {otherUser.avatar_url ? (
+                  <img
+                    src={otherUser.avatar_url}
+                    alt={otherUser.nickname}
+                    className='h-16 w-16 rounded-full object-cover ring-1 ring-slate-700'
+                  />
+                ) : (
+                  <div className='flex h-16 w-16 items-center justify-center rounded-full bg-slate-800 text-xl font-semibold text-slate-200 ring-1 ring-slate-700'>
+                    {otherUser.nickname.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <h4 className='mt-3 text-base font-medium text-white'>
+                  {otherUser.nickname}
+                </h4>
+                <p className='text-sm text-slate-400'>@{otherUser.username}</p>
+                <div className='mt-2 inline-flex items-center gap-1.5 rounded-full border border-slate-700/80 bg-slate-950/40 px-2.5 py-1 text-xs text-slate-300'>
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      otherOnline ? 'bg-emerald-400' : 'bg-slate-500'
+                    }`}
+                  />
+                  {otherOnline ? 'Online' : 'Offline'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className='px-5 py-4'>
+            <p className='mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500'>
+              Members
             </p>
-            <div className='mt-2 space-y-1.5 lg:mt-3 lg:space-y-2'>
+            <div className='space-y-1'>
               {sortedMembers.length > 0 ? (
                 sortedMembers.map((member) => {
                   const online = isUserOnline(
@@ -85,100 +120,87 @@ export const ChatInfo = (props: {
                     member.appear_offline,
                     nowMs,
                   );
+                  const isYou = member.id === currentUserId;
 
                   return (
-                    <div
+                    <button
                       key={member.id}
+                      type='button'
+                      disabled={isYou || !props.onViewProfile}
                       onClick={() => {
-                        if (
-                          member.id !== currentUserId &&
-                          props.onViewProfile
-                        ) {
-                          props.onViewProfile(member.username);
-                        }
+                        if (!isYou) props.onViewProfile?.(member.username);
                       }}
-                      className={`flex items-center gap-3 p-2.5 transition-colors rounded-lg lg:p-3 ${
-                        member.id !== currentUserId
-                          ? 'cursor-pointer bg-slate-700 hover:bg-slate-600'
-                          : 'bg-slate-800'
+                      className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left transition-colors ${
+                        isYou
+                          ? 'cursor-default'
+                          : 'hover:bg-slate-800/80'
                       }`}
                     >
                       {member.avatar_url ? (
                         <img
                           src={member.avatar_url}
                           alt={member.nickname}
-                          className='object-cover w-9 h-9 rounded-full lg:w-10 lg:h-10'
+                          className='h-9 w-9 rounded-full object-cover'
                         />
                       ) : (
-                        <div className='flex items-center justify-center flex-shrink-0 w-9 h-9 text-sm font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600 lg:w-10 lg:h-10'>
+                        <div className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-sm font-medium text-slate-200'>
                           {member.nickname.charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <div className='flex-1 min-w-0'>
-                        <div className='text-sm font-medium text-white truncate'>
-                          {member.nickname}
+                      <div className='min-w-0 flex-1'>
+                        <div className='flex items-center gap-2'>
+                          <span className='truncate text-sm text-white'>
+                            {member.nickname}
+                          </span>
+                          {isYou && (
+                            <span className='rounded bg-slate-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-slate-400'>
+                              You
+                            </span>
+                          )}
                         </div>
-                        <div className='text-xs truncate text-slate-400'>
+                        <div className='truncate text-xs text-slate-500'>
                           @{member.username}
                         </div>
-                        <div className='flex items-center gap-1 mt-0.5'>
-                          <span
-                            className={`w-2 h-2 rounded-full ${
-                              online ? 'bg-green-500' : 'bg-slate-500'
-                            }`}
-                          />
-                          <span className='text-xs capitalize text-slate-400'>
-                            {online ? 'online' : 'offline'}
-                          </span>
-                        </div>
                       </div>
-                      {member.id === currentUserId && (
-                        <span className='flex-shrink-0 px-2 py-1 text-xs text-white bg-indigo-600 rounded'>
-                          You
-                        </span>
-                      )}
-                    </div>
+                      <span
+                        className={`h-2 w-2 flex-shrink-0 rounded-full ${
+                          online ? 'bg-emerald-400' : 'bg-slate-600'
+                        }`}
+                        title={online ? 'Online' : 'Offline'}
+                      />
+                    </button>
                   );
                 })
               ) : (
-                <div className='text-sm text-slate-500'>No members</div>
+                <p className='px-2.5 text-sm text-slate-500'>No members</p>
               )}
-            </div>
-          </div>
-
-          <div className='border-t border-slate-700 pt-3 lg:pt-4'>
-            <p className='text-xs tracking-wider uppercase text-slate-400 lg:text-sm'>
-              Actions
-            </p>
-            <div className='mt-2 grid grid-cols-2 gap-1.5 lg:mt-3 lg:grid-cols-1 lg:space-y-0 lg:gap-2'>
-              <button className='w-full px-3 py-2 text-sm text-left transition-colors rounded-lg text-slate-300 hover:bg-slate-700'>
-                📌 Pin Chat
-              </button>
-              <button className='w-full px-3 py-2 text-sm text-left transition-colors rounded-lg text-slate-300 hover:bg-slate-700'>
-                🔔 Mute
-              </button>
-              {otherUser && (
-                <button
-                  onClick={() => {
-                    props.onBlockUser?.(otherUser.username, otherUser.id);
-                  }}
-                  className='w-full px-3 py-2 text-sm text-left text-orange-400 transition-colors rounded-lg hover:bg-slate-700'
-                >
-                  {getBlockButtonLabel(
-                    Boolean(props.isBlocked?.(otherUser.id)),
-                  )}
-                </button>
-              )}
-              <button
-                onClick={props.onDeleteChat}
-                className='w-full px-3 py-2 text-sm text-left text-red-400 transition-colors rounded-lg hover:bg-slate-700'
-              >
-                🗑️ Delete Chat
-              </button>
             </div>
           </div>
         </div>
-      </div>
+
+        <div className='border-t border-slate-800 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]'>
+          <div className='space-y-1'>
+            {otherUser && (
+              <button
+                type='button'
+                onClick={() => {
+                  props.onBlockUser?.(otherUser.username, otherUser.id);
+                }}
+                className='w-full rounded-lg px-3 py-2.5 text-left text-sm text-slate-300 transition-colors hover:bg-slate-800'
+              >
+                {getBlockButtonLabel(Boolean(props.isBlocked?.(otherUser.id)))}
+              </button>
+            )}
+            <button
+              type='button'
+              onClick={props.onDeleteChat}
+              className='w-full rounded-lg px-3 py-2.5 text-left text-sm text-rose-400 transition-colors hover:bg-rose-500/10'
+            >
+              Delete conversation
+            </button>
+          </div>
+        </div>
+      </aside>
     </>
   );
 };
