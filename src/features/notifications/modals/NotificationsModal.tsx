@@ -1,7 +1,6 @@
 import { NotificationT } from '../../../types';
 import { handleBackdropClick } from '../../../shared/utils/modal';
 import {
-  IconBell,
   IconCheck,
   IconInfo,
   IconMessage,
@@ -36,27 +35,20 @@ export const NotificationsModal = (props: {
 
   return (
     <div
-      className='fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4'
+      className='fixed inset-0 z-[60] flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4'
       onClick={(event) => handleBackdropClick(event, props.onClose)}
     >
-      <div className='flex h-[75vh] max-h-[85vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-slate-700/70 bg-slate-900 shadow-2xl sm:h-[560px] sm:rounded-2xl'>
-        <div className='flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-3.5 sm:px-5'>
-          <div className='flex items-center gap-3'>
-            <div className='flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300'>
-              <IconBell size={18} />
-            </div>
-            <div>
-              <h2 className='text-base font-semibold text-white sm:text-lg'>
-                Notifications
-              </h2>
-              <p className='text-xs text-slate-500'>
-                {unreadCount > 0
-                  ? `${unreadCount} unread`
-                  : 'You are up to date'}
-              </p>
-            </div>
+      <div className='flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-2xl border-slate-700/70 bg-slate-900 shadow-2xl sm:max-h-[85vh] sm:rounded-2xl sm:border'>
+        <div className='flex flex-shrink-0 items-center justify-between gap-3 border-b border-slate-700 bg-slate-900 px-4 py-3 sm:px-5 sm:py-3.5'>
+          <div className='min-w-0'>
+            <h2 className='text-lg font-semibold text-white'>Notifications</h2>
+            <p className='mt-0.5 text-xs text-slate-500'>
+              {unreadCount > 0
+                ? `${unreadCount} unread`
+                : 'You are up to date'}
+            </p>
           </div>
-          <div className='flex items-center gap-2'>
+          <div className='flex flex-shrink-0 items-center gap-2'>
             {unreadCount > 0 && (
               <button
                 onClick={props.onMarkAllAsRead}
@@ -75,12 +67,9 @@ export const NotificationsModal = (props: {
           </div>
         </div>
 
-        <div className='flex-1 overflow-y-auto'>
+        <div className='min-h-0 flex-1 overflow-y-auto bg-slate-950/50'>
           {props.notifications.length === 0 ? (
-            <div className='flex h-full flex-col items-center justify-center px-6 text-center'>
-              <div className='mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-slate-700 bg-slate-800/60 text-slate-400'>
-                <IconBell size={24} />
-              </div>
+            <div className='flex flex-col items-center justify-center px-6 py-16 text-center'>
               <p className='text-base font-medium text-slate-200'>
                 No notifications
               </p>
@@ -89,57 +78,63 @@ export const NotificationsModal = (props: {
               </p>
             </div>
           ) : (
-            <ul className='divide-y divide-slate-800/80'>
+            <ul className='space-y-2 p-3 sm:p-4'>
               {props.notifications.map((notification) => {
                 const TypeIcon = typeIcon(notification.type);
                 return (
                   <li
                     key={notification.id}
-                    className={`flex items-start gap-3 px-4 py-3.5 transition-colors sm:px-5 ${
+                    className={`rounded-xl border px-3.5 py-3 transition-colors ${
                       notification.is_read
-                        ? 'bg-transparent'
-                        : 'bg-indigo-500/[0.06]'
+                        ? 'border-slate-800/80 bg-slate-900/70'
+                        : 'border-slate-700 bg-slate-900'
                     }`}
                   >
-                    <div
-                      className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border ${
-                        notification.is_read
-                          ? 'border-slate-800 bg-slate-800/50 text-slate-500'
-                          : 'border-indigo-500/30 bg-indigo-500/10 text-indigo-300'
-                      }`}
-                    >
-                      <TypeIcon size={16} />
-                    </div>
-                    <div className='min-w-0 flex-1'>
-                      <div className='flex items-start justify-between gap-3'>
-                        <div className='min-w-0'>
-                          <div className='flex items-center gap-2'>
-                            <h3 className='truncate text-sm font-medium text-white'>
-                              {notification.title}
-                            </h3>
-                            {!notification.is_read && (
-                              <span className='h-1.5 w-1.5 flex-shrink-0 rounded-full bg-indigo-400' />
+                    <div className='flex items-start gap-3'>
+                      <div
+                        className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
+                          notification.is_read
+                            ? 'bg-slate-800 text-slate-500'
+                            : 'bg-indigo-500/15 text-indigo-300'
+                        }`}
+                      >
+                        <TypeIcon size={14} />
+                      </div>
+                      <div className='min-w-0 flex-1'>
+                        <div className='flex items-start justify-between gap-3'>
+                          <div className='min-w-0'>
+                            <div className='flex items-center gap-2'>
+                              <h3 className='truncate text-sm font-medium text-white'>
+                                {notification.title}
+                              </h3>
+                              {!notification.is_read && (
+                                <span className='h-1.5 w-1.5 flex-shrink-0 rounded-full bg-indigo-400' />
+                              )}
+                            </div>
+                            {notification.message && (
+                              <p className='mt-1 text-sm leading-relaxed text-slate-400'>
+                                {notification.message}
+                              </p>
                             )}
-                          </div>
-                          {notification.message && (
-                            <p className='mt-1 text-sm leading-relaxed text-slate-400'>
-                              {notification.message}
+                            <p className='mt-2 text-[11px] text-slate-500'>
+                              {new Date(
+                                notification.created_at,
+                              ).toLocaleString()}
                             </p>
+                          </div>
+                          {!notification.is_read && (
+                            <button
+                              onClick={() =>
+                                props.onMarkAsRead(notification.id)
+                              }
+                              className='flex flex-shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
+                              title='Mark as read'
+                            >
+                              <IconCheck size={14} />
+                              <span className='hidden sm:inline'>Read</span>
+                            </button>
                           )}
-                          <p className='mt-2 text-[11px] text-slate-500'>
-                            {new Date(notification.created_at).toLocaleString()}
-                          </p>
                         </div>
-                        {!notification.is_read && (
-                          <button
-                            onClick={() => props.onMarkAsRead(notification.id)}
-                            className='flex flex-shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
-                            title='Mark as read'
-                          >
-                            <IconCheck size={14} />
-                            <span className='hidden sm:inline'>Read</span>
-                          </button>
-                        )}
                       </div>
                     </div>
                   </li>

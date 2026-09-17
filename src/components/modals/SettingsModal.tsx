@@ -167,20 +167,13 @@ export const SettingsModal = (props: {
       className='fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4'
       onClick={(event) => handleBackdropClick(event, props.onClose)}
     >
-      <div className='flex max-h-[78dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border-slate-700/70 bg-slate-900 sm:max-h-[90vh] sm:rounded-2xl sm:border'>
-        <div className='flex flex-shrink-0 items-center justify-between border-b border-slate-800 px-4 py-3.5 sm:px-6 sm:py-4'>
-          <div className='flex items-center gap-3'>
-            <div className='flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300'>
-              <IconSettings size={18} />
-            </div>
-            <div>
-              <h2 className='text-base font-semibold text-white sm:text-lg'>
-                Settings
-              </h2>
-              <p className='text-xs text-slate-500'>
-                Manage your profile and account
-              </p>
-            </div>
+      <div className='flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border-slate-700/70 bg-slate-900 sm:max-h-[90vh] sm:rounded-2xl sm:border'>
+        <div className='flex flex-shrink-0 items-center justify-between border-b border-slate-700 px-4 py-3 sm:px-6 sm:py-3.5'>
+          <div className='min-w-0'>
+            <h2 className='text-lg font-semibold text-white'>Settings</h2>
+            <p className='mt-0.5 text-xs text-slate-500'>
+              Manage your profile and account
+            </p>
           </div>
           <button
             onClick={props.onClose}
