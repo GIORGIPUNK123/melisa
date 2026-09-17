@@ -26,7 +26,7 @@ export const BrandMark = ({
   return (
     <div className={wrapper}>
       <h1
-        className={`${titleClass} text-transparent bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text`}
+        className={`${titleClass} text-slate-100`}
       >
         {APP_NAME}
       </h1>

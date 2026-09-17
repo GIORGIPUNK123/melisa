@@ -5,6 +5,7 @@ import { UserT } from '../../types';
 import { api } from '../../api/instance';
 import { handleBackdropClick } from '../../shared/utils/modal';
 import { useAuth } from '../../features/auth/hooks/useAuth';
+import { IconEyeOff, IconLock, IconSettings, IconUser, IconX } from '../../atoms/Icon';
 
 export const SettingsModal = (props: {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const SettingsModal = (props: {
   const [appearOffline, setAppearOffline] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [messageTone, setMessageTone] = useState<'ok' | 'error'>('ok');
 
   const fallbackInitial = useMemo(() => {
     const base = nickname || username || email || 'U';
@@ -53,6 +55,7 @@ export const SettingsModal = (props: {
       const token = sessionData?.session?.access_token;
 
       if (!token) {
+        setMessageTone('error');
         setMessage('Not authenticated');
         setIsSaving(false);
         return;
@@ -60,21 +63,25 @@ export const SettingsModal = (props: {
 
       if (password || confirmPassword || currentPassword) {
         if (!currentPassword) {
+          setMessageTone('error');
           setMessage('Enter your current password to set a new one');
           setIsSaving(false);
           return;
         }
         if (!password) {
+          setMessageTone('error');
           setMessage('Enter a new password');
           setIsSaving(false);
           return;
         }
         if (password !== confirmPassword) {
+          setMessageTone('error');
           setMessage('New passwords do not match');
           setIsSaving(false);
           return;
         }
         if (password.length < 6) {
+          setMessageTone('error');
           setMessage('New password must be at least 6 characters');
           setIsSaving(false);
           return;
@@ -85,6 +92,7 @@ export const SettingsModal = (props: {
           password,
         );
         if (!result.ok) {
+          setMessageTone('error');
           setMessage(result.error || 'Failed to update password');
           setIsSaving(false);
           return;
@@ -118,6 +126,7 @@ export const SettingsModal = (props: {
       setPassword('');
       setConfirmPassword('');
       setCurrentPassword('');
+      setMessageTone('ok');
       setMessage(
         password
           ? 'Password and encryption key updated successfully'
@@ -126,6 +135,7 @@ export const SettingsModal = (props: {
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.error || 'Failed to update settings';
+      setMessageTone('error');
       setMessage(errorMessage);
     } finally {
       setIsSaving(false);
@@ -133,9 +143,9 @@ export const SettingsModal = (props: {
   };
 
   const fieldClassName =
-    'w-full min-w-0 rounded-md border border-slate-700 bg-slate-800/70 px-2 py-1.5 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:rounded-lg sm:px-3 sm:py-2';
+    'w-full min-w-0 rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30';
   const labelClassName =
-    'mb-0.5 block text-[10px] leading-tight text-slate-400 sm:mb-1 sm:text-xs';
+    'mb-1.5 block text-xs font-medium text-slate-400';
 
   if (!props.isOpen) return null;
 
@@ -157,34 +167,48 @@ export const SettingsModal = (props: {
       className='fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4'
       onClick={(event) => handleBackdropClick(event, props.onClose)}
     >
-      <div className='flex max-h-[68dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-xl border-slate-700/60 bg-slate-900 sm:max-h-[90vh] sm:rounded-2xl sm:border'>
-        <div className='flex flex-shrink-0 items-center justify-between border-b border-slate-800 px-3 py-1.5 sm:px-6 sm:py-4'>
-          <h2 className='text-sm font-semibold text-white sm:text-xl'>
-            Settings
-          </h2>
+      <div className='flex max-h-[78dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border-slate-700/70 bg-slate-900 sm:max-h-[90vh] sm:rounded-2xl sm:border'>
+        <div className='flex flex-shrink-0 items-center justify-between border-b border-slate-800 px-4 py-3.5 sm:px-6 sm:py-4'>
+          <div className='flex items-center gap-3'>
+            <div className='flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300'>
+              <IconSettings size={18} />
+            </div>
+            <div>
+              <h2 className='text-base font-semibold text-white sm:text-lg'>
+                Settings
+              </h2>
+              <p className='text-xs text-slate-500'>
+                Manage your profile and account
+              </p>
+            </div>
+          </div>
           <button
             onClick={props.onClose}
-            className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-800 hover:text-white sm:h-10 sm:w-10'
+            className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
             aria-label='Close settings'
           >
-            ✕
+            <IconX size={18} />
           </button>
         </div>
 
-        <div className='min-h-0 space-y-1.5 overflow-y-auto overscroll-contain px-3 py-1.5 sm:space-y-6 sm:p-6'>
-          <section>
-            <h3 className='mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 sm:mb-4 sm:text-sm'>
-              Profile
-            </h3>
-            <div className='flex items-center gap-2 sm:gap-4'>
+        <div className='min-h-0 space-y-5 overflow-y-auto overscroll-contain px-4 py-4 sm:space-y-6 sm:px-6 sm:py-5'>
+          <section className='rounded-xl border border-slate-800 bg-slate-950/40 p-4 sm:p-5'>
+            <div className='mb-4 flex items-center gap-2 text-slate-300'>
+              <IconUser size={15} />
+              <h3 className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
+                Profile
+              </h3>
+            </div>
+
+            <div className='flex items-center gap-3 sm:gap-4'>
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
                   alt='Avatar'
-                  className='h-8 w-8 flex-shrink-0 rounded-full border border-slate-700 object-cover sm:h-16 sm:w-16'
+                  className='h-12 w-12 flex-shrink-0 rounded-full border border-slate-700 object-cover sm:h-14 sm:w-14'
                 />
               ) : (
-                <div className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-rose-500 to-indigo-500 text-xs font-bold text-white sm:h-16 sm:w-16 sm:text-xl'>
+                <div className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-sm font-semibold text-slate-100 sm:h-14 sm:w-14 sm:text-base'>
                   {fallbackInitial}
                 </div>
               )}
@@ -199,7 +223,7 @@ export const SettingsModal = (props: {
               </div>
             </div>
 
-            <div className='mt-1.5 grid grid-cols-2 gap-1.5 sm:mt-5 sm:gap-4'>
+            <div className='mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2'>
               <div className='min-w-0'>
                 <label className={labelClassName}>Username</label>
                 <input
@@ -219,11 +243,14 @@ export const SettingsModal = (props: {
             </div>
           </section>
 
-          <section>
-            <h3 className='mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 sm:mb-4 sm:text-sm'>
-              Account
-            </h3>
-            <div className='space-y-1.5 sm:space-y-4'>
+          <section className='rounded-xl border border-slate-800 bg-slate-950/40 p-4 sm:p-5'>
+            <div className='mb-4 flex items-center gap-2 text-slate-300'>
+              <IconLock size={15} />
+              <h3 className='text-xs font-semibold uppercase tracking-wider text-slate-400'>
+                Account & security
+              </h3>
+            </div>
+            <div className='space-y-3'>
               <div className='min-w-0'>
                 <label className={labelClassName}>Email</label>
                 <input
@@ -233,7 +260,7 @@ export const SettingsModal = (props: {
                   className={fieldClassName}
                 />
               </div>
-              <div className='grid grid-cols-1 gap-1.5 sm:grid-cols-3 sm:gap-3'>
+              <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
                 <div className='min-w-0'>
                   <label className={labelClassName}>Current password</label>
                   <input
@@ -257,34 +284,42 @@ export const SettingsModal = (props: {
                   />
                 </div>
                 <div className='min-w-0'>
-                  <label className={labelClassName}>Repeat new</label>
+                  <label className={labelClassName}>Confirm password</label>
                   <input
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     type='password'
-                    placeholder='Repeat'
+                    placeholder='Confirm'
                     className={fieldClassName}
                     autoComplete='new-password'
                   />
                   {password &&
                     confirmPassword &&
                     password !== confirmPassword && (
-                      <p className='mt-0.5 text-[10px] text-rose-400'>
+                      <p className='mt-1.5 text-xs text-rose-400'>
                         Passwords do not match
                       </p>
                     )}
                 </div>
               </div>
+              <p className='text-xs leading-relaxed text-slate-500'>
+                Changing your password also re-encrypts your private chat key.
+              </p>
             </div>
           </section>
 
-          <section className='flex items-center justify-between gap-2 border-t border-slate-800 pt-1.5 sm:rounded-2xl sm:border sm:border-slate-800 sm:bg-slate-900/80 sm:p-5 sm:pt-5'>
-            <div className='min-w-0'>
-              <div className='text-xs font-medium text-white sm:text-sm'>
-                Appear offline
+          <section className='flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4 sm:p-5'>
+            <div className='flex min-w-0 items-start gap-3'>
+              <div className='mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/70 text-slate-400'>
+                <IconEyeOff size={15} />
               </div>
-              <div className='hidden text-xs text-slate-400 sm:block'>
-                Others always see you offline.
+              <div className='min-w-0'>
+                <div className='text-sm font-medium text-white'>
+                  Appear offline
+                </div>
+                <div className='mt-0.5 text-xs leading-relaxed text-slate-500'>
+                  Hide your online presence from other users.
+                </div>
               </div>
             </div>
             <label className='inline-flex flex-shrink-0 cursor-pointer items-center'>
@@ -295,15 +330,13 @@ export const SettingsModal = (props: {
                 onChange={(e) => setAppearOffline(e.target.checked)}
               />
               <span
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors sm:h-6 sm:w-11 ${
-                  appearOffline ? 'bg-amber-500' : 'bg-slate-700'
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  appearOffline ? 'bg-indigo-600' : 'bg-slate-700'
                 }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform sm:h-5 sm:w-5 ${
-                    appearOffline
-                      ? 'translate-x-4 sm:translate-x-5'
-                      : 'translate-x-0.5 sm:translate-x-1'
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                    appearOffline ? 'translate-x-5' : 'translate-x-0.5'
                   }`}
                 />
               </span>
@@ -311,25 +344,31 @@ export const SettingsModal = (props: {
           </section>
 
           {message && (
-            <div className='rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-center text-[11px] text-slate-200 sm:rounded-lg sm:px-3 sm:py-2 sm:text-sm'>
+            <div
+              className={`rounded-lg border px-3 py-2.5 text-center text-sm ${
+                messageTone === 'error'
+                  ? 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+                  : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+              }`}
+            >
               {message}
             </div>
           )}
         </div>
 
-        <div className='flex flex-shrink-0 gap-2 border-t border-slate-700 px-3 py-1.5 pb-[max(0.4rem,env(safe-area-inset-bottom))] sm:items-center sm:justify-end sm:gap-3 sm:px-6 sm:py-4'>
+        <div className='flex flex-shrink-0 gap-2 border-t border-slate-800 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:justify-end sm:gap-3 sm:px-6 sm:py-4'>
           <button
             onClick={props.onClose}
-            className='w-full rounded-md px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-800 sm:w-auto sm:rounded-lg sm:px-4 sm:py-2.5 sm:text-base'
+            className='w-full rounded-lg border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white sm:w-auto'
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving || password !== confirmPassword}
-            className='w-full rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500 disabled:opacity-50 sm:w-auto sm:rounded-lg sm:px-4 sm:py-2.5 sm:text-base'
+            className='w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto'
           >
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </div>

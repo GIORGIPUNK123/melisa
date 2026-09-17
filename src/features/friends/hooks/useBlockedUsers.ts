@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../../db/supabase';
 
 export const getBlockButtonLabel = (blocked: boolean) =>
-  blocked ? '🚫 Unblock' : '🚫 Block User';
+  blocked ? 'Unblock' : 'Block user';
 
 export const useBlockedUsers = (userId: string | undefined) => {
   const [blockedIds, setBlockedIds] = useState<string[]>([]);

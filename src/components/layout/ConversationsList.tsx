@@ -38,7 +38,7 @@ export const ConversationsList = (props: {
                   className='flex-shrink-0 object-cover w-10 h-10 rounded-full'
                 />
               ) : (
-                <div className='flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600'>
+                <div className='flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-semibold text-slate-100 rounded-full bg-slate-700'>
                   {conv.otherUserNickname.charAt(0).toUpperCase()}
                 </div>
               )}

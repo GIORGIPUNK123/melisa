@@ -3,6 +3,7 @@ import { useFormInput } from '../../../shared/hooks/useFormInput';
 import { useAddFriend } from '../hooks/useAddFriend';
 import { User } from '@supabase/supabase-js';
 import { handleBackdropClick } from '../../../shared/utils/modal';
+import { IconUserPlus, IconX } from '../../../atoms/Icon';
 
 export const AddFriendsModal = (props: {
   isOpen: boolean;
@@ -26,31 +27,30 @@ export const AddFriendsModal = (props: {
     <div
       className={`${
         !props.isOpen ? 'hidden' : ''
-      } fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4`}
+      } fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm`}
       onClick={(event) => handleBackdropClick(event, handleClose)}
     >
-      <div className='relative w-full max-w-md overflow-hidden border shadow-2xl rounded-2xl border-slate-700/50 bg-gradient-to-br from-slate-800 to-slate-900'>
-        <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500'></div>
-
+      <div className='relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900 shadow-2xl'>
         <button
           onClick={handleClose}
-          className='absolute flex items-center justify-center w-10 h-10 transition-colors rounded-full top-4 right-4 text-slate-300 hover:text-white hover:bg-slate-700/60'
+          className='absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
           aria-label='Close add friend modal'
         >
-          ✕
+          <IconX size={18} />
         </button>
 
-        <div className='p-6 sm:p-8'>
-          <div className='flex flex-col items-center space-y-5'>
-            <div className='flex items-center justify-center text-2xl text-white rounded-full shadow-lg w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600'>
-              👥
-            </div>
-
-            <div className='text-center'>
-              <h2 className='text-2xl font-bold text-white'>Add Friend</h2>
-              <p className='mt-1 text-sm text-slate-400'>
-                Search by username to send a friend request
-              </p>
+        <div className='p-6 sm:p-7'>
+          <div className='flex flex-col space-y-5'>
+            <div className='flex items-start gap-3 pr-8'>
+              <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300'>
+                <IconUserPlus size={18} />
+              </div>
+              <div>
+                <h2 className='text-lg font-semibold text-white'>Add friend</h2>
+                <p className='mt-1 text-sm text-slate-400'>
+                  Search by username to send a friend request.
+                </p>
+              </div>
             </div>
 
             <div className='w-full'>
@@ -64,10 +64,10 @@ export const AddFriendsModal = (props: {
 
             {messageResponse && (
               <div
-                className={`w-full text-center py-2 px-4 rounded-lg text-sm font-medium ${
+                className={`w-full rounded-lg border px-3 py-2 text-center text-sm font-medium ${
                   messageResponse.toLowerCase().includes('success')
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                    : 'border-rose-500/30 bg-rose-500/10 text-rose-300'
                 }`}
               >
                 {messageResponse}
@@ -77,9 +77,9 @@ export const AddFriendsModal = (props: {
             <button
               onClick={handleAddFriend}
               disabled={!userNameInput.value || isLoading}
-              className='w-full px-6 py-3 font-semibold text-white transition-all duration-200 rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
+              className='w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50'
             >
-              {isLoading ? 'Sending...' : 'Send Request'}
+              {isLoading ? 'Sending...' : 'Send request'}
             </button>
           </div>
         </div>
