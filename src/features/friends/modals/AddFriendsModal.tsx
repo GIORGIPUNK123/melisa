@@ -10,8 +10,13 @@ export const AddFriendsModal = (props: {
   setIsOpen: (isOpen: boolean) => void;
   user: User;
 }) => {
-  const { messageResponse, addFriend, resetMessageResponse, isLoading } =
-    useAddFriend();
+  const {
+    messageResponse,
+    isSuccess,
+    addFriend,
+    resetMessageResponse,
+    isLoading,
+  } = useAddFriend();
   const userNameInput = useFormInput('', resetMessageResponse);
   const handleAddFriend = () => {
     addFriend(userNameInput.value);
@@ -65,7 +70,7 @@ export const AddFriendsModal = (props: {
             {messageResponse && (
               <div
                 className={`w-full rounded-lg border px-3 py-2 text-center text-sm font-medium ${
-                  messageResponse.toLowerCase().includes('success')
+                  isSuccess
                     ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
                     : 'border-rose-500/30 bg-rose-500/10 text-rose-300'
                 }`}
