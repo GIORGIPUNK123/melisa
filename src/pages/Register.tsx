@@ -151,85 +151,88 @@ export const Register = () => {
   }
   if (user === null) {
     return (
-      <div className='flex items-center justify-center min-h-screen px-4 py-12 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
+      // Scroll inside #root (which is overflow:hidden globally for chat mobile).
+      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
         <EmailVerificationModal
           isOpen={isOpen}
           setIsOpen={setIsOpen}
           navigate={navigate}
         />
-        <div className='w-full max-w-xl px-8 py-10 border shadow-xl rounded-2xl border-slate-800 bg-slate-900/70 backdrop-blur'>
-          <BrandMark subtitle='Private messaging' />
-          <div className='mt-6 text-center'>
-            <h2 className='text-xl font-semibold text-white'>
-              Create your {APP_NAME} account
-            </h2>
-            <p className='mt-1 text-slate-400'>Join in a few seconds</p>
-          </div>
+        <div className='flex min-h-full items-center justify-center px-4 py-8 sm:py-12'>
+          <div className='w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-10'>
+            <BrandMark subtitle='Private messaging' />
+            <div className='mt-5 text-center sm:mt-6'>
+              <h2 className='text-xl font-semibold text-white'>
+                Create your {APP_NAME} account
+              </h2>
+              <p className='mt-1 text-slate-400'>Join in a few seconds</p>
+            </div>
 
-          <div className='grid grid-cols-1 gap-4 mt-8 md:grid-cols-2'>
-            <TextInput
-              {...usernameInput}
-              placeholder='Username'
-              type='text'
-              required={true}
-              error={errors.username}
-            />
-            <TextInput
-              {...nicknameInput}
-              placeholder='Nickname'
-              type='text'
-              required={true}
-              error={errors.nickname}
-            />
-            <div className='md:col-span-2'>
+            <div className='mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:gap-4 md:grid-cols-2'>
               <TextInput
-                {...emailInput}
-                placeholder='Email'
-                type='email'
+                {...usernameInput}
+                placeholder='Username'
+                type='text'
                 required={true}
-                error={errors.email}
+                error={errors.username}
+              />
+              <TextInput
+                {...nicknameInput}
+                placeholder='Nickname'
+                type='text'
+                required={true}
+                error={errors.nickname}
+              />
+              <div className='md:col-span-2'>
+                <TextInput
+                  {...emailInput}
+                  placeholder='Email'
+                  type='email'
+                  required={true}
+                  error={errors.email}
+                />
+              </div>
+              <TextInput
+                {...passwordInput}
+                placeholder='Password'
+                type='password'
+                required={true}
+                error={errors.password}
+              />
+              <TextInput
+                {...repeatPasswordInput}
+                placeholder='Repeat password'
+                type='password'
+                required={true}
+                error={errors.repeatPassword}
               />
             </div>
-            <TextInput
-              {...passwordInput}
-              placeholder='Password'
-              type='password'
-              required={true}
-              error={errors.password}
-            />
-            <TextInput
-              {...repeatPasswordInput}
-              placeholder='Repeat password'
-              type='password'
-              required={true}
-              error={errors.repeatPassword}
-            />
-          </div>
 
-          <button
-            onClick={handleSubmit}
-            className='w-full mt-6 font-medium text-white bg-indigo-600 rounded-lg h-11 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed'
-            disabled={passwordInput.value !== repeatPasswordInput.value}
-          >
-            Create account
-          </button>
+            <button
+              onClick={handleSubmit}
+              className='mt-5 h-11 w-full rounded-lg bg-indigo-600 font-medium text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 sm:mt-6'
+              disabled={passwordInput.value !== repeatPasswordInput.value}
+            >
+              Create account
+            </button>
 
-          {authError ? (
-            <p className='mt-4 text-sm text-center text-rose-400'>
-              {authError}
-            </p>
-          ) : null}
+            {authError ? (
+              <p className='mt-4 text-center text-sm text-rose-400'>
+                {authError}
+              </p>
+            ) : null}
 
-          <div className='mt-6 text-center'>
-            <p className='text-sm text-slate-400'>
-              Already have an account?{' '}
-              <button
-                onClick={() => navigate('/login')}
-                className='font-medium text-indigo-400 hover:text-indigo-300'
-              >
-                Sign in
-              </button>
-            </p>
+            <div className='mt-5 text-center sm:mt-6'>
+              <p className='text-sm text-slate-400'>
+                Already have an account?{' '}
+                <button
+                  onClick={() => navigate('/login')}
+                  className='font-medium text-indigo-400 hover:text-indigo-300'
+                >
+                  Sign in
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>

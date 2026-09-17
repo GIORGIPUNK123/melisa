@@ -36,49 +36,52 @@ export const Login = () => {
 
   if (user === null) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex justify-center items-center px-4 py-12'>
-        <div className='w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur px-8 py-10 shadow-xl'>
-          <BrandMark subtitle='Private messaging' />
+      // Scroll inside #root (which is overflow:hidden globally for chat mobile).
+      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
+        <div className='flex min-h-full items-center justify-center px-4 py-8 sm:py-12'>
+          <div className='w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-10'>
+            <BrandMark subtitle='Private messaging' />
 
-          <form onSubmit={handleSubmit} className='mt-8 space-y-4'>
-            <TextInput
-              {...emailInput}
-              placeholder='Email'
-              type='email'
-              required={true}
-            />
-            <TextInput
-              {...passwordInput}
-              placeholder='Password'
-              type='password'
-              required={true}
-            />
+            <form onSubmit={handleSubmit} className='mt-6 space-y-4 sm:mt-8'>
+              <TextInput
+                {...emailInput}
+                placeholder='Email'
+                type='email'
+                required={true}
+              />
+              <TextInput
+                {...passwordInput}
+                placeholder='Password'
+                type='password'
+                required={true}
+              />
 
-            <button
-              type='submit'
-              disabled={isLoading || !emailInput.value || !passwordInput.value}
-              className='mt-6 h-11 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-500 w-full disabled:opacity-50 disabled:cursor-not-allowed'
-            >
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
-
-          {authError && (
-            <p className='mt-4 text-sm text-center text-rose-400'>
-              {authError}
-            </p>
-          )}
-
-          <div className='mt-6 text-center'>
-            <p className='text-slate-400 text-sm'>
-              Don't have an account?{' '}
               <button
-                onClick={() => navigate('/register')}
-                className='text-indigo-400 hover:text-indigo-300 font-medium'
+                type='submit'
+                disabled={isLoading || !emailInput.value || !passwordInput.value}
+                className='mt-6 h-11 w-full rounded-lg bg-indigo-600 font-medium text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50'
               >
-                Create one
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </button>
-            </p>
+            </form>
+
+            {authError && (
+              <p className='mt-4 text-center text-sm text-rose-400'>
+                {authError}
+              </p>
+            )}
+
+            <div className='mt-5 text-center sm:mt-6'>
+              <p className='text-sm text-slate-400'>
+                Don't have an account?{' '}
+                <button
+                  onClick={() => navigate('/register')}
+                  className='font-medium text-indigo-400 hover:text-indigo-300'
+                >
+                  Create one
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>
