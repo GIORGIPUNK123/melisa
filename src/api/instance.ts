@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { supabase } from '../db/supabase';
 
+// Always same-origin. Vercel/Vite proxy /api → Render (no browser CORS).
 export const api = axios.create({
-  baseURL: String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/+$/, ''),
+  baseURL: '/api',
   headers: {
     'Content-type': 'application/json',
     Accept: 'application/json',

@@ -18,18 +18,8 @@ export const BackendStatusBanner = () => {
 
   useEffect(() => {
     const checkBackend = async () => {
-      if (!import.meta.env.VITE_BACKEND_URL) {
-        setIsBackendDown(true);
-        setIsChecking(false);
-        return;
-      }
-
       try {
-        const base = String(import.meta.env.VITE_BACKEND_URL || '').replace(
-          /\/+$/,
-          '',
-        );
-        const response = await fetch(`${base}/health`, {
+        const response = await fetch('/api/health', {
           method: 'GET',
           cache: 'no-store',
           signal: AbortSignal.timeout(20000),
@@ -42,12 +32,6 @@ export const BackendStatusBanner = () => {
         setIsChecking(false);
       }
     };
-
-    if (!import.meta.env.VITE_BACKEND_URL) {
-      setIsBackendDown(true);
-      setIsChecking(false);
-      return;
-    }
 
     checkBackend();
 
