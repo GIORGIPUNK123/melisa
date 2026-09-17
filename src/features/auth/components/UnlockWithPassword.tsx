@@ -47,7 +47,7 @@ export const UnlockWithPassword = (props: {
             placeholder='Enter password'
             value={unlockPassword}
             onChange={(e) => setUnlockPassword(e.target.value)}
-            className='mt-2 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30'
+            className='mt-2 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-base text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30'
             autoFocus
             required
           />

@@ -18,7 +18,7 @@ export const TextInput = (props: {
         type={props.type}
         value={props.value}
         onChange={props.onChange}
-        className={`bg-gray-50 border text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white ${
+        className={`block w-full rounded-lg border bg-gray-50 p-2.5 text-base text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ${
           props.error
             ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500'
             : 'border-gray-300 dark:border-gray-600'

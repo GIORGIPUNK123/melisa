@@ -24,7 +24,7 @@ export const ChatHeader = ({
   const displayInitial = (displayName || '?').charAt(0).toUpperCase();
 
   return (
-    <div className='flex items-center justify-between px-3 py-3 border-b sm:px-4 md:px-6 border-slate-700 bg-slate-900'>
+    <div className='flex shrink-0 items-center justify-between border-b border-slate-700 bg-slate-900 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4 md:px-6'>
       <div className='flex items-center gap-2 sm:gap-3'>
         <button
           onClick={onToggleSidebar}

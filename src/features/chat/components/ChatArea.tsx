@@ -51,7 +51,7 @@ export const ChatArea = ({
   };
 
   return (
-    <div className='flex flex-col flex-1 h-screen bg-slate-900'>
+    <div className='flex h-full min-h-0 flex-1 flex-col bg-slate-900'>
       <ChatHeader
         members={members}
         currentUserId={currentUserId}
@@ -61,7 +61,7 @@ export const ChatArea = ({
         fallbackAvatar={conversationPreview?.otherUserAvatar}
       />
 
-      <div className='flex-1 p-4 space-y-4 overflow-y-auto md:p-6'>
+      <div className='min-h-0 flex-1 space-y-4 overflow-y-auto p-4 md:p-6'>
         <MessageList
           messages={messages}
           members={members}
