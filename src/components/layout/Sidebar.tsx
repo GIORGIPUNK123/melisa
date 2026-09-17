@@ -1,10 +1,17 @@
 import { User } from '@supabase/supabase-js';
-import { supabase } from '../../db/supabase';
 import { useNavigate } from 'react-router';
 import { ConversationT, FriendT, NotificationT } from '../../types';
 import { FriendsList } from '../../features/friends/components/FriendsList';
 import { ConversationsList } from './ConversationsList';
 import { BrandMark } from '../../atoms/BrandMark';
+import {
+  IconBell,
+  IconInbox,
+  IconLogOut,
+  IconSettings,
+  IconUserPlus,
+} from '../../atoms/Icon';
+import { supabase } from '../../db/supabase';
 
 export const Sidebar = (props: {
   activeTab: 'chats' | 'friends';
@@ -49,6 +56,9 @@ export const Sidebar = (props: {
     props.onNotificationsClick?.();
   };
 
+  const navButtonClass =
+    'flex items-center justify-center w-full gap-2.5 rounded-lg border border-slate-700/80 bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-800 hover:text-white';
+
   return (
     <>
       {props.isVisible && (
@@ -61,36 +71,36 @@ export const Sidebar = (props: {
       <div
         className={`
         fixed lg:relative inset-y-0 left-0 z-20
-        flex h-[100dvh] w-full flex-col border-r border-slate-700 bg-slate-950
+        flex h-[100dvh] w-full flex-col border-r border-slate-800 bg-slate-950
         lg:h-screen lg:w-full lg:max-w-sm
         transform transition-transform duration-300 ease-in-out
         ${props.isVisible ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}
       >
-        <div className='flex items-center gap-3 border-b border-slate-700 px-3 py-2.5 lg:p-6'>
+        <div className='flex items-center gap-3 border-b border-slate-800 px-3 py-2.5 lg:p-5'>
           {props.avatarUrl ? (
             <img
               src={props.avatarUrl}
               alt='Avatar'
-              className='object-cover w-9 h-9 lg:w-10 lg:h-10 border rounded-full border-slate-700'
+              className='h-9 w-9 rounded-full border border-slate-700 object-cover lg:h-10 lg:w-10'
             />
           ) : (
-            <div className='flex items-center justify-center w-9 h-9 lg:w-10 lg:h-10 font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600'>
+            <div className='flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-slate-100 lg:h-10 lg:w-10'>
               {(props.nickname || 'U').trim().charAt(0).toUpperCase()}
             </div>
           )}
           <div className='min-w-0 flex-1'>
             <BrandMark align='left' size='xs' />
-            <p className='text-xs lg:text-sm text-slate-400 truncate'>
+            <p className='truncate text-xs text-slate-400 lg:text-sm'>
               {props.nickname || 'User'}
             </p>
           </div>
           <button
             onClick={handleNotificationsClick}
-            className='relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white lg:hidden'
+            className='relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white lg:hidden'
             aria-label='Notifications'
           >
-            <span className='text-base'>🔔</span>
+            <IconBell size={18} />
             {unreadNotifications.length > 0 && (
               <span className='absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-indigo-600 px-1 text-[10px] font-semibold leading-4 text-white'>
                 {unreadNotifications.length}
@@ -99,12 +109,12 @@ export const Sidebar = (props: {
           </button>
         </div>
 
-        <div className='flex border-b border-slate-700'>
+        <div className='flex border-b border-slate-800'>
           <button
             onClick={() => props.setActiveTab('chats')}
-            className={`flex-1 py-2 text-sm font-medium transition-colors lg:py-3 ${
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors lg:py-3 ${
               props.activeTab === 'chats'
-                ? 'text-white border-b-2 border-indigo-500'
+                ? 'border-b-2 border-indigo-500 text-white'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -112,9 +122,9 @@ export const Sidebar = (props: {
           </button>
           <button
             onClick={() => props.setActiveTab('friends')}
-            className={`flex-1 py-2 text-sm font-medium transition-colors lg:py-3 ${
+            className={`flex-1 py-2.5 text-sm font-medium transition-colors lg:py-3 ${
               props.activeTab === 'friends'
-                ? 'text-white border-b-2 border-indigo-500'
+                ? 'border-b-2 border-indigo-500 text-white'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -143,17 +153,18 @@ export const Sidebar = (props: {
           )}
         </div>
 
-        <div className='hidden px-4 pb-4 lg:block'>
+        <div className='hidden border-t border-slate-800 px-4 py-3 lg:block'>
           <button
             onClick={handleNotificationsClick}
-            className='flex items-center justify-between w-full mb-2 transition-colors hover:text-white'
+            className='mb-2 flex w-full items-center justify-between transition-colors hover:text-white'
           >
-            <h3 className='text-sm tracking-wider uppercase text-slate-400'>
+            <h3 className='flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500'>
+              <IconBell size={14} />
               Notifications
             </h3>
             <div className='flex items-center gap-2'>
               {unreadNotifications.length > 0 && (
-                <span className='px-2 py-0.5 text-xs font-medium text-white bg-indigo-600 rounded-full'>
+                <span className='rounded-md bg-indigo-600/90 px-1.5 py-0.5 text-[11px] font-medium text-white'>
                   {unreadNotifications.length}
                 </span>
               )}
@@ -163,24 +174,26 @@ export const Sidebar = (props: {
             </div>
           </button>
           <div
-            className='pr-1 space-y-2 overflow-y-auto max-h-40'
+            className='max-h-40 space-y-1.5 overflow-y-auto pr-1'
             onClick={handleNotificationsClick}
           >
             {props.notificationsLoading ? (
               <div className='text-sm text-slate-500'>Loading...</div>
             ) : unreadNotifications.length === 0 ? (
-              <div className='text-sm text-slate-500'>
+              <div className='rounded-lg border border-dashed border-slate-800 px-3 py-4 text-center text-sm text-slate-500'>
                 No unread notifications
               </div>
             ) : (
               unreadNotifications.slice(0, 5).map((n) => (
                 <div
                   key={n.id}
-                  className='p-3 text-white transition-colors border rounded-lg cursor-pointer bg-slate-800 border-indigo-500/40 hover:bg-slate-700/60'
+                  className='cursor-pointer rounded-lg border border-slate-800 bg-slate-900/80 px-3 py-2.5 transition-colors hover:border-slate-700 hover:bg-slate-800/80'
                 >
-                  <div className='text-sm font-medium'>{n.title}</div>
+                  <div className='truncate text-sm font-medium text-slate-100'>
+                    {n.title}
+                  </div>
                   {n.message && (
-                    <div className='mt-1 text-xs text-slate-400'>
+                    <div className='mt-0.5 line-clamp-2 text-xs text-slate-400'>
                       {n.message}
                     </div>
                   )}
@@ -190,64 +203,55 @@ export const Sidebar = (props: {
           </div>
         </div>
 
-        <div className='grid grid-cols-4 gap-1 border-t border-slate-700 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden'>
+        <div className='grid grid-cols-4 gap-1 border-t border-slate-800 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden'>
           <button
             onClick={props.onAddFriendClick}
-            className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-200 hover:bg-slate-800'
+            className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-300 transition-colors hover:bg-slate-800 hover:text-white'
           >
-            <span>👥</span>
+            <IconUserPlus size={18} />
             Add
           </button>
           <button
             onClick={props.onFriendRequestsClick}
-            className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-200 hover:bg-slate-800'
+            className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-300 transition-colors hover:bg-slate-800 hover:text-white'
           >
-            <span>📬</span>
+            <IconInbox size={18} />
             Requests
           </button>
           <button
             onClick={props.onSettingsClick}
-            className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-200 hover:bg-slate-800'
+            className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-300 transition-colors hover:bg-slate-800 hover:text-white'
           >
-            <span>⚙️</span>
+            <IconSettings size={18} />
             Settings
           </button>
           <button
             onClick={handleLogout}
-            className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-200 hover:bg-slate-800'
+            className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-300 transition-colors hover:bg-slate-800 hover:text-white'
           >
-            <span>🚪</span>
+            <IconLogOut size={18} />
             Log out
           </button>
         </div>
 
-        <div className='hidden space-y-2 border-t border-slate-700 p-4 lg:block'>
+        <div className='hidden space-y-2 border-t border-slate-800 p-4 lg:block'>
           <button
             onClick={props.onAddFriendClick}
-            className='flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-white transition-all duration-200 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+            className='flex w-full items-center justify-center gap-2.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500'
           >
-            <span>👥</span>
+            <IconUserPlus size={16} />
             Add Friends
           </button>
-          <button
-            onClick={props.onFriendRequestsClick}
-            className='flex items-center justify-center w-full gap-2 px-4 py-3 font-medium transition-all duration-200 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200'
-          >
-            <span>📬</span>
+          <button onClick={props.onFriendRequestsClick} className={navButtonClass}>
+            <IconInbox size={16} />
             Friend Requests
           </button>
-          <button
-            onClick={props.onSettingsClick}
-            className='flex items-center justify-center w-full gap-2 px-4 py-3 font-medium transition-all duration-200 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200'
-          >
-            <span>⚙️</span>
+          <button onClick={props.onSettingsClick} className={navButtonClass}>
+            <IconSettings size={16} />
             Settings
           </button>
-          <button
-            onClick={handleLogout}
-            className='flex items-center justify-center w-full gap-2 px-4 py-3 font-medium transition-all duration-200 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200'
-          >
-            <span>🚪</span>
+          <button onClick={handleLogout} className={navButtonClass}>
+            <IconLogOut size={16} />
             Log Out
           </button>
         </div>

@@ -1,4 +1,5 @@
 import { BrandMark } from '../../../atoms/BrandMark';
+import { IconLock } from '../../../atoms/Icon';
 
 export const UnlockWithPassword = (props: {
   unlockPassword: string;
@@ -28,8 +29,8 @@ export const UnlockWithPassword = (props: {
           <BrandMark size='sm' subtitle='Unlock to continue' />
         </div>
         <div className='mb-5 flex items-center gap-3'>
-          <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600/20 text-indigo-300'>
-            🔐
+          <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300'>
+            <IconLock size={18} />
           </div>
           <div>
             <h3 className='text-lg font-semibold text-white'>

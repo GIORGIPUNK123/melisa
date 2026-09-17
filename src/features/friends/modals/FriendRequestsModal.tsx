@@ -2,6 +2,7 @@ import { usePendingRequests } from '../hooks/usePendingRequests';
 import { useState } from 'react';
 import { UserProfileModal } from './UserProfileModal';
 import { handleBackdropClick } from '../../../shared/utils/modal';
+import { IconX } from '../../../atoms/Icon';
 
 export const FriendRequestsModal = (props: {
   isOpen: boolean;
@@ -48,16 +49,16 @@ export const FriendRequestsModal = (props: {
         onClick={(event) => handleBackdropClick(event, props.onClose)}
       >
         <div className='w-full max-w-2xl rounded-2xl border border-slate-700/50 bg-slate-900 shadow-2xl overflow-hidden max-h-[80vh] flex flex-col'>
-          <div className='flex items-center justify-between px-6 py-4 border-b border-slate-700'>
-            <h2 className='text-xl font-semibold text-white'>
+          <div className='flex items-center justify-between border-b border-slate-800 px-6 py-4'>
+            <h2 className='text-lg font-semibold text-white'>
               Friend Requests
             </h2>
             <button
               onClick={props.onClose}
-              className='text-slate-400 hover:text-white transition-colors'
+              className='flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
               aria-label='Close'
             >
-              ✕
+              <IconX size={18} />
             </button>
           </div>
 
@@ -93,7 +94,7 @@ export const FriendRequestsModal = (props: {
                                 className='w-10 h-10 rounded-full object-cover'
                               />
                             ) : (
-                              <div className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold'>
+                              <div className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-slate-100'>
                                 {req.nickname.charAt(0).toUpperCase()}
                               </div>
                             )}
@@ -149,7 +150,7 @@ export const FriendRequestsModal = (props: {
                                 className='w-10 h-10 rounded-full object-cover'
                               />
                             ) : (
-                              <div className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold'>
+                              <div className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-slate-100'>
                                 {req.nickname.charAt(0).toUpperCase()}
                               </div>
                             )}

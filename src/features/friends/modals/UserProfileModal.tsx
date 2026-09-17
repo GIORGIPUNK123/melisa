@@ -3,6 +3,7 @@ import { getBlockButtonLabel } from '../hooks/useBlockedUsers';
 import { isUserOnline } from '../../../shared/utils/presence';
 import { useTickingNow } from '../../../shared/hooks/useTickingNow';
 import { handleBackdropClick } from '../../../shared/utils/modal';
+import { IconX } from '../../../atoms/Icon';
 
 export const UserProfileModal = (props: {
   isOpen: boolean;
@@ -29,14 +30,14 @@ export const UserProfileModal = (props: {
       onClick={(event) => handleBackdropClick(event, props.onClose)}
     >
       <div className='w-full max-w-md overflow-hidden border shadow-2xl rounded-2xl border-slate-700/50 bg-slate-900'>
-        <div className='flex items-center justify-between px-6 py-4 border-b border-slate-700'>
-          <h2 className='text-xl font-semibold text-white'>User Profile</h2>
+        <div className='flex items-center justify-between border-b border-slate-800 px-6 py-4'>
+          <h2 className='text-lg font-semibold text-white'>User Profile</h2>
           <button
             onClick={props.onClose}
-            className='transition-colors text-slate-400 hover:text-white'
+            className='flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
             aria-label='Close'
           >
-            ✕
+            <IconX size={18} />
           </button>
         </div>
 
@@ -55,7 +56,7 @@ export const UserProfileModal = (props: {
                     className='object-cover w-24 h-24 border-2 rounded-full border-slate-700'
                   />
                 ) : (
-                  <div className='flex items-center justify-center w-24 h-24 text-3xl font-bold text-white rounded-full bg-gradient-to-br from-blue-500 to-purple-600'>
+                  <div className='flex h-24 w-24 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-3xl font-semibold text-slate-100'>
                     {profile.nickname.charAt(0).toUpperCase()}
                   </div>
                 )}

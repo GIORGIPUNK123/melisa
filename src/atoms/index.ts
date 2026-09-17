@@ -4,3 +4,4 @@ export { Avatar } from './Avatar';
 export { TextInput } from './TextInput';
 export { ErrorBoundary } from './ErrorBoundary';
 export { BrandMark } from './BrandMark';
+export * from './Icon';
