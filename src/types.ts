@@ -81,6 +81,30 @@ export interface MessageT {
   updated_at: string;
 }
 
+export interface ReactionTypeT {
+  uid: string;
+  reaction: string;
+  name: string;
+}
+
+export interface MessageReactionT {
+  id: string;
+  message_id: string;
+  conversation_id: string;
+  user_id: string;
+  reaction_id: string;
+  created_at: string;
+  reaction?: ReactionTypeT | null;
+}
+
+export type ReactionChipT = {
+  reactionId: string;
+  emoji: string;
+  name: string;
+  count: number;
+  reactedByMe: boolean;
+};
+
 // Notification types
 export interface NotificationT {
   id: string;

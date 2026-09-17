@@ -38,8 +38,11 @@ export const Main = () => {
     setUnlockError(null);
     const ok = await authUnlock(unlockPassword);
     setUnlocking(false);
-    if (!ok) setUnlockError('Invalid password');
-    else setUnlockPassword('');
+    if (!ok) {
+      setUnlockError(
+        'Wrong password for your encryption key. If you recently changed login password, try the previous one.',
+      );
+    } else setUnlockPassword('');
 
     try {
       void ensureMessageSoundEnabled?.();

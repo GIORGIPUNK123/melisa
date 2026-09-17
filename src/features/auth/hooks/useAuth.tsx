@@ -44,6 +44,10 @@ type AuthContextValue = {
   user: 'loading' | User | null;
   privateKey: string | null;
   authUnlock: (password: string) => Promise<boolean>;
+  changeEncryptionPassword: (
+    currentPassword: string,
+    newPassword: string,
+  ) => Promise<{ ok: boolean; error?: string }>;
   generatedPublicKey: string | null;
   generatedSalt: string | null;
   derivedEncryptionKey: string | null;
@@ -217,11 +221,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (!data.user) throw new Error('Login failed');
 
         const key = await fetchPrivateKey(data.user.id, password);
-        if (key === null) {
-          setUser(null);
-          return false;
-        }
-
+        // Keep the session even if key unwrap fails (e.g. password was
+        // changed without re-wrapping). Unlock screen can use the old password.
         setUser(data.user);
         return true;
       } catch (err: any) {
@@ -248,6 +249,77 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (err) {
         console.error('authUnlock failed:', err);
         return false;
+      }
+    },
+    [fetchPrivateKey],
+  );
+
+  // Re-wrap private key with a new password and update auth password
+  const changeEncryptionPassword = useCallback(
+    async (currentPassword: string, newPassword: string) => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+        if (!userId) {
+          return { ok: false, error: 'Not authenticated' };
+        }
+        if (!newPassword || newPassword.length < 6) {
+          return {
+            ok: false,
+            error: 'New password must be at least 6 characters',
+          };
+        }
+
+        // Decrypt with the password that currently wraps the key
+        const plaintextKey = await fetchPrivateKey(userId, currentPassword);
+        if (!plaintextKey) {
+          return {
+            ok: false,
+            error:
+              'Current password is wrong for your encryption key. If you recently changed login password, try the previous one here.',
+          };
+        }
+
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const hashResult = await argon2.hash({
+          pass: newPassword,
+          salt,
+          time: 3,
+          mem: 65536,
+          hashLen: 32,
+          parallelism: 4,
+          type: argon2.ArgonType.Argon2id,
+        });
+        const passwordKey = new Uint8Array(hashResult.hash);
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const encryptedPrivateKeyBase64 = await AESGCMEncrypt(
+          plaintextKey,
+          passwordKey,
+          iv,
+        );
+
+        await api.put('/friends/settings', {
+          password: newPassword,
+          encrypted_private_key: encryptedPrivateKeyBase64,
+          iv: encodeBase64(iv),
+          salt: encodeBase64(salt),
+        });
+
+        setPrivateKey(plaintextKey);
+        setEncryptedPrivateKey(encryptedPrivateKeyBase64);
+        setGeneratedIv(encodeBase64(iv));
+        setGeneratedSalt(encodeBase64(salt));
+        setDerivedEncryptionKey(encodeBase64(passwordKey));
+
+        return { ok: true };
+      } catch (err: any) {
+        const message =
+          err?.response?.data?.error ||
+          err?.message ||
+          'Failed to update password';
+        return { ok: false, error: message };
       }
     },
     [fetchPrivateKey],
@@ -359,6 +431,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       privateKey,
       authUnlock,
+      changeEncryptionPassword,
       generatedPublicKey,
       generatedSalt,
       derivedEncryptionKey,
@@ -375,6 +448,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       privateKey,
       authUnlock,
+      changeEncryptionPassword,
       generatedPublicKey,
       generatedSalt,
       derivedEncryptionKey,

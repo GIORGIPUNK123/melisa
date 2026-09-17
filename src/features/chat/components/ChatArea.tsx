@@ -2,6 +2,7 @@ import { MessageT, PublicProfileT, ConversationT } from '../../../types';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { useMessages } from '../hooks/useMessages';
+import { useMessageReactions } from '../hooks/useMessageReactions';
 import { decryptChatMessageContent as cryptoDecrypt } from '../utils/chatCrypto';
 import { MessageInput } from './MessageInput';
 import { sameId } from '../../../shared/utils/ids';
@@ -45,6 +46,9 @@ export const ChatArea = ({
     handleIncomingMessage,
   );
 
+  const { catalog, chipsByMessageId, toggleHeart, setReaction, removeMyReaction } =
+    useMessageReactions(conversationId, currentUserId);
+
   const handleSend = async (text: string) => {
     onConversationActivity?.(conversationId);
     await sendMessage(text);
@@ -61,12 +65,17 @@ export const ChatArea = ({
         fallbackAvatar={conversationPreview?.otherUserAvatar}
       />
 
-      <div className='min-h-0 flex-1 space-y-4 overflow-y-auto p-4 md:p-6'>
+      <div className='min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden p-4 md:p-6'>
         <MessageList
           messages={messages}
           members={members}
           currentUserId={currentUserId}
           isLoading={isLoading}
+          catalog={catalog}
+          chipsByMessageId={chipsByMessageId}
+          onToggleHeart={toggleHeart}
+          onSetReaction={setReaction}
+          onRemoveMyReaction={removeMyReaction}
         />
       </div>
 

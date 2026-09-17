@@ -1,5 +1,10 @@
-import { useEffect, useRef } from 'react';
-import { MessageT, PublicProfileT } from '../../../types';
+import { useEffect, useRef, useState } from 'react';
+import {
+  MessageT,
+  PublicProfileT,
+  ReactionChipT,
+  ReactionTypeT,
+} from '../../../types';
 import { sameId } from '../../../shared/utils/ids';
 
 interface MessageListProps {
@@ -7,15 +12,68 @@ interface MessageListProps {
   members: PublicProfileT[];
   currentUserId?: string;
   isLoading: boolean;
+  catalog?: ReactionTypeT[];
+  chipsByMessageId?: Map<string, ReactionChipT[]>;
+  onToggleHeart?: (messageId: string) => void;
+  onSetReaction?: (messageId: string, reactionId: string) => void;
+  onRemoveMyReaction?: (messageId: string) => void;
 }
+
+const LONG_PRESS_MS = 450;
+const MOVE_THRESHOLD_PX = 10;
+
+const ReactionPlusIcon = () => (
+  <svg
+    viewBox='0 0 20 20'
+    fill='none'
+    className='h-3.5 w-3.5'
+    aria-hidden='true'
+  >
+    <path
+      d='M10 4.5v11M4.5 10h11'
+      stroke='currentColor'
+      strokeWidth='1.6'
+      strokeLinecap='round'
+    />
+  </svg>
+);
 
 export const MessageList = ({
   messages,
   members,
   currentUserId,
   isLoading,
+  catalog = [],
+  chipsByMessageId,
+  onToggleHeart,
+  onSetReaction,
+  onRemoveMyReaction,
 }: MessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<number | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const [pickerForMessageId, setPickerForMessageId] = useState<string | null>(
+    null,
+  );
+
+  const clearLongPress = () => {
+    if (longPressTimerRef.current != null) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    touchStartRef.current = null;
+  };
+
+  const openPicker = (messageId: string) => {
+    setPickerForMessageId(messageId);
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate(12);
+      } catch {
+        // ignore
+      }
+    }
+  };
 
   const scrollToBottom = (behavior: 'smooth' | 'auto' = 'smooth') => {
     messagesEndRef.current?.scrollIntoView({ behavior });
@@ -32,6 +90,17 @@ export const MessageList = ({
       scrollToBottom('smooth');
     }
   }, [messages.length]);
+
+  useEffect(() => {
+    const closePicker = () => setPickerForMessageId(null);
+    window.addEventListener('click', closePicker);
+    window.addEventListener('touchstart', closePicker);
+    return () => {
+      window.removeEventListener('click', closePicker);
+      window.removeEventListener('touchstart', closePicker);
+      clearLongPress();
+    };
+  }, []);
 
   const showSkeleton = isLoading && messages.length === 0;
 
@@ -77,36 +146,176 @@ export const MessageList = ({
 
   return (
     <>
-      {messages.map((msg) => (
-        <div
-          key={msg.id}
-          className={`flex gap-2 ${sameId(msg.sender_id, currentUserId) ? 'justify-end' : 'justify-start'}`}
-        >
-          <div
-            className={`max-w-[75%] sm:max-w-sm md:max-w-md rounded-lg px-3 py-2 ${
-              sameId(msg.sender_id, currentUserId)
-                ? 'bg-indigo-600 text-white'
-                : 'bg-slate-800 text-slate-100'
-            }`}
-          >
-            {!sameId(msg.sender_id, currentUserId) && (
-              <div className='mb-1 text-xs font-semibold text-slate-400'>
-                {members.find((m) => sameId(m.id, msg.sender_id))?.nickname ||
-                  members.find((m) => sameId(m.id, msg.sender_id))?.username ||
-                  'Unknown'}
-              </div>
-            )}
-            <p className='text-sm break-words'>{msg.content}</p>
-            <div className='mt-1 text-xs opacity-70'>
-              {new Date(msg.created_at).toLocaleTimeString([], {
-                timeStyle: 'short',
-              })}
-            </div>
-          </div>
-        </div>
-      ))}
+      {messages.map((msg) => {
+        const isSelf = sameId(msg.sender_id, currentUserId);
+        const chips = chipsByMessageId?.get(msg.id) || [];
+        const canReact = !msg.id.startsWith('temp-');
+        const pickerOpen = pickerForMessageId === msg.id;
 
-      {/* 4. Target anchor placed perfectly at the absolute end of our fragment view */}
+        const addButton =
+          canReact && catalog.length > 0 ? (
+            <div className='relative flex shrink-0 items-center self-center'>
+              <button
+                type='button'
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setPickerForMessageId((current) =>
+                    current === msg.id ? null : msg.id,
+                  );
+                }}
+                className={`hidden h-6 w-6 items-center justify-center rounded-md text-slate-500 opacity-0 transition hover:bg-slate-800 hover:text-slate-200 group-hover:opacity-100 md:flex ${
+                  pickerOpen
+                    ? '!flex !opacity-100 bg-slate-800 text-slate-200'
+                    : ''
+                }`}
+                title='Add reaction'
+                aria-label='Add reaction'
+              >
+                <ReactionPlusIcon />
+              </button>
+            </div>
+          ) : null;
+
+        const picker =
+          pickerOpen && canReact && catalog.length > 0 ? (
+            <div
+              className={`absolute bottom-full z-20 mb-2 flex items-center gap-0.5 rounded-lg border border-slate-600/50 bg-slate-800/70 p-1 shadow-lg backdrop-blur-md ${
+                isSelf
+                  ? 'reaction-picker-in-right right-0'
+                  : 'reaction-picker-in-left left-0'
+              }`}
+              onClick={(event) => event.stopPropagation()}
+              onTouchStart={(event) => event.stopPropagation()}
+            >
+              {catalog.map((reaction) => (
+                <button
+                  key={reaction.uid}
+                  type='button'
+                  onClick={() => {
+                    onSetReaction?.(msg.id, reaction.uid);
+                    setPickerForMessageId(null);
+                  }}
+                  className='flex h-8 w-8 items-center justify-center rounded-md text-[16px] transition active:scale-90 hover:bg-slate-700/60'
+                  title={reaction.name}
+                >
+                  {reaction.reaction}
+                </button>
+              ))}
+            </div>
+          ) : null;
+
+        return (
+          <div
+            key={msg.id}
+            className={`group flex gap-2 ${isSelf ? 'justify-end' : 'justify-start'}`}
+          >
+            {isSelf && addButton}
+
+            <div
+              className={`relative max-w-[75%] sm:max-w-sm md:max-w-md ${
+                chips.length ? 'mb-3' : ''
+              }`}
+            >
+              {picker}
+
+              <div
+                onDoubleClick={() => {
+                  if (canReact) onToggleHeart?.(msg.id);
+                }}
+                onContextMenu={(event) => {
+                  if (canReact) event.preventDefault();
+                }}
+                onTouchStart={(event) => {
+                  if (!canReact || catalog.length === 0) return;
+                  const touch = event.touches[0];
+                  if (!touch) return;
+                  clearLongPress();
+                  touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+                  longPressTimerRef.current = window.setTimeout(() => {
+                    openPicker(msg.id);
+                    longPressTimerRef.current = null;
+                  }, LONG_PRESS_MS);
+                }}
+                onTouchMove={(event) => {
+                  const start = touchStartRef.current;
+                  const touch = event.touches[0];
+                  if (!start || !touch) return;
+                  const dx = Math.abs(touch.clientX - start.x);
+                  const dy = Math.abs(touch.clientY - start.y);
+                  if (dx > MOVE_THRESHOLD_PX || dy > MOVE_THRESHOLD_PX) {
+                    clearLongPress();
+                  }
+                }}
+                onTouchEnd={clearLongPress}
+                onTouchCancel={clearLongPress}
+                className={`select-none rounded-lg px-3 py-2 [-webkit-touch-callout:none] ${
+                  isSelf
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-800 text-slate-100'
+                }`}
+              >
+                {!isSelf && (
+                  <div className='mb-1 text-xs font-semibold text-slate-400'>
+                    {members.find((m) => sameId(m.id, msg.sender_id))
+                      ?.nickname ||
+                      members.find((m) => sameId(m.id, msg.sender_id))
+                        ?.username ||
+                      'Unknown'}
+                  </div>
+                )}
+                <p className='text-sm break-words'>{msg.content}</p>
+                <div className='mt-1 text-xs opacity-70'>
+                  {new Date(msg.created_at).toLocaleTimeString([], {
+                    timeStyle: 'short',
+                  })}
+                </div>
+              </div>
+
+              {chips.length > 0 && (
+                <div
+                  className={`absolute -bottom-3 flex flex-wrap gap-1 ${
+                    isSelf ? 'left-1' : 'right-1'
+                  }`}
+                >
+                  {chips.map((chip) => (
+                    <button
+                      key={chip.reactionId}
+                      type='button'
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (!canReact) return;
+                        if (chip.reactedByMe) {
+                          onRemoveMyReaction?.(msg.id);
+                        }
+                      }}
+                      className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[11px] shadow-sm transition ${
+                        chip.reactedByMe
+                          ? 'border-indigo-400/40 bg-slate-900/95 text-slate-100'
+                          : 'border-slate-600 bg-slate-900/95 text-slate-200'
+                      } ${chip.reactedByMe ? 'cursor-pointer hover:bg-slate-800' : 'cursor-default'}`}
+                      title={
+                        chip.reactedByMe
+                          ? 'Remove your reaction'
+                          : `${chip.count} ${chip.name}`
+                      }
+                    >
+                      <span>{chip.emoji}</span>
+                      {chip.count > 1 && (
+                        <span className='font-medium opacity-80'>
+                          {chip.count}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {!isSelf && addButton}
+          </div>
+        );
+      })}
+
       <div ref={messagesEndRef} />
     </>
   );

@@ -15,7 +15,7 @@ export const UnlockWithPassword = (props: {
     handleUnlock,
   } = props;
   return (
-    <div className='flex items-center justify-center w-screen h-screen bg-slate-900 px-4'>
+    <div className='flex h-[100dvh] w-full items-center justify-center bg-slate-900 px-4'>
       <div className='w-full max-w-sm rounded-2xl border border-slate-700/60 bg-slate-900/70 p-6 shadow-2xl'>
         <div className='mb-6'>
           <BrandMark size='sm' subtitle='Unlock to continue' />
@@ -29,7 +29,7 @@ export const UnlockWithPassword = (props: {
               Unlock your private key
             </h3>
             <p className='text-sm text-slate-400'>
-              Enter your password to continue.
+              Enter the password that encrypts your chats.
             </p>
           </div>
         </div>
@@ -54,6 +54,11 @@ export const UnlockWithPassword = (props: {
           {unlockError && (
             <div className='mt-3 text-sm text-red-400'>{unlockError}</div>
           )}
+          <p className='mt-3 text-xs leading-relaxed text-slate-500'>
+            If you changed your login password recently, try your{' '}
+            <span className='text-slate-300'>previous</span> password here. Login
+            and chat encryption can get out of sync.
+          </p>
           <button
             type='submit'
             disabled={unlocking || !unlockPassword}
