@@ -220,7 +220,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) throw new Error(error.message);
         if (!data.user) throw new Error('Login failed');
 
-        const key = await fetchPrivateKey(data.user.id, password);
+        await fetchPrivateKey(data.user.id, password);
         // Keep the session even if key unwrap fails (e.g. password was
         // changed without re-wrapping). Unlock screen can use the old password.
         setUser(data.user);
