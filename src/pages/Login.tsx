@@ -7,17 +7,17 @@ import { Loading } from '../components/Loading';
 import { BrandMark } from '../atoms/BrandMark';
 
 export const Login = () => {
-  const { user, authLogin, authError } = useAuth();
+  const { user, authLogin, authError, isResolvingPrivateKey } = useAuth();
   const navigate = useNavigate();
   const emailInput = useFormInput('');
   const passwordInput = useFormInput('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (user && user !== 'loading') {
+    if (user && user !== 'loading' && !isResolvingPrivateKey) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, isResolvingPrivateKey, navigate]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -30,7 +30,7 @@ export const Login = () => {
     }
   };
 
-  if (user === 'loading') {
+  if (user === 'loading' || isResolvingPrivateKey || isLoading) {
     return <Loading />;
   }
 

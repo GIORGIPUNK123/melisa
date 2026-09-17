@@ -21,19 +21,22 @@ import { EmptyChatState } from '../features/chat/components/EmptyChatState';
 import { ChatArea } from '../features/chat/components/ChatArea';
 import { useHeartbeat } from '../features/notifications/hooks/useHeartbeat';
 import { useConversations } from '../features/chat/hooks/useConversations';
+import { useFriendsList } from '../features/friends/hooks/useFriendsList';
 import { PublicProfileT } from '../types';
 
 const EMPTY_MEMBERS: PublicProfileT[] = [];
 
 export const Main = () => {
-  const { user, authUnlock, privateKey } = useAuth();
+  const { user, authUnlock, authLogout, privateKey, isResolvingPrivateKey } =
+    useAuth();
   const navigate = useNavigate();
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const handleUnlock = async () => {
-    if (unlocking || !unlockPassword) return;
+    if (unlocking || loggingOut || !unlockPassword) return;
     setUnlocking(true);
     setUnlockError(null);
     const ok = await authUnlock(unlockPassword);
@@ -49,6 +52,18 @@ export const Main = () => {
       void ensureNotificationSound?.();
     } catch (err) {
       console.warn('Failed to prime audio on unlock:', err);
+    }
+  };
+
+  const handleUnlockLogout = async () => {
+    if (loggingOut || unlocking) return;
+    setLoggingOut(true);
+    setUnlockError(null);
+    try {
+      await authLogout();
+      navigate('/login');
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -94,10 +109,19 @@ export const Main = () => {
 
   useNotificationSound(notifications.length, playNotificationSound);
 
+  const {
+    friends,
+    isLoading: friendsLoading,
+    getOrCreateConversation,
+    removeFriend,
+    isFriend,
+  } = useFriendsList();
+
   const chatActions = useChatActions(
     userId,
     modals.openConfirmModal,
     chatState.clearActiveConversation,
+    removeFriend,
   );
 
   const handleMessageUser = useCallback(
@@ -136,7 +160,7 @@ export const Main = () => {
     if (user === null) navigate('/login');
   }, [user, navigate]);
 
-  if (user === 'loading') return <Loading />;
+  if (user === 'loading' || isResolvingPrivateKey) return <Loading />;
 
   if (user != null && privateKey == null) {
     return (
@@ -146,6 +170,8 @@ export const Main = () => {
         unlockError={unlockError}
         unlocking={unlocking}
         handleUnlock={handleUnlock}
+        onLogout={handleUnlockLogout}
+        loggingOut={loggingOut}
       />
     );
   }
@@ -167,8 +193,10 @@ export const Main = () => {
           selectedUsername={modals.selectedUsername}
           closeUserProfileModal={modals.closeUserProfileModal}
           onBlockUser={chatActions.handleBlockUser}
+          onRemoveFriend={chatActions.handleRemoveFriend}
           onMessageUser={handleMessageUser}
           isBlocked={chatActions.isBlocked}
+          isFriend={isFriend}
           confirmModalOpen={modals.confirmModalOpen}
           confirmModalData={modals.confirmModalData}
           closeConfirmModal={modals.closeConfirmModal}
@@ -199,6 +227,9 @@ export const Main = () => {
           unreadCounts={unreadCounts}
           conversations={conversations}
           conversationLoading={conversationLoading}
+          friends={friends}
+          friendsLoading={friendsLoading}
+          getOrCreateConversation={getOrCreateConversation}
         />
 
         {!chatState.activeConversationId ? (
@@ -223,10 +254,12 @@ export const Main = () => {
             onClose={chatState.closeChatInfo}
             onViewProfile={modals.openUserProfileModal}
             onBlockUser={chatActions.handleBlockUser}
+            onRemoveFriend={chatActions.handleRemoveFriend}
             onDeleteChat={() =>
               chatActions.handleDeleteChat(chatState.activeConversationId)
             }
             isBlocked={chatActions.isBlocked}
+            isFriend={isFriend}
           />
         )}
       </div>

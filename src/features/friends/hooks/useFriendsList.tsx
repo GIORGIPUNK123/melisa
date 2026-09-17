@@ -45,6 +45,28 @@ export const useFriendsList = () => {
     }
   };
 
+  const removeFriend = async (friendUserId: string) => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
+
+    await api.delete(`/friends/with/${friendUserId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setFriends((current) =>
+      current.filter((friend) => friend.userId !== friendUserId),
+    );
+  };
+
+  const isFriend = (userId?: string | null) => {
+    if (!userId) return false;
+    return friends.some((friend) => friend.userId === userId);
+  };
+
   useEffect(() => {
     fetchFriends();
 
@@ -100,5 +122,7 @@ export const useFriendsList = () => {
     isLoading,
     fetchFriends,
     getOrCreateConversation,
+    removeFriend,
+    isFriend,
   };
 };

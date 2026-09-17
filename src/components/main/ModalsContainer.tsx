@@ -22,8 +22,10 @@ interface ModalsContainerProps {
   selectedUsername: string | null;
   closeUserProfileModal: () => void;
   onBlockUser: (username: string, userId?: string) => void;
+  onRemoveFriend?: (username: string, userId?: string) => void;
   onMessageUser: (userId: string) => void;
   isBlocked?: (userId?: string | null) => boolean;
+  isFriend?: (userId?: string | null) => boolean;
   confirmModalOpen: boolean;
   confirmModalData: ConfirmModalData | null;
   closeConfirmModal: () => void;
@@ -48,8 +50,10 @@ export const ModalsContainer = ({
   selectedUsername,
   closeUserProfileModal,
   onBlockUser,
+  onRemoveFriend,
   onMessageUser,
   isBlocked,
+  isFriend,
   confirmModalOpen,
   confirmModalData,
   closeConfirmModal,
@@ -66,8 +70,10 @@ export const ModalsContainer = ({
         onClose={closeUserProfileModal}
         username={selectedUsername}
         onBlockUser={onBlockUser}
+        onRemoveFriend={onRemoveFriend}
         onMessageUser={onMessageUser}
         isBlocked={isBlocked}
+        isFriend={isFriend}
       />
 
       <ConfirmModal

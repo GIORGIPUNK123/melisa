@@ -11,6 +11,7 @@ export const useChatActions = (
     onConfirm: () => void;
   }) => void,
   clearActiveConversation: () => void,
+  removeFriend?: (friendUserId: string) => Promise<void>,
 ) => {
   const { isBlocked, blockUser, unblockUser } = useBlockedUsers(userId);
 
@@ -44,6 +45,30 @@ export const useChatActions = (
               ? 'Failed to unblock user. Please try again.'
               : 'Failed to block user. Please try again.',
           );
+        }
+      },
+    });
+  };
+
+  const handleRemoveFriend = (username: string, friendUserId?: string) => {
+    if (!removeFriend) return;
+
+    openConfirmModal({
+      title: 'Remove Friend',
+      message: `Remove @${username} from your friends? You can send a new request later.`,
+      confirmText: 'Remove',
+      onConfirm: async () => {
+        try {
+          const targetId =
+            friendUserId || (await getUserIdByUsername(username));
+          if (!targetId) {
+            throw new Error('User not found');
+          }
+
+          await removeFriend(targetId);
+        } catch (error) {
+          console.error('Failed to remove friend:', error);
+          alert('Failed to remove friend. Please try again.');
         }
       },
     });
@@ -93,6 +118,7 @@ export const useChatActions = (
   return {
     isBlocked,
     handleBlockUser,
+    handleRemoveFriend,
     handleDeleteChat,
     handleMarkNotificationAsRead,
     handleMarkAllNotificationsAsRead,

@@ -10,8 +10,10 @@ export const ChatInfo = (props: {
   onClose?: () => void;
   onViewProfile?: (username: string) => void;
   onBlockUser?: (username: string, userId?: string) => void;
+  onRemoveFriend?: (username: string, userId?: string) => void;
   onDeleteChat?: () => void;
   isBlocked?: (userId?: string | null) => boolean;
+  isFriend?: (userId?: string | null) => boolean;
 }) => {
   const [currentUserId, setCurrentUserId] = useState<string>('');
 
@@ -180,6 +182,17 @@ export const ChatInfo = (props: {
 
         <div className='border-t border-slate-800 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]'>
           <div className='space-y-1'>
+            {otherUser && props.isFriend?.(otherUser.id) && (
+              <button
+                type='button'
+                onClick={() => {
+                  props.onRemoveFriend?.(otherUser.username, otherUser.id);
+                }}
+                className='w-full rounded-lg px-3 py-2.5 text-left text-sm text-slate-300 transition-colors hover:bg-slate-800'
+              >
+                Remove friend
+              </button>
+            )}
             {otherUser && (
               <button
                 type='button'

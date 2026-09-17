@@ -43,6 +43,7 @@ type AuthContextValue = {
   ) => Promise<boolean>;
   user: 'loading' | User | null;
   privateKey: string | null;
+  isResolvingPrivateKey: boolean;
   authUnlock: (password: string) => Promise<boolean>;
   changeEncryptionPassword: (
     currentPassword: string,
@@ -60,6 +61,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<'loading' | User | null>('loading');
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isResolvingPrivateKey, setIsResolvingPrivateKey] = useState(false);
 
   const [privateKey, setPrivateKey] = useState<string | null>(null);
   const [generatedPublicKey, setGeneratedPublicKey] = useState<string | null>(
@@ -211,6 +213,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     async (email: string, password: string) => {
       setUser('loading');
       setAuthError(null);
+      setIsResolvingPrivateKey(true);
 
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -229,6 +232,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAuthError(err.message || 'Login error');
         setUser(null);
         return false;
+      } finally {
+        setIsResolvingPrivateKey(false);
       }
     },
     [fetchPrivateKey],
@@ -404,6 +409,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setGeneratedSalt(null);
     setDerivedEncryptionKey(null);
     setGeneratedPublicKey(null);
+    setIsResolvingPrivateKey(false);
     setUser(null);
   }, []);
 
@@ -430,6 +436,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       authRegister,
       user,
       privateKey,
+      isResolvingPrivateKey,
       authUnlock,
       changeEncryptionPassword,
       generatedPublicKey,
@@ -447,6 +454,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       authRegister,
       user,
       privateKey,
+      isResolvingPrivateKey,
       authUnlock,
       changeEncryptionPassword,
       generatedPublicKey,

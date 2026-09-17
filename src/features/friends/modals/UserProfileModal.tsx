@@ -9,8 +9,10 @@ export const UserProfileModal = (props: {
   username: string | null;
   onClose: () => void;
   onBlockUser?: (username: string, userId?: string) => void;
+  onRemoveFriend?: (username: string, userId?: string) => void;
   onMessageUser?: (userId: string) => void;
   isBlocked?: (userId?: string | null) => boolean;
+  isFriend?: (userId?: string | null) => boolean;
 }) => {
   const { profile, isLoading, error } = usePublicProfile(props.username);
   const nowMs = useTickingNow();
@@ -94,6 +96,19 @@ export const UserProfileModal = (props: {
                 >
                   Message
                 </button>
+                {props.isFriend?.(profile.id) && (
+                  <button
+                    onClick={() => {
+                      if (props.onRemoveFriend && profile.username) {
+                        props.onRemoveFriend(profile.username, profile.id);
+                        props.onClose();
+                      }
+                    }}
+                    className='w-full px-4 py-2 text-sm font-medium text-slate-300 transition-colors border rounded-lg border-slate-600/50 bg-slate-800/60 hover:bg-slate-800'
+                  >
+                    Remove friend
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (props.onBlockUser && profile.username) {

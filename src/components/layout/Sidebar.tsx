@@ -1,10 +1,9 @@
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../db/supabase';
 import { useNavigate } from 'react-router';
-import { ConversationT, NotificationT } from '../../types';
+import { ConversationT, FriendT, NotificationT } from '../../types';
 import { FriendsList } from '../../features/friends/components/FriendsList';
 import { ConversationsList } from './ConversationsList';
-import { useFriendsList } from '../../features/friends/hooks/useFriendsList';
 import { BrandMark } from '../../atoms/BrandMark';
 
 export const Sidebar = (props: {
@@ -28,13 +27,11 @@ export const Sidebar = (props: {
   unreadCounts?: Record<string, number>;
   conversations: ConversationT[];
   conversationLoading?: boolean;
+  friends: FriendT[];
+  friendsLoading?: boolean;
+  getOrCreateConversation: (friendUserId: string) => Promise<string | null>;
 }) => {
   const navigate = useNavigate();
-  const {
-    friends,
-    isLoading: friendsLoading,
-    getOrCreateConversation,
-  } = useFriendsList();
   const unreadNotifications = props.notifications.filter((n) => !n.is_read);
 
   const handleLogout = async () => {
@@ -136,9 +133,9 @@ export const Sidebar = (props: {
             />
           ) : (
             <FriendsList
-              friends={friends}
-              isLoading={friendsLoading}
-              getOrCreateConversation={getOrCreateConversation}
+              friends={props.friends}
+              isLoading={props.friendsLoading || false}
+              getOrCreateConversation={props.getOrCreateConversation}
               onFriendSelect={props.onFriendSelect}
               onViewProfile={props.onViewProfile}
               ensureTargetSubscription={props.ensureTargetSubscription}
