@@ -5,7 +5,7 @@ import { UserT } from '../../types';
 import { api } from '../../api/instance';
 import { handleBackdropClick } from '../../shared/utils/modal';
 import { useAuth } from '../../features/auth/hooks/useAuth';
-import { IconEyeOff, IconLock, IconSettings, IconUser, IconX } from '../../atoms/Icon';
+import { IconEyeOff, IconLock, IconUser, IconX } from '../../atoms/Icon';
 
 export const SettingsModal = (props: {
   isOpen: boolean;
