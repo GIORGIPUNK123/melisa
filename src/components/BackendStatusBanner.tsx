@@ -25,9 +25,16 @@ export const BackendStatusBanner = () => {
       }
 
       try {
-        await api.get('/health', {
-          timeout: 4000,
+        const base = String(import.meta.env.VITE_BACKEND_URL || '').replace(
+          /\/+$/,
+          '',
+        );
+        const response = await fetch(`${base}/health`, {
+          method: 'GET',
+          cache: 'no-store',
+          signal: AbortSignal.timeout(20000),
         });
+        if (!response.ok) throw new Error('health failed');
         setIsBackendDown(false);
       } catch {
         setIsBackendDown(true);

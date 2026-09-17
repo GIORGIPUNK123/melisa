@@ -2,8 +2,7 @@ import axios from 'axios';
 import { supabase } from '../db/supabase';
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
-  withCredentials: true,
+  baseURL: String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/+$/, ''),
   headers: {
     'Content-type': 'application/json',
     Accept: 'application/json',
