@@ -6,6 +6,11 @@ import {
   ReactionTypeT,
 } from '../../../types';
 import { sameId } from '../../../shared/utils/ids';
+import {
+  formatChatDayLabel,
+  formatMessageTime,
+  isSameLocalDay,
+} from '../../../shared/utils/dates';
 
 interface MessageListProps {
   messages: MessageT[];
@@ -146,7 +151,10 @@ export const MessageList = ({
 
   return (
     <>
-      {messages.map((msg) => {
+      {messages.map((msg, index) => {
+        const previous = messages[index - 1];
+        const showDayLabel =
+          !previous || !isSameLocalDay(previous.created_at, msg.created_at);
         const isSelf = sameId(msg.sender_id, currentUserId);
         const chips = chipsByMessageId?.get(msg.id) || [];
         const canReact = !msg.id.startsWith('temp-');
@@ -205,8 +213,15 @@ export const MessageList = ({
           ) : null;
 
         return (
+          <div key={msg.id}>
+            {showDayLabel && (
+              <div className='flex justify-center py-2'>
+                <span className='rounded-full border border-slate-700/80 bg-slate-800/80 px-3 py-1 text-[11px] font-medium text-slate-300'>
+                  {formatChatDayLabel(msg.created_at)}
+                </span>
+              </div>
+            )}
           <div
-            key={msg.id}
             className={`group flex gap-1.5 py-0.5 ${isSelf ? 'justify-end' : 'justify-start'}`}
           >
             {isSelf && addButton}
@@ -265,9 +280,7 @@ export const MessageList = ({
                 )}
                 <p className='text-sm break-words'>{msg.content}</p>
                 <div className='mt-1 text-xs opacity-70'>
-                  {new Date(msg.created_at).toLocaleTimeString([], {
-                    timeStyle: 'short',
-                  })}
+                  {formatMessageTime(msg.created_at)}
                 </div>
               </div>
 
@@ -314,6 +327,7 @@ export const MessageList = ({
             </div>
 
             {!isSelf && addButton}
+          </div>
           </div>
         );
       })}

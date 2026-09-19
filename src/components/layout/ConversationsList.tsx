@@ -1,4 +1,5 @@
 import { ConversationT } from '../../types';
+import { formatConversationTime } from '../../shared/utils/dates';
 
 export const ConversationsList = (props: {
   onConversationSelect: (conversationId: string) => void;
@@ -50,8 +51,19 @@ export const ConversationsList = (props: {
                 </div>
               )}
               <div className='flex-1 min-w-0'>
-                <div className='font-medium text-white truncate'>
-                  {conv.otherUserNickname}
+                <div className='flex items-center gap-2'>
+                  <div className='font-medium text-white truncate'>
+                    {conv.otherUserNickname}
+                  </div>
+                  {conv.lastMessageTime && (
+                    <div
+                      className={`ml-auto flex-shrink-0 text-[11px] ${
+                        isActive ? 'text-indigo-100' : 'text-slate-400'
+                      }`}
+                    >
+                      {formatConversationTime(conv.lastMessageTime)}
+                    </div>
+                  )}
                 </div>
                 {blocked && (
                   <div
