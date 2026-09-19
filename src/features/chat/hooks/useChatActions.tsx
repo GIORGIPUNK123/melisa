@@ -12,8 +12,10 @@ export const useChatActions = (
   }) => void,
   clearActiveConversation: () => void,
   removeFriend?: (friendUserId: string) => Promise<void>,
+  refreshFriends?: () => Promise<void> | void,
 ) => {
-  const { isBlocked, blockUser, unblockUser } = useBlockedUsers(userId);
+  const { isBlocked, isBlockedBy, hasBlock, blockUser, unblockUser } =
+    useBlockedUsers(userId);
 
   const handleBlockUser = (username: string, targetUserId?: string) => {
     const currentlyBlocked = isBlocked(targetUserId);
@@ -21,8 +23,8 @@ export const useChatActions = (
     openConfirmModal({
       title: currentlyBlocked ? 'Unblock User' : 'Block User',
       message: currentlyBlocked
-        ? `Unblock @${username}? They will be able to message you again.`
-        : `Are you sure you want to block @${username}? They will no longer be able to send you messages or see your profile.`,
+        ? `Unblock @${username}? You will be able to message each other again.`
+        : `Block @${username}? Neither of you will be able to message or send friend requests.`,
       confirmText: currentlyBlocked ? 'Unblock' : 'Block',
       onConfirm: async () => {
         try {
@@ -38,6 +40,7 @@ export const useChatActions = (
             await blockUser(blockedUserId);
             clearActiveConversation();
           }
+          await refreshFriends?.();
         } catch (error) {
           console.error('Failed to update block:', error);
           alert(
@@ -117,6 +120,8 @@ export const useChatActions = (
 
   return {
     isBlocked,
+    isBlockedBy,
+    hasBlock,
     handleBlockUser,
     handleRemoveFriend,
     handleDeleteChat,

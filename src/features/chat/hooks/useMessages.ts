@@ -293,6 +293,23 @@ export const useMessages = (
       return;
     }
 
+    const { data: blockRows, error: blockError } = await supabase
+      .from('blocks')
+      .select('id')
+      .or(
+        `and(blocker_id.eq.${currentUserId},blocked_user_id.eq.${recipient.id}),and(blocker_id.eq.${recipient.id},blocked_user_id.eq.${currentUserId})`,
+      )
+      .limit(1);
+
+    if (blockError) {
+      console.error('Failed to check block status:', blockError);
+    }
+
+    if (blockRows && blockRows.length > 0) {
+      alert("You can't message this user.");
+      return;
+    }
+
     setIsSending(true);
     const tempId = `temp-${Date.now()}`;
 

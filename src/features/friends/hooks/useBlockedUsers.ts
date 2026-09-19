@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { api } from '../../../api/instance';
 import { supabase } from '../../../db/supabase';
 
 export const getBlockButtonLabel = (blocked: boolean) =>
@@ -6,24 +7,38 @@ export const getBlockButtonLabel = (blocked: boolean) =>
 
 export const useBlockedUsers = (userId: string | undefined) => {
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
+  const [blockedByIds, setBlockedByIds] = useState<string[]>([]);
 
   const fetchBlocks = useCallback(async () => {
     if (!userId) {
       setBlockedIds([]);
+      setBlockedByIds([]);
       return;
     }
 
     const { data, error } = await supabase
       .from('blocks')
-      .select('blocked_user_id')
-      .eq('blocker_id', userId);
+      .select('blocker_id, blocked_user_id')
+      .or(`blocker_id.eq.${userId},blocked_user_id.eq.${userId}`);
 
     if (error) {
       console.error('Failed to load blocks:', error);
       return;
     }
 
-    setBlockedIds((data ?? []).map((row) => row.blocked_user_id));
+    const mine: string[] = [];
+    const theirs: string[] = [];
+
+    for (const row of data ?? []) {
+      if (row.blocker_id === userId) {
+        mine.push(row.blocked_user_id);
+      } else if (row.blocked_user_id === userId) {
+        theirs.push(row.blocker_id);
+      }
+    }
+
+    setBlockedIds(mine);
+    setBlockedByIds(theirs);
   }, [userId]);
 
   useEffect(() => {
@@ -44,6 +59,18 @@ export const useBlockedUsers = (userId: string | undefined) => {
           fetchBlocks();
         },
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'blocks',
+          filter: `blocked_user_id=eq.${userId}`,
+        },
+        () => {
+          fetchBlocks();
+        },
+      )
       .subscribe();
 
     return () => {
@@ -56,14 +83,20 @@ export const useBlockedUsers = (userId: string | undefined) => {
     [blockedIds],
   );
 
+  const isBlockedBy = useCallback(
+    (id?: string | null) => Boolean(id && blockedByIds.includes(id)),
+    [blockedByIds],
+  );
+
+  const hasBlock = useCallback(
+    (id?: string | null) => isBlocked(id) || isBlockedBy(id),
+    [isBlocked, isBlockedBy],
+  );
+
   const blockUser = async (blockedUserId: string) => {
     if (!userId) throw new Error('Not authenticated');
 
-    const { error } = await supabase.from('blocks').insert({
-      blocker_id: userId,
-      blocked_user_id: blockedUserId,
-    });
-    if (error) throw error;
+    await api.post('/friends/block', { userId: blockedUserId });
 
     setBlockedIds((prev) =>
       prev.includes(blockedUserId) ? prev : [...prev, blockedUserId],
@@ -73,15 +106,10 @@ export const useBlockedUsers = (userId: string | undefined) => {
   const unblockUser = async (blockedUserId: string) => {
     if (!userId) throw new Error('Not authenticated');
 
-    const { error } = await supabase
-      .from('blocks')
-      .delete()
-      .eq('blocker_id', userId)
-      .eq('blocked_user_id', blockedUserId);
-    if (error) throw error;
+    await api.delete(`/friends/block/${blockedUserId}`);
 
     setBlockedIds((prev) => prev.filter((id) => id !== blockedUserId));
   };
 
-  return { isBlocked, blockUser, unblockUser };
+  return { isBlocked, isBlockedBy, hasBlock, blockUser, unblockUser };
 };

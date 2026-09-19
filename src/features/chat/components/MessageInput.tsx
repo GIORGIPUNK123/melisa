@@ -3,9 +3,14 @@ import { FormEvent, useRef, useState } from 'react';
 interface MessageInputProps {
   onSubmit: (message: string) => void;
   disabled?: boolean;
+  placeholder?: string;
 }
 
-export const MessageInput = ({ onSubmit, disabled }: MessageInputProps) => {
+export const MessageInput = ({
+  onSubmit,
+  disabled,
+  placeholder = 'Type a message...',
+}: MessageInputProps) => {
   const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -29,15 +34,16 @@ export const MessageInput = ({ onSubmit, disabled }: MessageInputProps) => {
           type='text'
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder='Type a message...'
+          placeholder={placeholder}
+          disabled={disabled}
           // 16px+ prevents iOS Safari from zooming on focus
-          className='min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 md:px-4'
+          className='min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 md:px-4'
           autoComplete='off'
           enterKeyHint='send'
         />
         <button
           type='submit'
-          disabled={!message.trim()}
+          disabled={disabled || !message.trim()}
           className='rounded-lg bg-indigo-600 px-4 py-2.5 text-base font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 md:px-6'
         >
           Send

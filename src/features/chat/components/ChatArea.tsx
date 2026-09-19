@@ -17,6 +17,8 @@ interface Props {
   conversationPreview?: ConversationT;
   onConversationActivity?: (conversationId: string) => void;
   onIncomingMessageSound?: () => void;
+  isBlocked?: (userId?: string | null) => boolean;
+  isBlockedBy?: (userId?: string | null) => boolean;
 }
 
 export const ChatArea = ({
@@ -29,6 +31,8 @@ export const ChatArea = ({
   conversationPreview,
   onConversationActivity,
   onIncomingMessageSound,
+  isBlocked,
+  isBlockedBy,
 }: Props) => {
   const handleIncomingMessage = (message: MessageT) => {
     onConversationActivity?.(message.conversation_id);
@@ -49,7 +53,15 @@ export const ChatArea = ({
   const { catalog, chipsByMessageId, toggleHeart, setReaction, removeMyReaction } =
     useMessageReactions(conversationId, currentUserId);
 
+  const otherUser = members.find(
+    (member) => !sameId(member.id, currentUserId),
+  );
+  const blockedByMe = Boolean(otherUser && isBlocked?.(otherUser.id));
+  const blockedMe = Boolean(otherUser && isBlockedBy?.(otherUser.id));
+  const messagingBlocked = blockedByMe || blockedMe;
+
   const handleSend = async (text: string) => {
+    if (messagingBlocked) return;
     onConversationActivity?.(conversationId);
     await sendMessage(text);
   };
@@ -73,13 +85,31 @@ export const ChatArea = ({
           isLoading={isLoading}
           catalog={catalog}
           chipsByMessageId={chipsByMessageId}
-          onToggleHeart={toggleHeart}
-          onSetReaction={setReaction}
-          onRemoveMyReaction={removeMyReaction}
+          onToggleHeart={messagingBlocked ? undefined : toggleHeart}
+          onSetReaction={messagingBlocked ? undefined : setReaction}
+          onRemoveMyReaction={messagingBlocked ? undefined : removeMyReaction}
         />
       </div>
 
-      <MessageInput onSubmit={handleSend} />
+      {messagingBlocked && (
+        <div className='border-t border-slate-800 px-4 py-2 text-center text-sm text-slate-400'>
+          {blockedByMe
+            ? 'You blocked this user. Unblock them to send messages.'
+            : "You can't message this user."}
+        </div>
+      )}
+
+      <MessageInput
+        onSubmit={handleSend}
+        disabled={messagingBlocked}
+        placeholder={
+          blockedByMe
+            ? 'You blocked this user'
+            : blockedMe
+              ? "You can't message this user"
+              : 'Type a message...'
+        }
+      />
     </div>
   );
 };

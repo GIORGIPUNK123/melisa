@@ -13,6 +13,7 @@ export const UserProfileModal = (props: {
   onRemoveFriend?: (username: string, userId?: string) => void;
   onMessageUser?: (userId: string) => void;
   isBlocked?: (userId?: string | null) => boolean;
+  hasBlock?: (userId?: string | null) => boolean;
   isFriend?: (userId?: string | null) => boolean;
 }) => {
   const { profile, isLoading, error } = usePublicProfile(props.username);
@@ -85,18 +86,20 @@ export const UserProfileModal = (props: {
 
               {/* Action Buttons */}
               <div className='pt-4 space-y-2 border-t border-slate-700'>
-                <button
-                  onClick={() => {
-                    if (props.onMessageUser && profile.id) {
-                      props.onMessageUser(profile.id);
-                      props.onClose();
-                    }
-                  }}
-                  disabled={!props.onMessageUser}
-                  className='w-full px-4 py-2 text-sm font-medium text-blue-400 transition-colors border rounded-lg border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50'
-                >
-                  Message
-                </button>
+                {!props.hasBlock?.(profile.id) && (
+                  <button
+                    onClick={() => {
+                      if (props.onMessageUser && profile.id) {
+                        props.onMessageUser(profile.id);
+                        props.onClose();
+                      }
+                    }}
+                    disabled={!props.onMessageUser}
+                    className='w-full px-4 py-2 text-sm font-medium text-blue-400 transition-colors border rounded-lg border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50'
+                  >
+                    Message
+                  </button>
+                )}
                 {props.isFriend?.(profile.id) && (
                   <button
                     onClick={() => {

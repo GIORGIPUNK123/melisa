@@ -114,6 +114,7 @@ export const Main = () => {
     isLoading: friendsLoading,
     getOrCreateConversation,
     removeFriend,
+    fetchFriends,
     isFriend,
   } = useFriendsList();
 
@@ -122,11 +123,17 @@ export const Main = () => {
     modals.openConfirmModal,
     chatState.clearActiveConversation,
     removeFriend,
+    fetchFriends,
+  );
+
+  const visibleFriends = friends.filter(
+    (friend) => !chatActions.hasBlock(friend.userId),
   );
 
   const handleMessageUser = useCallback(
     async (friendUserId: string) => {
       if (!userId || chatState.isOpeningConversation) return;
+      if (chatActions.hasBlock(friendUserId)) return;
 
       chatState.beginConversationTransition();
 
@@ -153,7 +160,7 @@ export const Main = () => {
         chatState.endConversationTransition();
       }
     },
-    [chatState, userId],
+    [chatActions, chatState, userId],
   );
 
   useEffect(() => {
@@ -196,6 +203,7 @@ export const Main = () => {
           onRemoveFriend={chatActions.handleRemoveFriend}
           onMessageUser={handleMessageUser}
           isBlocked={chatActions.isBlocked}
+          hasBlock={chatActions.hasBlock}
           isFriend={isFriend}
           confirmModalOpen={modals.confirmModalOpen}
           confirmModalData={modals.confirmModalData}
@@ -227,7 +235,7 @@ export const Main = () => {
           unreadCounts={unreadCounts}
           conversations={conversations}
           conversationLoading={conversationLoading}
-          friends={friends}
+          friends={visibleFriends}
           friendsLoading={friendsLoading}
           getOrCreateConversation={getOrCreateConversation}
         />
@@ -245,6 +253,8 @@ export const Main = () => {
             conversationPreview={activeConversation}
             onConversationActivity={bumpConversation}
             onIncomingMessageSound={playMessageSound}
+            isBlocked={chatActions.isBlocked}
+            isBlockedBy={chatActions.isBlockedBy}
           />
         )}
 

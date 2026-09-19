@@ -25,6 +25,7 @@ interface ModalsContainerProps {
   onRemoveFriend?: (username: string, userId?: string) => void;
   onMessageUser: (userId: string) => void;
   isBlocked?: (userId?: string | null) => boolean;
+  hasBlock?: (userId?: string | null) => boolean;
   isFriend?: (userId?: string | null) => boolean;
   confirmModalOpen: boolean;
   confirmModalData: ConfirmModalData | null;
@@ -53,6 +54,7 @@ export const ModalsContainer = ({
   onRemoveFriend,
   onMessageUser,
   isBlocked,
+  hasBlock,
   isFriend,
   confirmModalOpen,
   confirmModalData,
@@ -73,6 +75,7 @@ export const ModalsContainer = ({
         onRemoveFriend={onRemoveFriend}
         onMessageUser={onMessageUser}
         isBlocked={isBlocked}
+        hasBlock={hasBlock}
         isFriend={isFriend}
       />
 
