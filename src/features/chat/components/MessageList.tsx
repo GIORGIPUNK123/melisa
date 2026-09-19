@@ -263,14 +263,14 @@ export const MessageList = ({
                 }}
                 onTouchEnd={clearLongPress}
                 onTouchCancel={clearLongPress}
-                className={`select-none rounded-lg px-3 py-2 transition-colors duration-150 [-webkit-touch-callout:none] ${
+                className={`select-none rounded-2xl px-3 py-2 transition-colors duration-150 [-webkit-touch-callout:none] ${
                   isSelf
                     ? 'bg-indigo-600 text-white group-hover:bg-indigo-500'
                     : 'bg-slate-800 text-slate-100 group-hover:bg-slate-700'
                 }`}
               >
                 {!isSelf && (
-                  <div className='mb-1 text-xs font-semibold text-slate-400'>
+                  <div className='mb-1 text-[12px] font-semibold text-slate-300'>
                     {members.find((m) => sameId(m.id, msg.sender_id))
                       ?.nickname ||
                       members.find((m) => sameId(m.id, msg.sender_id))
@@ -278,8 +278,8 @@ export const MessageList = ({
                       'Unknown'}
                   </div>
                 )}
-                <p className='text-sm break-words'>{msg.content}</p>
-                <div className='mt-1 text-xs opacity-70'>
+                <p className='break-words text-[15px] leading-5'>{msg.content}</p>
+                <div className='mt-1 text-[11px] opacity-70'>
                   {formatMessageTime(msg.created_at)}
                 </div>
               </div>

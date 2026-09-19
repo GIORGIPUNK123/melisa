@@ -87,17 +87,17 @@ export const ChatInfo = (props: {
                   <img
                     src={otherUser.avatar_url}
                     alt={otherUser.nickname}
-                    className='h-16 w-16 rounded-full object-cover ring-1 ring-slate-700'
+                    className='h-14 w-14 rounded-full object-cover ring-1 ring-slate-700'
                   />
                 ) : (
-                  <div className='flex h-16 w-16 items-center justify-center rounded-full bg-slate-800 text-xl font-semibold text-slate-200 ring-1 ring-slate-700'>
+                  <div className='flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-lg font-semibold text-slate-200 ring-1 ring-slate-700'>
                     {otherUser.nickname.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <h4 className='mt-3 text-base font-medium text-white'>
+                <h4 className='mt-3 text-[16px] font-semibold tracking-tight text-white'>
                   {otherUser.nickname}
                 </h4>
-                <p className='text-sm text-slate-400'>@{otherUser.username}</p>
+                <p className='text-[13px] text-slate-400'>@{otherUser.username}</p>
                 <div className='mt-2 inline-flex items-center gap-1.5 rounded-full border border-slate-700/80 bg-slate-950/40 px-2.5 py-1 text-xs text-slate-300'>
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${

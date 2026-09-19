@@ -1,3 +1,5 @@
+import { ui } from '../shared/ui';
+
 export const TextInput = (props: {
   value: string;
   label?: string;
@@ -8,26 +10,22 @@ export const TextInput = (props: {
   error?: string;
 }) => {
   return (
-    <div className='w-full mb-4'>
-      {props.label && (
-        <label className='block mb-2 text-lg font-medium text-gray-900 dark:text-white'>
-          {props.label}
-        </label>
-      )}
+    <div className='w-full'>
+      {props.label && <label className={ui.label}>{props.label}</label>}
       <input
         type={props.type}
         value={props.value}
         onChange={props.onChange}
-        className={`block w-full rounded-lg border bg-gray-50 p-2.5 text-base text-gray-900 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 ${
+        className={`${ui.input} ${
           props.error
-            ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500'
-            : 'border-gray-300 dark:border-gray-600'
+            ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/30'
+            : ''
         }`}
         placeholder={props.placeholder}
         required={props.required}
       />
       {props.error ? (
-        <p className='ml-1 text-sm text-rose-500'>{props.error}</p>
+        <p className='mt-1.5 text-[12px] text-rose-400'>{props.error}</p>
       ) : null}
     </div>
   );

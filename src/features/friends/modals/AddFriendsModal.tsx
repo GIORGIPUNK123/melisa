@@ -4,6 +4,7 @@ import { useAddFriend } from '../hooks/useAddFriend';
 import { User } from '@supabase/supabase-js';
 import { handleBackdropClick } from '../../../shared/utils/modal';
 import { IconUserPlus, IconX } from '../../../atoms/Icon';
+import { ui } from '../../../shared/ui';
 
 export const AddFriendsModal = (props: {
   isOpen: boolean;
@@ -38,7 +39,7 @@ export const AddFriendsModal = (props: {
       <div className='relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900 shadow-2xl'>
         <button
           onClick={handleClose}
-          className='absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
+          className={`${ui.iconBtn} absolute right-3 top-3`}
           aria-label='Close add friend modal'
         >
           <IconX size={18} />
@@ -51,8 +52,8 @@ export const AddFriendsModal = (props: {
                 <IconUserPlus size={18} />
               </div>
               <div>
-                <h2 className='text-lg font-semibold text-white'>Add friend</h2>
-                <p className='mt-1 text-sm text-slate-400'>
+                <h2 className={ui.title}>Add friend</h2>
+                <p className={`mt-1 ${ui.subtitle}`}>
                   Search by username to send a friend request.
                 </p>
               </div>
@@ -82,7 +83,7 @@ export const AddFriendsModal = (props: {
             <button
               onClick={handleAddFriend}
               disabled={!userNameInput.value || isLoading}
-              className='w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50'
+              className={ui.btnPrimary}
             >
               {isLoading ? 'Sending...' : 'Send request'}
             </button>

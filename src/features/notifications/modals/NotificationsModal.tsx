@@ -41,8 +41,10 @@ export const NotificationsModal = (props: {
       <div className='flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-2xl border-slate-700/70 bg-slate-900 shadow-2xl sm:max-h-[85vh] sm:rounded-2xl sm:border'>
         <div className='flex flex-shrink-0 items-center justify-between gap-3 border-b border-slate-700 bg-slate-900 px-4 py-3 sm:px-5 sm:py-3.5'>
           <div className='min-w-0'>
-            <h2 className='text-lg font-semibold text-white'>Notifications</h2>
-            <p className='mt-0.5 text-xs text-slate-500'>
+            <h2 className='text-[17px] font-semibold tracking-tight text-white'>
+              Notifications
+            </h2>
+            <p className='mt-0.5 text-[12px] text-slate-500'>
               {unreadCount > 0
                 ? `${unreadCount} unread`
                 : 'You are up to date'}

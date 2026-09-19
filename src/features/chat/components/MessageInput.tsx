@@ -1,4 +1,5 @@
 import { FormEvent, useRef, useState } from 'react';
+import { ui } from '../../../shared/ui';
 
 interface MessageInputProps {
   onSubmit: (message: string) => void;
@@ -27,8 +28,8 @@ export const MessageInput = ({
   };
 
   return (
-    <div className='shrink-0 border-t border-slate-700 bg-slate-900 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:p-4'>
-      <form onSubmit={handleSubmit} className='flex gap-2 md:gap-3'>
+    <div className='shrink-0 border-t border-slate-800 bg-slate-900 px-3 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:px-4'>
+      <form onSubmit={handleSubmit} className='flex items-center gap-2'>
         <input
           ref={inputRef}
           type='text'
@@ -36,15 +37,14 @@ export const MessageInput = ({
           onChange={(e) => setMessage(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
-          // 16px+ prevents iOS Safari from zooming on focus
-          className='min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 md:px-4'
+          className={ui.input}
           autoComplete='off'
           enterKeyHint='send'
         />
         <button
           type='submit'
           disabled={disabled || !message.trim()}
-          className='rounded-lg bg-indigo-600 px-4 py-2.5 text-base font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 md:px-6'
+          className={`${ui.btnPrimary} w-auto min-w-[4.5rem] px-4`}
         >
           Send
         </button>

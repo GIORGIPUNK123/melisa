@@ -22,19 +22,20 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'rounded font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    'rounded-xl font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantStyles = {
-    primary: 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500',
-    secondary: 'bg-gray-500 hover:bg-gray-600 text-white focus:ring-gray-500',
-    danger: 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-500',
-    ghost: 'bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500',
+    primary: 'bg-indigo-600 hover:bg-indigo-500 text-white',
+    secondary:
+      'border border-slate-700 bg-transparent text-slate-200 hover:bg-slate-800',
+    danger: 'bg-rose-600 hover:bg-rose-500 text-white',
+    ghost: 'bg-transparent text-slate-300 hover:bg-slate-800',
   };
 
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    sm: 'h-9 px-3 text-[13px]',
+    md: 'h-11 px-4 text-[15px]',
+    lg: 'h-12 px-5 text-[16px]',
   };
 
   const widthStyles = fullWidth ? 'w-full' : '';

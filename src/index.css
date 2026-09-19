@@ -34,10 +34,14 @@ body,
 	color-scheme: dark;
 }
 body {
-	line-height: 1;
 	box-sizing: border-box;
 	overscroll-behavior: none;
 	-webkit-tap-highlight-color: transparent;
+	font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+	line-height: 1.45;
+	letter-spacing: -0.011em;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 ol, ul {
 	list-style: none;

@@ -12,6 +12,7 @@ import {
   IconUserPlus,
 } from '../../atoms/Icon';
 import { supabase } from '../../db/supabase';
+import { ui } from '../../shared/ui';
 
 export const Sidebar = (props: {
   activeTab: 'chats' | 'friends';
@@ -57,8 +58,7 @@ export const Sidebar = (props: {
     props.onNotificationsClick?.();
   };
 
-  const navButtonClass =
-    'flex items-center justify-center w-full gap-2.5 rounded-lg border border-slate-700/80 bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-200 transition-colors hover:border-slate-600 hover:bg-slate-800 hover:text-white';
+  const navButtonClass = `${ui.btnSecondary} gap-2`;
 
   return (
     <>
@@ -78,27 +78,29 @@ export const Sidebar = (props: {
         ${props.isVisible ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}
       >
-        <div className='flex items-center gap-3 border-b border-slate-800 px-3 py-2.5 lg:p-5'>
+        <div className='flex items-center gap-3 border-b border-slate-800 px-3 py-3 lg:px-4 lg:py-4'>
           {props.avatarUrl ? (
             <img
               src={props.avatarUrl}
               alt='Avatar'
-              className='h-9 w-9 rounded-full border border-slate-700 object-cover lg:h-10 lg:w-10'
+              className={`${ui.avatar} border border-slate-700`}
             />
           ) : (
-            <div className='flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-slate-100 lg:h-10 lg:w-10'>
+            <div className={ui.avatarFallback}>
               {(props.nickname || 'U').trim().charAt(0).toUpperCase()}
             </div>
           )}
           <div className='min-w-0 flex-1'>
-            <BrandMark align='left' size='xs' />
-            <p className='truncate text-xs text-slate-400 lg:text-sm'>
-              {props.nickname || 'User'}
-            </p>
+            <BrandMark
+              align='left'
+              size='xs'
+              showMark={false}
+              subtitle={props.nickname || 'User'}
+            />
           </div>
           <button
             onClick={handleNotificationsClick}
-            className='relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white lg:hidden'
+            className={`${ui.iconBtn} relative lg:hidden`}
             aria-label='Notifications'
           >
             <IconBell size={18} />
@@ -113,7 +115,7 @@ export const Sidebar = (props: {
         <div className='flex border-b border-slate-800'>
           <button
             onClick={() => props.setActiveTab('chats')}
-            className={`flex-1 py-2.5 text-sm font-medium transition-colors lg:py-3 ${
+            className={`flex-1 py-2.5 text-[14px] font-medium transition-colors lg:py-3 ${
               props.activeTab === 'chats'
                 ? 'border-b-2 border-indigo-500 text-white'
                 : 'text-slate-400 hover:text-slate-200'
@@ -123,7 +125,7 @@ export const Sidebar = (props: {
           </button>
           <button
             onClick={() => props.setActiveTab('friends')}
-            className={`flex-1 py-2.5 text-sm font-medium transition-colors lg:py-3 ${
+            className={`flex-1 py-2.5 text-[14px] font-medium transition-colors lg:py-3 ${
               props.activeTab === 'friends'
                 ? 'border-b-2 border-indigo-500 text-white'
                 : 'text-slate-400 hover:text-slate-200'
@@ -239,7 +241,7 @@ export const Sidebar = (props: {
         <div className='hidden space-y-2 border-t border-slate-800 p-4 lg:block'>
           <button
             onClick={props.onAddFriendClick}
-            className='flex w-full items-center justify-center gap-2.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500'
+            className={`${ui.btnPrimary} gap-2`}
           >
             <IconUserPlus size={16} />
             Add Friends

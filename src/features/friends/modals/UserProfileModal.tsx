@@ -54,17 +54,17 @@ export const UserProfileModal = (props: {
                   <img
                     src={profile.avatarUrl}
                     alt={profile.nickname}
-                    className='object-cover w-24 h-24 border-2 rounded-full border-slate-700'
+                    className='h-20 w-20 rounded-full border border-slate-700 object-cover'
                   />
                 ) : (
-                  <div className='flex h-24 w-24 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-3xl font-semibold text-slate-100'>
+                  <div className='flex h-20 w-20 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-2xl font-semibold text-slate-100'>
                     {profile.nickname.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <h3 className='mt-4 text-2xl font-bold text-white'>
+                <h3 className='mt-3 text-[20px] font-semibold tracking-tight text-white'>
                   {profile.nickname}
                 </h3>
-                <p className='text-slate-400'>@{profile.username}</p>
+                <p className='text-[13px] text-slate-400'>@{profile.username}</p>
                 {profile && (
                   <span
                     className={`mt-2 px-3 py-1 rounded-full text-xs font-medium ${

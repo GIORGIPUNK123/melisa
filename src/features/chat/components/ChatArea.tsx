@@ -82,7 +82,7 @@ export const ChatArea = ({
         blockedByMe={blockedByMe}
       />
 
-      <div className='min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden p-4 md:p-6'>
+      <div className='min-h-0 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-5 sm:py-4'>
         <MessageList
           messages={messages}
           members={members}

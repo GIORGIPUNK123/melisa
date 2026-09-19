@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { UserProfileModal } from './UserProfileModal';
 import { handleBackdropClick } from '../../../shared/utils/modal';
 import { IconX } from '../../../atoms/Icon';
+import { ui } from '../../../shared/ui';
 
 export const FriendRequestsModal = (props: {
   isOpen: boolean;
@@ -49,27 +50,25 @@ export const FriendRequestsModal = (props: {
         onClick={(event) => handleBackdropClick(event, props.onClose)}
       >
         <div className='w-full max-w-2xl rounded-2xl border border-slate-700/50 bg-slate-900 shadow-2xl overflow-hidden max-h-[80vh] flex flex-col'>
-          <div className='flex items-center justify-between border-b border-slate-800 px-6 py-4'>
-            <h2 className='text-lg font-semibold text-white'>
-              Friend Requests
-            </h2>
+          <div className='flex items-center justify-between border-b border-slate-800 px-4 py-3.5 sm:px-5'>
+            <h2 className={ui.title}>Friend requests</h2>
             <button
               onClick={props.onClose}
-              className='flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
+              className={ui.iconBtn}
               aria-label='Close'
             >
               <IconX size={18} />
             </button>
           </div>
 
-          <div className='overflow-y-auto flex-1 p-6 space-y-6'>
+          <div className='flex-1 space-y-6 overflow-y-auto p-4 sm:p-5'>
             {isLoading ? (
               <div className='text-center text-slate-400'>Loading...</div>
             ) : (
               <>
                 {/* Received Requests */}
                 <div>
-                  <h3 className='text-sm uppercase tracking-wider text-slate-400 mb-3'>
+                  <h3 className={`${ui.section} mb-3`}>
                     Received ({receivedRequests.length})
                   </h3>
                   {receivedRequests.length === 0 ? (
@@ -91,31 +90,27 @@ export const FriendRequestsModal = (props: {
                               <img
                                 src={req.avatarUrl}
                                 alt={req.nickname}
-                                className='w-10 h-10 rounded-full object-cover'
+                                className={ui.avatar}
                               />
                             ) : (
-                              <div className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-slate-100'>
+                              <div className={ui.avatarFallback}>
                                 {req.nickname.charAt(0).toUpperCase()}
                               </div>
                             )}
                             <div className='text-left'>
-                              <div className='text-white font-medium'>
-                                {req.nickname}
-                              </div>
-                              <div className='text-slate-400 text-sm'>
-                                @{req.username}
-                              </div>
+                              <div className={ui.name}>{req.nickname}</div>
+                              <div className={ui.meta}>@{req.username}</div>
                             </div>
                           </button>
                           <button
                             onClick={() => handleAccept(req.friendshipId)}
-                            className='px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium'
+                            className={`${ui.btnCompact} bg-emerald-600 hover:bg-emerald-500`}
                           >
                             Accept
                           </button>
                           <button
                             onClick={() => handleReject(req.friendshipId)}
-                            className='px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium'
+                            className='inline-flex h-9 items-center rounded-xl bg-slate-700 px-3 text-[13px] font-medium text-white hover:bg-slate-600'
                           >
                             Reject
                           </button>
@@ -127,7 +122,7 @@ export const FriendRequestsModal = (props: {
 
                 {/* Sent Requests */}
                 <div>
-                  <h3 className='text-sm uppercase tracking-wider text-slate-400 mb-3'>
+                  <h3 className={`${ui.section} mb-3`}>
                     Sent ({sentRequests.length})
                   </h3>
                   {sentRequests.length === 0 ? (
@@ -147,25 +142,21 @@ export const FriendRequestsModal = (props: {
                               <img
                                 src={req.avatarUrl}
                                 alt={req.nickname}
-                                className='w-10 h-10 rounded-full object-cover'
+                                className={ui.avatar}
                               />
                             ) : (
-                              <div className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-slate-100'>
+                              <div className={ui.avatarFallback}>
                                 {req.nickname.charAt(0).toUpperCase()}
                               </div>
                             )}
                             <div className='text-left'>
-                              <div className='text-white font-medium'>
-                                {req.nickname}
-                              </div>
-                              <div className='text-slate-400 text-sm'>
-                                @{req.username}
-                              </div>
+                              <div className={ui.name}>{req.nickname}</div>
+                              <div className={ui.meta}>@{req.username}</div>
                             </div>
                           </button>
                           <button
                             onClick={() => handleCancel(req.friendshipId)}
-                            className='px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium'
+                            className='inline-flex h-9 items-center rounded-xl bg-rose-600 px-3 text-[13px] font-medium text-white hover:bg-rose-500'
                           >
                             Cancel
                           </button>

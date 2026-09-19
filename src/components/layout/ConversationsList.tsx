@@ -1,5 +1,6 @@
 import { ConversationT } from '../../types';
 import { formatConversationTime } from '../../shared/utils/dates';
+import { ui } from '../../shared/ui';
 
 export const ConversationsList = (props: {
   onConversationSelect: (conversationId: string) => void;
@@ -12,76 +13,70 @@ export const ConversationsList = (props: {
   const { conversations, isLoading } = props;
 
   return (
-    <div className='flex flex-col h-full'>
+    <div className='flex h-full flex-col'>
       {isLoading ? (
-        <div className='flex items-center justify-center py-8 text-slate-400'>
+        <div className='flex items-center justify-center py-10 text-[13px] text-slate-400'>
           Loading chats...
         </div>
       ) : conversations.length === 0 ? (
-        <div className='flex items-center justify-center py-8 text-sm text-slate-400'>
-          No chats yet. Add friends to start chatting!
+        <div className='flex items-center justify-center px-6 py-10 text-center text-[13px] text-slate-400'>
+          No chats yet. Add friends to start messaging.
         </div>
       ) : (
-        <div className='flex-1 p-2 space-y-1 overflow-y-auto'>
+        <div className='flex-1 space-y-0.5 overflow-y-auto p-2'>
           {conversations.map((conv) => {
             const blocked = Boolean(props.isBlocked?.(conv.otherUserId));
             const isActive = props.activeConversationId === conv.id;
 
             return (
-            <button
-              key={conv.id}
-              onClick={() => props.onConversationSelect(conv.id)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left ${
-                isActive
-                  ? 'bg-indigo-600'
-                  : 'hover:bg-slate-800'
-              }`}
-            >
-              {conv.otherUserAvatar ? (
-                <img
-                  src={conv.otherUserAvatar}
-                  alt={conv.otherUserNickname}
-                  className={`flex-shrink-0 object-cover w-10 h-10 rounded-full ${
-                    blocked ? 'opacity-70' : ''
-                  }`}
-                />
-              ) : (
-                <div className='flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-semibold text-slate-100 rounded-full bg-slate-700'>
-                  {conv.otherUserNickname.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div className='flex-1 min-w-0'>
-                <div className='flex items-center gap-2'>
-                  <div className='font-medium text-white truncate'>
-                    {conv.otherUserNickname}
+              <button
+                key={conv.id}
+                onClick={() => props.onConversationSelect(conv.id)}
+                className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-colors ${
+                  isActive ? 'bg-indigo-600' : 'hover:bg-slate-800/80'
+                }`}
+              >
+                {conv.otherUserAvatar ? (
+                  <img
+                    src={conv.otherUserAvatar}
+                    alt={conv.otherUserNickname}
+                    className={`${ui.avatar} ${blocked ? 'opacity-70' : ''}`}
+                  />
+                ) : (
+                  <div className={ui.avatarFallback}>
+                    {conv.otherUserNickname.charAt(0).toUpperCase()}
                   </div>
-                  {conv.lastMessageTime && (
+                )}
+                <div className='min-w-0 flex-1'>
+                  <div className='flex items-center gap-2'>
+                    <div className={ui.name}>{conv.otherUserNickname}</div>
+                    {conv.lastMessageTime && (
+                      <div
+                        className={`ml-auto flex-shrink-0 text-[11px] ${
+                          isActive ? 'text-indigo-100' : 'text-slate-500'
+                        }`}
+                      >
+                        {formatConversationTime(conv.lastMessageTime)}
+                      </div>
+                    )}
+                  </div>
+                  {blocked && (
                     <div
-                      className={`ml-auto flex-shrink-0 text-[11px] ${
+                      className={`mt-0.5 text-[12px] ${
                         isActive ? 'text-indigo-100' : 'text-slate-400'
                       }`}
                     >
-                      {formatConversationTime(conv.lastMessageTime)}
+                      Blocked
                     </div>
                   )}
                 </div>
-                {blocked && (
-                  <div
-                    className={`text-xs truncate ${
-                      isActive ? 'text-indigo-100' : 'text-slate-400'
-                    }`}
-                  >
-                    Blocked
-                  </div>
-                )}
-              </div>
-              {props.unreadCounts[conv.id] > 0 &&
-                props.activeConversationId !== conv.id && (
-                <div className='flex items-center justify-center px-2 py-1 text-xs font-bold text-white bg-red-600 rounded-full min-w-[1.5rem]'>
-                  {props.unreadCounts[conv.id]}
-                </div>
-              )}
-            </button>
+                {props.unreadCounts[conv.id] > 0 &&
+                  props.activeConversationId !== conv.id && (
+                    <div className='flex min-w-[1.25rem] items-center justify-center rounded-full bg-indigo-600 px-1.5 py-0.5 text-[11px] font-semibold text-white'>
+                      {props.unreadCounts[conv.id]}
+                    </div>
+                  )}
+              </button>
             );
           })}
         </div>

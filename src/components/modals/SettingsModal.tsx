@@ -6,6 +6,7 @@ import { api } from '../../api/instance';
 import { handleBackdropClick } from '../../shared/utils/modal';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import { IconEyeOff, IconLock, IconUser, IconX } from '../../atoms/Icon';
+import { ui } from '../../shared/ui';
 
 export const SettingsModal = (props: {
   isOpen: boolean;
@@ -142,10 +143,8 @@ export const SettingsModal = (props: {
     }
   };
 
-  const fieldClassName =
-    'w-full min-w-0 rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30';
-  const labelClassName =
-    'mb-1.5 block text-xs font-medium text-slate-400';
+  const fieldClassName = ui.input;
+  const labelClassName = ui.label;
 
   if (!props.isOpen) return null;
 
@@ -170,14 +169,14 @@ export const SettingsModal = (props: {
       <div className='flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border-slate-700/70 bg-slate-900 sm:max-h-[90vh] sm:rounded-2xl sm:border'>
         <div className='flex flex-shrink-0 items-center justify-between border-b border-slate-700 px-4 py-3 sm:px-6 sm:py-3.5'>
           <div className='min-w-0'>
-            <h2 className='text-lg font-semibold text-white'>Settings</h2>
-            <p className='mt-0.5 text-xs text-slate-500'>
+            <h2 className={ui.title}>Settings</h2>
+            <p className='mt-0.5 text-[12px] text-slate-500'>
               Manage your profile and account
             </p>
           </div>
           <button
             onClick={props.onClose}
-            className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
+            className={ui.iconBtn}
             aria-label='Close settings'
           >
             <IconX size={18} />
@@ -352,14 +351,14 @@ export const SettingsModal = (props: {
         <div className='flex flex-shrink-0 gap-2 border-t border-slate-800 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:justify-end sm:gap-3 sm:px-6 sm:py-4'>
           <button
             onClick={props.onClose}
-            className='w-full rounded-lg border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white sm:w-auto'
+            className={`${ui.btnSecondary} sm:w-auto`}
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving || password !== confirmPassword}
-            className='w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto'
+            className={`${ui.btnPrimary} sm:w-auto`}
           >
             {isSaving ? 'Saving...' : 'Save changes'}
           </button>

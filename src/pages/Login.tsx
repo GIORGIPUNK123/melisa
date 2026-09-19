@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import { useEffect, useState } from 'react';
 import { Loading } from '../components/Loading';
 import { BrandMark } from '../atoms/BrandMark';
+import { ui } from '../shared/ui';
 
 export const Login = () => {
   const { user, authLogin, authError, isResolvingPrivateKey } = useAuth();
@@ -39,10 +40,10 @@ export const Login = () => {
       // Scroll inside #root (which is overflow:hidden globally for chat mobile).
       <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
         <div className='flex min-h-full items-center justify-center px-4 py-8 sm:py-12'>
-          <div className='w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-10'>
-            <BrandMark subtitle='Private messaging' />
+          <div className='w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-9'>
+            <BrandMark size='sm' subtitle='Private messaging' />
 
-            <form onSubmit={handleSubmit} className='mt-6 space-y-4 sm:mt-8'>
+            <form onSubmit={handleSubmit} className='mt-7 space-y-3'>
               <TextInput
                 {...emailInput}
                 placeholder='Email'
@@ -59,7 +60,7 @@ export const Login = () => {
               <button
                 type='submit'
                 disabled={isLoading || !emailInput.value || !passwordInput.value}
-                className='mt-6 h-11 w-full rounded-lg bg-indigo-600 font-medium text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50'
+                className={`${ui.btnPrimary} mt-2`}
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </button>
@@ -72,7 +73,7 @@ export const Login = () => {
             )}
 
             <div className='mt-5 text-center sm:mt-6'>
-              <p className='text-sm text-slate-400'>
+              <p className='text-[13px] text-slate-400'>
                 Don't have an account?{' '}
                 <button
                   onClick={() => navigate('/register')}

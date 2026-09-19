@@ -2,6 +2,7 @@ import { MouseEvent } from 'react';
 import { FriendT } from '../../../types';
 import { isUserOnline } from '../../../shared/utils/presence';
 import { useTickingNow } from '../../../shared/hooks/useTickingNow';
+import { ui } from '../../../shared/ui';
 
 const getInitials = (nickname: string) => nickname.charAt(0).toUpperCase();
 
@@ -45,26 +46,22 @@ const FriendRow = ({
     <div className='relative group'>
       <button
         onClick={handleFriendClick}
-        className='flex items-center w-full gap-3 p-3 text-left transition-colors rounded-lg hover:bg-slate-800'
+        className='flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-slate-800/80'
       >
         {friend.avatarUrl ? (
           <img
             src={friend.avatarUrl}
             alt={friend.nickname}
-            className='flex-shrink-0 object-cover w-10 h-10 rounded-full'
+            className={ui.avatar}
           />
         ) : (
-          <div className='flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-semibold text-slate-100 rounded-full bg-slate-700'>
+          <div className={ui.avatarFallback}>
             {getInitials(friend.nickname)}
           </div>
         )}
-        <div className='flex-1 min-w-0'>
-          <div className='font-medium text-white truncate'>
-            {friend.nickname}
-          </div>
-          <div className='text-xs truncate text-slate-400'>
-            @{friend.username}
-          </div>
+        <div className='min-w-0 flex-1'>
+          <div className={ui.name}>{friend.nickname}</div>
+          <div className={ui.meta}>@{friend.username}</div>
         </div>
         <div
           className={`h-2 w-2 rounded-full flex-shrink-0 ${
@@ -116,20 +113,20 @@ export const FriendsList = (props: {
 
   return (
     <div className='flex flex-col h-full'>
-      <h3 className='px-4 py-3 text-sm tracking-wider uppercase border-b text-slate-400 border-slate-700'>
+      <h3 className={`${ui.section} border-b border-slate-800 px-4 py-2.5`}>
         Friends ({friends.length})
       </h3>
 
       {isLoading ? (
-        <div className='flex items-center justify-center py-8 text-slate-400'>
+        <div className='flex items-center justify-center py-10 text-[13px] text-slate-400'>
           Loading friends...
         </div>
       ) : friends.length === 0 ? (
-        <div className='flex items-center justify-center py-8 text-sm text-slate-400'>
+        <div className='flex items-center justify-center py-10 text-[13px] text-slate-400'>
           No friends yet
         </div>
       ) : (
-        <div className='flex-1 p-2 space-y-1 overflow-y-auto'>
+        <div className='flex-1 space-y-0.5 overflow-y-auto p-2'>
           {friends.map((friend) => (
             <FriendRow
               key={friend.friendshipId}

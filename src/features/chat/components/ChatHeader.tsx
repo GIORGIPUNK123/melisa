@@ -1,4 +1,5 @@
 import { PublicProfileT } from '../../../types';
+import { ui } from '../../../shared/ui';
 
 interface ChatHeaderProps {
   members: PublicProfileT[];
@@ -26,15 +27,15 @@ export const ChatHeader = ({
   const displayInitial = (displayName || '?').charAt(0).toUpperCase();
 
   return (
-    <div className='flex shrink-0 items-center justify-between border-b border-slate-700 bg-slate-900 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4 md:px-6'>
-      <div className='flex items-center gap-2 sm:gap-3'>
+    <div className='flex shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900 px-3 py-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] sm:px-4'>
+      <div className='flex min-w-0 items-center gap-2.5'>
         <button
           onClick={onToggleSidebar}
-          className='p-2 transition-colors rounded-lg lg:hidden text-slate-400 hover:text-white hover:bg-slate-800'
+          className={`${ui.iconBtn} lg:hidden`}
           title='Toggle sidebar'
         >
           <svg
-            className='w-5 h-5'
+            className='h-5 w-5'
             fill='none'
             stroke='currentColor'
             viewBox='0 0 24 24'
@@ -54,31 +55,27 @@ export const ChatHeader = ({
               <img
                 src={displayAvatar}
                 alt={displayName}
-                className='w-8 h-8 rounded-full sm:w-10 sm:h-10'
+                className={ui.avatar}
               />
             ) : (
-              <div className='flex items-center justify-center w-8 h-8 text-sm font-semibold text-white bg-indigo-600 rounded-full sm:w-10 sm:h-10'>
+              <div className={`${ui.avatarFallback} bg-indigo-600 text-white`}>
                 {displayInitial}
               </div>
             )}
             <div className='min-w-0'>
-              <h2 className='text-sm font-semibold text-white truncate sm:text-base'>
-                {displayName}
-              </h2>
-              {blockedByMe && (
-                <p className='text-xs text-slate-400'>Blocked</p>
-              )}
+              <h2 className={ui.name}>{displayName}</h2>
+              {blockedByMe && <p className={ui.meta}>Blocked</p>}
             </div>
           </>
         )}
       </div>
       <button
         onClick={onToggleChatInfo}
-        className='flex-shrink-0 p-2 transition-colors rounded-lg text-slate-400 hover:text-white hover:bg-slate-800'
+        className={ui.iconBtn}
         title='Toggle chat info'
       >
         <svg
-          className='w-5 h-5 sm:w-6 sm:h-6'
+          className='h-5 w-5'
           fill='none'
           stroke='currentColor'
           viewBox='0 0 24 24'

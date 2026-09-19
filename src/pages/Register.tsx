@@ -8,7 +8,7 @@ import * as yup from 'yup';
 import { registerSchema } from '../features/auth/schemas/registerSchema';
 import { handleBackdropClick } from '../shared/utils/modal';
 import { BrandMark } from '../atoms/BrandMark';
-import { APP_NAME } from '../shared/constants';
+import { ui } from '../shared/ui';
 
 const EmailVerificationModal = (props: {
   isOpen: boolean;
@@ -28,12 +28,11 @@ const EmailVerificationModal = (props: {
       }
     >
       <div className='relative w-full max-w-md bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden'>
-        <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500'></div>
+        <div className='absolute left-0 right-0 top-0 h-1 bg-indigo-500'></div>
 
-        <div className='p-8'>
+        <div className='p-6 sm:p-8'>
           <div className='flex flex-col items-center space-y-4 text-center'>
-            {/* Email icon */}
-            <div className='w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg'>
+            <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg'>
               <svg
                 className='w-8 h-8 text-white'
                 fill='none'
@@ -49,8 +48,8 @@ const EmailVerificationModal = (props: {
               </svg>
             </div>
 
-            <h2 className='text-white text-2xl font-bold'>Check your email</h2>
-            <p className='text-slate-400 text-sm'>
+            <h2 className={ui.title}>Check your email</h2>
+            <p className={ui.subtitle}>
               We've sent you a verification link. Please check your inbox and
               click the link to activate your account.
             </p>
@@ -60,7 +59,7 @@ const EmailVerificationModal = (props: {
                 props.setIsOpen(false);
                 props.navigate('/login');
               }}
-              className='w-full py-3 px-6 mt-4 rounded-lg font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 active:scale-95 transition-all duration-200 shadow-lg'
+              className={`${ui.btnPrimary} mt-2`}
             >
               Go to Login
             </button>
@@ -159,16 +158,10 @@ export const Register = () => {
           navigate={navigate}
         />
         <div className='flex min-h-full items-center justify-center px-4 py-8 sm:py-12'>
-          <div className='w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-10'>
-            <BrandMark subtitle='Private messaging' />
-            <div className='mt-5 text-center sm:mt-6'>
-              <h2 className='text-xl font-semibold text-white'>
-                Create your {APP_NAME} account
-              </h2>
-              <p className='mt-1 text-slate-400'>Join in a few seconds</p>
-            </div>
+          <div className='w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/80 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-9'>
+            <BrandMark size='sm' subtitle='Create your account' />
 
-            <div className='mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:gap-4 md:grid-cols-2'>
+            <div className='mt-7 grid grid-cols-1 gap-3 md:grid-cols-2'>
               <TextInput
                 {...usernameInput}
                 placeholder='Username'
@@ -210,7 +203,7 @@ export const Register = () => {
 
             <button
               onClick={handleSubmit}
-              className='mt-5 h-11 w-full rounded-lg bg-indigo-600 font-medium text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 sm:mt-6'
+              className={`${ui.btnPrimary} mt-5`}
               disabled={passwordInput.value !== repeatPasswordInput.value}
             >
               Create account
@@ -223,7 +216,7 @@ export const Register = () => {
             ) : null}
 
             <div className='mt-5 text-center sm:mt-6'>
-              <p className='text-sm text-slate-400'>
+              <p className='text-[13px] text-slate-400'>
                 Already have an account?{' '}
                 <button
                   onClick={() => navigate('/login')}
