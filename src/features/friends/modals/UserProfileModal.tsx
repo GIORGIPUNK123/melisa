@@ -86,7 +86,8 @@ export const UserProfileModal = (props: {
 
               {/* Action Buttons */}
               <div className='pt-4 space-y-2 border-t border-slate-700'>
-                {!props.hasBlock?.(profile.id) && (
+                {(!props.hasBlock?.(profile.id) ||
+                  props.isBlocked?.(profile.id)) && (
                   <button
                     onClick={() => {
                       if (props.onMessageUser && profile.id) {
@@ -97,7 +98,7 @@ export const UserProfileModal = (props: {
                     disabled={!props.onMessageUser}
                     className='w-full px-4 py-2 text-sm font-medium text-blue-400 transition-colors border rounded-lg border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50'
                   >
-                    Message
+                    {props.isBlocked?.(profile.id) ? 'Open chat' : 'Message'}
                   </button>
                 )}
                 {props.isFriend?.(profile.id) && (

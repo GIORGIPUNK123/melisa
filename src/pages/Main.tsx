@@ -133,6 +133,15 @@ export const Main = () => {
   const handleMessageUser = useCallback(
     async (friendUserId: string) => {
       if (!userId || chatState.isOpeningConversation) return;
+
+      const existingConversation = conversations.find(
+        (conversation) => conversation.otherUserId === friendUserId,
+      );
+      if (existingConversation) {
+        chatState.handleFriendSelect(existingConversation.id);
+        return;
+      }
+
       if (chatActions.hasBlock(friendUserId)) return;
 
       chatState.beginConversationTransition();
@@ -160,7 +169,7 @@ export const Main = () => {
         chatState.endConversationTransition();
       }
     },
-    [chatActions, chatState, userId],
+    [chatActions, chatState, conversations, userId],
   );
 
   useEffect(() => {
@@ -238,6 +247,7 @@ export const Main = () => {
           friends={visibleFriends}
           friendsLoading={friendsLoading}
           getOrCreateConversation={getOrCreateConversation}
+          isBlocked={chatActions.isBlocked}
         />
 
         {!chatState.activeConversationId ? (
@@ -255,6 +265,7 @@ export const Main = () => {
             onIncomingMessageSound={playMessageSound}
             isBlocked={chatActions.isBlocked}
             isBlockedBy={chatActions.isBlockedBy}
+            onUnblockUser={chatActions.handleBlockUser}
           />
         )}
 

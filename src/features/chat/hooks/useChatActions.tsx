@@ -38,7 +38,6 @@ export const useChatActions = (
             await unblockUser(blockedUserId);
           } else {
             await blockUser(blockedUserId);
-            clearActiveConversation();
           }
           await refreshFriends?.();
         } catch (error) {

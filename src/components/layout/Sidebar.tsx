@@ -37,6 +37,7 @@ export const Sidebar = (props: {
   friends: FriendT[];
   friendsLoading?: boolean;
   getOrCreateConversation: (friendUserId: string) => Promise<string | null>;
+  isBlocked?: (userId?: string | null) => boolean;
 }) => {
   const navigate = useNavigate();
   const unreadNotifications = props.notifications.filter((n) => !n.is_read);
@@ -140,6 +141,7 @@ export const Sidebar = (props: {
               unreadCounts={props.unreadCounts || {}}
               conversations={props.conversations}
               isLoading={props.conversationLoading || false}
+              isBlocked={props.isBlocked}
             />
           ) : (
             <FriendsList

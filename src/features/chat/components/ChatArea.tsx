@@ -5,6 +5,7 @@ import { useMessages } from '../hooks/useMessages';
 import { useMessageReactions } from '../hooks/useMessageReactions';
 import { decryptChatMessageContent as cryptoDecrypt } from '../utils/chatCrypto';
 import { MessageInput } from './MessageInput';
+import { BlockedComposer } from './BlockedComposer';
 import { sameId } from '../../../shared/utils/ids';
 
 interface Props {
@@ -19,6 +20,7 @@ interface Props {
   onIncomingMessageSound?: () => void;
   isBlocked?: (userId?: string | null) => boolean;
   isBlockedBy?: (userId?: string | null) => boolean;
+  onUnblockUser?: (username: string, userId?: string) => void;
 }
 
 export const ChatArea = ({
@@ -33,6 +35,7 @@ export const ChatArea = ({
   onIncomingMessageSound,
   isBlocked,
   isBlockedBy,
+  onUnblockUser,
 }: Props) => {
   const handleIncomingMessage = (message: MessageT) => {
     onConversationActivity?.(message.conversation_id);
@@ -56,8 +59,9 @@ export const ChatArea = ({
   const otherUser = members.find(
     (member) => !sameId(member.id, currentUserId),
   );
-  const blockedByMe = Boolean(otherUser && isBlocked?.(otherUser.id));
-  const blockedMe = Boolean(otherUser && isBlockedBy?.(otherUser.id));
+  const otherUserId = otherUser?.id || conversationPreview?.otherUserId;
+  const blockedByMe = Boolean(otherUserId && isBlocked?.(otherUserId));
+  const blockedMe = Boolean(otherUserId && isBlockedBy?.(otherUserId));
   const messagingBlocked = blockedByMe || blockedMe;
 
   const handleSend = async (text: string) => {
@@ -75,6 +79,7 @@ export const ChatArea = ({
         onToggleChatInfo={onToggleChatInfo!}
         fallbackName={conversationPreview?.otherUserNickname}
         fallbackAvatar={conversationPreview?.otherUserAvatar}
+        blockedByMe={blockedByMe}
       />
 
       <div className='min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden p-4 md:p-6'>
@@ -91,25 +96,24 @@ export const ChatArea = ({
         />
       </div>
 
-      {messagingBlocked && (
-        <div className='border-t border-slate-800 px-4 py-2 text-center text-sm text-slate-400'>
-          {blockedByMe
-            ? 'You blocked this user. Unblock them to send messages.'
-            : "You can't message this user."}
-        </div>
+      {messagingBlocked ? (
+        <BlockedComposer
+          blockedByMe={blockedByMe}
+          onUnblock={
+            blockedByMe && otherUserId
+              ? () =>
+                  onUnblockUser?.(
+                    otherUser?.username ||
+                      conversationPreview?.otherUserNickname ||
+                      'this user',
+                    otherUserId,
+                  )
+              : undefined
+          }
+        />
+      ) : (
+        <MessageInput onSubmit={handleSend} />
       )}
-
-      <MessageInput
-        onSubmit={handleSend}
-        disabled={messagingBlocked}
-        placeholder={
-          blockedByMe
-            ? 'You blocked this user'
-            : blockedMe
-              ? "You can't message this user"
-              : 'Type a message...'
-        }
-      />
     </div>
   );
 };

@@ -7,6 +7,7 @@ interface ChatHeaderProps {
   onToggleChatInfo: () => void;
   fallbackName?: string;
   fallbackAvatar?: string;
+  blockedByMe?: boolean;
 }
 
 export const ChatHeader = ({
@@ -16,6 +17,7 @@ export const ChatHeader = ({
   onToggleChatInfo,
   fallbackName,
   fallbackAvatar,
+  blockedByMe,
 }: ChatHeaderProps) => {
   const otherMember = members.find((m) => m.id !== currentUserId);
   const displayName =
@@ -63,9 +65,9 @@ export const ChatHeader = ({
               <h2 className='text-sm font-semibold text-white truncate sm:text-base'>
                 {displayName}
               </h2>
-              <p className='text-xs capitalize text-slate-400'>
-                {/* {visibleStatus} */}
-              </p>
+              {blockedByMe && (
+                <p className='text-xs text-slate-400'>Blocked</p>
+              )}
             </div>
           </>
         )}
