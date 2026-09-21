@@ -11,6 +11,10 @@ import {
   formatMessageTime,
   isSameLocalDay,
 } from '../../../shared/utils/dates';
+import {
+  hapticLongPress,
+  hapticSelection,
+} from '../../../shared/utils/haptic';
 
 interface MessageListProps {
   messages: MessageT[];
@@ -71,13 +75,7 @@ export const MessageList = ({
 
   const openPicker = (messageId: string) => {
     setPickerForMessageId(messageId);
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        navigator.vibrate(12);
-      } catch {
-        // ignore
-      }
-    }
+    hapticLongPress();
   };
 
   const scrollToBottom = (behavior: 'smooth' | 'auto' = 'smooth') => {
@@ -200,6 +198,7 @@ export const MessageList = ({
                   key={reaction.uid}
                   type='button'
                   onClick={() => {
+                    hapticSelection();
                     onSetReaction?.(msg.id, reaction.uid);
                     setPickerForMessageId(null);
                   }}

@@ -43,6 +43,21 @@ export const useUnreadMessages = (
     [userId],
   );
 
+  const bumpUnread = useCallback(
+    (conversationId: string) => {
+      if (sameId(conversationId, activeConversationIdRef.current)) {
+        void markAsRead(conversationId);
+        return;
+      }
+
+      setUnreadCounts((prev) => ({
+        ...prev,
+        [conversationId]: (prev[conversationId] || 0) + 1,
+      }));
+    },
+    [markAsRead],
+  );
+
   const fetchUnreadCounts = useCallback(async () => {
     if (!userId) return;
 
@@ -63,23 +78,40 @@ export const useUnreadMessages = (
           continue;
         }
 
-        const { data: messages } = await supabase
-          .from('messages')
-          .select('id, sender_id, created_at')
-          .eq('conversation_id', member.conversation_id)
-          .neq('sender_id', userId)
-          .order('created_at', { ascending: false });
+        const lastRead = member.last_read_at
+          ? new Date(member.last_read_at)
+          : null;
 
-        if (messages) {
-          const unreadCount = member.last_read_at
-            ? messages.filter(
-                (msg) =>
-                  new Date(msg.created_at) > new Date(member.last_read_at),
-              ).length
-            : messages.length;
+        const [{ data: messages }, { data: reactions }] = await Promise.all([
+          supabase
+            .from('messages')
+            .select('id, sender_id, created_at')
+            .eq('conversation_id', member.conversation_id)
+            .neq('sender_id', userId)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('message_reactions')
+            .select('id, user_id, created_at')
+            .eq('conversation_id', member.conversation_id)
+            .neq('user_id', userId)
+            .order('created_at', { ascending: false }),
+        ]);
 
-          counts[member.conversation_id] = unreadCount;
-        }
+        const unreadMessages = messages
+          ? lastRead
+            ? messages.filter((msg) => new Date(msg.created_at) > lastRead)
+                .length
+            : messages.length
+          : 0;
+
+        const unreadReactions = reactions
+          ? lastRead
+            ? reactions.filter((row) => new Date(row.created_at) > lastRead)
+                .length
+            : reactions.length
+          : 0;
+
+        counts[member.conversation_id] = unreadMessages + unreadReactions;
       }
 
       if (viewingId) {
@@ -128,18 +160,31 @@ export const useUnreadMessages = (
           onIncomingMessageRef.current?.();
 
           if (!newMessage?.conversation_id) return;
+          bumpUnread(String(newMessage.conversation_id));
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'message_reactions',
+        },
+        (payload) => {
+          const reaction = payload.new as {
+            id?: string;
+            conversation_id?: string;
+            user_id?: string;
+          };
 
-          if (sameId(newMessage.conversation_id, activeConversationIdRef.current)) {
-            void markAsRead(String(newMessage.conversation_id));
+          if (!reaction.user_id || sameId(reaction.user_id, userId)) {
             return;
           }
 
-          const conversationId = String(newMessage.conversation_id);
+          if (!reaction.conversation_id) return;
 
-          setUnreadCounts((prev) => ({
-            ...prev,
-            [conversationId]: (prev[conversationId] || 0) + 1,
-          }));
+          onIncomingMessageRef.current?.();
+          bumpUnread(String(reaction.conversation_id));
         },
       )
       .subscribe();
@@ -147,7 +192,7 @@ export const useUnreadMessages = (
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, fetchUnreadCounts, markAsRead]);
+  }, [userId, fetchUnreadCounts, bumpUnread]);
 
   useEffect(() => {
     if (activeConversationId) {
