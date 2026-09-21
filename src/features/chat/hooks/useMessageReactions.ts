@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../../../db/supabase';
 import {
   MessageReactionT,
@@ -10,6 +11,12 @@ import { asId, sameId } from '../../../shared/utils/ids';
 type ReactionRow = MessageReactionT & {
   reactions?: ReactionTypeT | ReactionTypeT[] | null;
 };
+
+type ReactionRealtimeEvent =
+  | { type: 'DELETE'; id: string }
+  | { type: 'UPSERT'; row: MessageReactionT };
+
+const REACTION_BROADCAST_EVENT = 'reaction';
 
 const normalizeReactionRow = (row: ReactionRow): MessageReactionT => {
   const nested = Array.isArray(row.reactions)
@@ -70,6 +77,11 @@ const buildChips = (
   return [...byReaction.values()].sort((a, b) => b.count - a.count);
 };
 
+const belongsToConversation = (
+  conversationId: string | undefined,
+  conversationKey: string,
+) => !conversationId || sameId(asId(conversationId), conversationKey);
+
 export const useMessageReactions = (
   conversationId: string | null | undefined,
   currentUserId: string,
@@ -77,6 +89,10 @@ export const useMessageReactions = (
   const conversationKey = conversationId ? asId(conversationId) : '';
   const [rows, setRows] = useState<MessageReactionT[]>([]);
   const [catalog, setCatalog] = useState<ReactionTypeT[]>([]);
+  const catalogRef = useRef<ReactionTypeT[]>([]);
+  const channelRef = useRef<RealtimeChannel | null>(null);
+
+  catalogRef.current = catalog;
 
   const heartReaction = useMemo(
     () =>
@@ -90,6 +106,44 @@ export const useMessageReactions = (
       null,
     [catalog],
   );
+
+  const upsertRow = useCallback((incoming: MessageReactionT) => {
+    setRows((prev) => {
+      const without = prev.filter(
+        (row) =>
+          !sameId(row.id, incoming.id) &&
+          !(
+            sameId(row.message_id, incoming.message_id) &&
+            sameId(row.user_id, incoming.user_id)
+          ),
+      );
+      return [...without, incoming];
+    });
+  }, []);
+
+  const deleteRow = useCallback((id: string) => {
+    setRows((prev) => prev.filter((row) => !sameId(row.id, id)));
+  }, []);
+
+  const applyRealtimeEvent = useCallback(
+    (event: ReactionRealtimeEvent) => {
+      if (event.type === 'DELETE') {
+        if (!event.id) return;
+        deleteRow(event.id);
+        return;
+      }
+      upsertRow(event.row);
+    },
+    [deleteRow, upsertRow],
+  );
+
+  const broadcastReaction = useCallback((event: ReactionRealtimeEvent) => {
+    void channelRef.current?.send({
+      type: 'broadcast',
+      event: REACTION_BROADCAST_EVENT,
+      payload: event,
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -154,6 +208,29 @@ export const useMessageReactions = (
       setRows((data || []).map((row) => normalizeReactionRow(row as ReactionRow)));
     };
 
+    const resolveReaction = async (incoming: ReactionRow) => {
+      if (incoming.reaction) return incoming.reaction;
+      if (!incoming.reaction_id) return incoming.reaction ?? null;
+
+      const fromCatalog = catalogRef.current.find((item) =>
+        sameId(item.uid, incoming.reaction_id),
+      );
+      if (fromCatalog) return fromCatalog;
+
+      const { data } = await supabase
+        .from('reactions')
+        .select('uid, reaction, name')
+        .eq('uid', incoming.reaction_id)
+        .maybeSingle();
+
+      if (!data) return incoming.reaction ?? null;
+      return {
+        uid: asId(data.uid),
+        reaction: data.reaction,
+        name: data.name,
+      };
+    };
+
     void fetchReactions();
 
     void supabase.auth.getSession().then(({ data }) => {
@@ -162,7 +239,9 @@ export const useMessageReactions = (
     });
 
     const channel = supabase
-      .channel(`reactions:${conversationKey}`)
+      .channel(`reactions:${conversationKey}`, {
+        config: { broadcast: { self: false } },
+      })
       .on(
         'postgres_changes',
         {
@@ -175,70 +254,46 @@ export const useMessageReactions = (
           if (payload.eventType === 'DELETE') {
             const oldRow = payload.old as { id?: string };
             if (!oldRow?.id) return;
-            setRows((prev) =>
-              prev.filter((row) => !sameId(row.id, oldRow.id)),
-            );
+            applyRealtimeEvent({ type: 'DELETE', id: asId(oldRow.id) });
             return;
           }
 
           const incoming = payload.new as ReactionRow;
           if (!incoming?.id) return;
-
-          let reaction = incoming.reaction;
-          if (!reaction && incoming.reaction_id) {
-            const fromCatalog = catalog.find((item) =>
-              sameId(item.uid, incoming.reaction_id),
-            );
-            if (fromCatalog) {
-              reaction = fromCatalog;
-            } else {
-              const { data } = await supabase
-                .from('reactions')
-                .select('uid, reaction, name')
-                .eq('uid', incoming.reaction_id)
-                .maybeSingle();
-              if (data) {
-                reaction = {
-                  uid: asId(data.uid),
-                  reaction: data.reaction,
-                  name: data.name,
-                };
-              }
-            }
+          if (!belongsToConversation(incoming.conversation_id, conversationKey)) {
+            return;
           }
 
-          const normalized = normalizeReactionRow({
-            ...incoming,
-            reaction,
-          });
-
-          setRows((prev) => {
-            const without = prev.filter(
-              (row) => !sameId(row.id, normalized.id),
-            );
-            if (payload.eventType === 'UPDATE') {
-              return [
-                ...without.filter(
-                  (row) =>
-                    !(
-                      sameId(row.message_id, normalized.message_id) &&
-                      sameId(row.user_id, normalized.user_id)
-                    ),
-                ),
-                normalized,
-              ];
-            }
-            return [...without, normalized];
+          const reaction = await resolveReaction(incoming);
+          applyRealtimeEvent({
+            type: 'UPSERT',
+            row: normalizeReactionRow({ ...incoming, reaction }),
           });
         },
       )
-      .subscribe();
+      .on(
+        'broadcast',
+        { event: REACTION_BROADCAST_EVENT },
+        (payload) => {
+          const event = payload.payload as ReactionRealtimeEvent | undefined;
+          if (!event) return;
+          applyRealtimeEvent(event);
+        },
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Failed to subscribe to message reactions:', status);
+        }
+      });
+
+    channelRef.current = channel;
 
     return () => {
       cancelled = true;
+      channelRef.current = null;
       supabase.removeChannel(channel);
     };
-  }, [conversationKey, catalog]);
+  }, [applyRealtimeEvent, conversationKey]);
 
   const chipsByMessageId = useMemo(() => {
     const map = new Map<string, ReactionChipT[]>();
@@ -286,9 +341,12 @@ export const useMessageReactions = (
       if (error) {
         console.error('Failed to remove reaction:', error);
         setRows((prev) => [...prev, existing]);
+        return;
       }
+
+      broadcastReaction({ type: 'DELETE', id: existing.id });
     },
-    [currentUserId, getMyReaction],
+    [broadcastReaction, currentUserId, getMyReaction],
   );
 
   const setReaction = useCallback(
@@ -333,7 +391,10 @@ export const useMessageReactions = (
               sameId(row.id, existing.id) ? previous : row,
             ),
           );
+          return;
         }
+
+        broadcastReaction({ type: 'UPSERT', row: optimistic });
         return;
       }
 
@@ -353,6 +414,7 @@ export const useMessageReactions = (
         .from('message_reactions')
         .insert({
           message_id: messageId,
+          conversation_id: conversationKey,
           user_id: currentUserId,
           reaction_id: chosen.uid,
         })
@@ -373,9 +435,11 @@ export const useMessageReactions = (
           ...prev.filter((row) => row.id !== tempId),
           saved,
         ]);
+        broadcastReaction({ type: 'UPSERT', row: saved });
       }
     },
     [
+      broadcastReaction,
       catalog,
       conversationKey,
       currentUserId,
