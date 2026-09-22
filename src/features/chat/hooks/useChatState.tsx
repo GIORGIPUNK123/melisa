@@ -8,6 +8,7 @@ export type GroupMemberAccess = {
   role: GroupRole;
   canKick: boolean;
   canChangePhoto: boolean;
+  canChangeName: boolean;
   canClearMessages: boolean;
 };
 
@@ -93,10 +94,20 @@ export const useChatState = () => {
       const creatorId =
         conversation?.type === 'group' ? conversation.created_by || null : null;
 
-      const withRole = await supabase
+      const withName = await supabase
         .from('conversation_members')
-        .select('user_id, role, can_kick, can_change_photo, can_clear_messages')
+        .select(
+          'user_id, role, can_kick, can_change_photo, can_change_name, can_clear_messages',
+        )
         .eq('conversation_id', activeConversationId);
+
+      const withRole =
+        withName.error && /can_change_name/i.test(withName.error.message || '')
+          ? await supabase
+              .from('conversation_members')
+              .select('user_id, role, can_kick, can_change_photo, can_clear_messages')
+              .eq('conversation_id', activeConversationId)
+          : withName;
 
       let memberRows = withRole.data as
         | {
@@ -104,6 +115,7 @@ export const useChatState = () => {
             role?: string | null;
             can_kick?: boolean | null;
             can_change_photo?: boolean | null;
+            can_change_name?: boolean | null;
             can_clear_messages?: boolean | null;
           }[]
         | null;
@@ -170,6 +182,7 @@ export const useChatState = () => {
           role,
           canKick: role === 'admin' || member.can_kick === true,
           canChangePhoto: role === 'admin' || member.can_change_photo === true,
+          canChangeName: role === 'admin' || member.can_change_name === true,
           canClearMessages:
             role === 'admin' || member.can_clear_messages === true,
         };
@@ -235,6 +248,9 @@ export const useChatState = () => {
                 nextRole === 'admin' ||
                 (payload.new.can_change_photo ?? current?.canChangePhoto) ===
                   true,
+              canChangeName:
+                nextRole === 'admin' ||
+                (payload.new.can_change_name ?? current?.canChangeName) === true,
               canClearMessages:
                 nextRole === 'admin' ||
                 (payload.new.can_clear_messages ?? current?.canClearMessages) ===
@@ -245,6 +261,7 @@ export const useChatState = () => {
               current.role === next.role &&
               current.canKick === next.canKick &&
               current.canChangePhoto === next.canChangePhoto &&
+              current.canChangeName === next.canChangeName &&
               current.canClearMessages === next.canClearMessages
             ) {
               return prev;
@@ -322,6 +339,7 @@ export const useChatState = () => {
                 role: 'admin',
                 canKick: true,
                 canChangePhoto: true,
+                canChangeName: true,
                 canClearMessages: true,
               },
             };

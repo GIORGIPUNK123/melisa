@@ -112,6 +112,7 @@ export const setGroupMemberRole = async (
   permissions?: {
     canKick?: boolean;
     canChangePhoto?: boolean;
+    canChangeName?: boolean;
     canClearMessages?: boolean;
   },
 ) => {
@@ -119,8 +120,13 @@ export const setGroupMemberRole = async (
     role,
     canKick: permissions?.canKick === true,
     canChangePhoto: permissions?.canChangePhoto === true,
+    canChangeName: permissions?.canChangeName === true,
     canClearMessages: permissions?.canClearMessages === true,
   });
+};
+
+export const updateGroupName = async (conversationId: string, name: string) => {
+  await api.put(`/conversations/group/${conversationId}/name`, { name });
 };
 
 export const updateGroupPhoto = async (

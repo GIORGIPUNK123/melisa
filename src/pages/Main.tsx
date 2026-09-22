@@ -371,6 +371,9 @@ export const Main = () => {
               onPhotoUpdated={() => {
                 void fetchConversations();
               }}
+              onRenamed={() => {
+                void fetchConversations();
+              }}
               onLeft={() => {
                 chatState.clearActiveConversation();
                 void fetchConversations();

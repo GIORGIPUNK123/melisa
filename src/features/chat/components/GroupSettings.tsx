@@ -10,6 +10,7 @@ import {
   kickGroupMember,
   leaveGroup,
   setGroupMemberRole,
+  updateGroupName,
   updateGroupPhoto,
 } from '../api/groupAdmin';
 import { emitGroupMessagesCleared } from '../utils/groupEvents';
@@ -245,6 +246,7 @@ export const GroupSettings = (props: {
   onViewProfile: (username: string) => void;
   onMembersChanged: () => void;
   onPhotoUpdated: () => void;
+  onRenamed: () => void;
   onLeft: () => void;
   onDeleted: () => void;
   onConfirm: (data: {
@@ -258,6 +260,9 @@ export const GroupSettings = (props: {
   const [photoSaving, setPhotoSaving] = useState(false);
   const [photoBroken, setPhotoBroken] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState(false);
+  const [nameDraft, setNameDraft] = useState(props.groupName);
+  const [editingName, setEditingName] = useState(false);
+  const [nameSaving, setNameSaving] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -269,10 +274,15 @@ export const GroupSettings = (props: {
     setPhotoBroken(false);
   }, [props.avatarUrl]);
 
+  useEffect(() => {
+    if (!editingName) setNameDraft(props.groupName);
+  }, [props.groupName, editingName]);
+
   const mine = props.memberAccess[props.currentUserId];
   const isCreator = props.creatorId === props.currentUserId;
   const isAdmin = isCreator || mine?.role === 'admin';
   const canChangePhoto = Boolean(isAdmin || mine?.canChangePhoto);
+  const canRename = Boolean(isAdmin || mine?.canChangeName);
   const canClear = Boolean(isAdmin || mine?.canClearMessages);
   const canDelete = isAdmin;
   const previewUrl = canChangePhoto ? photoUrl.trim() : props.avatarUrl || '';
@@ -311,6 +321,25 @@ export const GroupSettings = (props: {
 
   const fail = (error: unknown, fallback: string) => {
     setActionError(groupActionError(error, fallback));
+  };
+
+  const saveName = async () => {
+    const nextName = nameDraft.replace(/\s+/g, ' ').trim();
+    if (!nextName) {
+      setActionError('Group name is required.');
+      return;
+    }
+    setNameSaving(true);
+    setActionError(null);
+    try {
+      await updateGroupName(props.conversationId, nextName);
+      setEditingName(false);
+      props.onRenamed();
+    } catch (error) {
+      fail(error, 'Could not rename the group.');
+    } finally {
+      setNameSaving(false);
+    }
   };
 
   const savePhoto = async () => {
@@ -420,14 +449,64 @@ export const GroupSettings = (props: {
               {props.groupName}
             </h4>
             <p className='mt-0.5 text-[13px] text-slate-400'>{peopleLabel}</p>
-            {canChangePhoto && !editingPhoto && (
-              <button
-                type='button'
-                onClick={() => setEditingPhoto(true)}
-                className='mt-3 text-[13px] font-medium text-indigo-300 transition-colors hover:text-indigo-200'
-              >
-                Change photo
-              </button>
+            {(canRename || canChangePhoto) && !editingName && !editingPhoto && (
+              <div className='mt-3 flex items-center justify-center gap-4'>
+                {canRename && (
+                  <button
+                    type='button'
+                    onClick={() => {
+                      setNameDraft(props.groupName);
+                      setEditingName(true);
+                    }}
+                    className='text-[13px] font-medium text-indigo-300 transition-colors hover:text-indigo-200'
+                  >
+                    Change name
+                  </button>
+                )}
+                {canChangePhoto && (
+                  <button
+                    type='button'
+                    onClick={() => setEditingPhoto(true)}
+                    className='text-[13px] font-medium text-indigo-300 transition-colors hover:text-indigo-200'
+                  >
+                    Change photo
+                  </button>
+                )}
+              </div>
+            )}
+            {canRename && editingName && (
+              <div className='mx-auto mt-4 max-w-xs space-y-2 text-left'>
+                <label className={ui.label} htmlFor='group-name'>
+                  Group name
+                </label>
+                <input
+                  id='group-name'
+                  value={nameDraft}
+                  maxLength={64}
+                  onChange={(event) => setNameDraft(event.target.value)}
+                  className={ui.input}
+                />
+                <div className='grid grid-cols-2 gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      setNameDraft(props.groupName);
+                      setEditingName(false);
+                    }}
+                    className={ui.btnSecondary}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => void saveName()}
+                    disabled={nameSaving || nameDraft.replace(/\s+/g, ' ').trim().length < 1}
+                    className={ui.btnPrimary}
+                  >
+                    {nameSaving ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </div>
             )}
             {canChangePhoto && editingPhoto && (
               <div className='mx-auto mt-4 max-w-xs space-y-2 text-left'>
@@ -742,6 +821,7 @@ const MemberOptions = (props: {
     permissions: {
       canKick: boolean;
       canChangePhoto: boolean;
+      canChangeName: boolean;
       canClearMessages: boolean;
     },
   ) => Promise<void>;
@@ -758,6 +838,9 @@ const MemberOptions = (props: {
   const [canChangePhoto, setCanChangePhoto] = useState(
     props.access?.canChangePhoto === true && initialRole === 'moderator',
   );
+  const [canChangeName, setCanChangeName] = useState(
+    props.access?.canChangeName === true && initialRole === 'moderator',
+  );
   const [canClear, setCanClear] = useState(
     props.access?.canClearMessages === true && initialRole === 'moderator',
   );
@@ -771,6 +854,7 @@ const MemberOptions = (props: {
       await props.onSave(role, {
         canKick,
         canChangePhoto,
+        canChangeName,
         canClearMessages: canClear,
       });
     } catch (saveError) {
@@ -842,6 +926,11 @@ const MemberOptions = (props: {
                     label='Change group photo'
                     checked={canChangePhoto}
                     onChange={setCanChangePhoto}
+                  />
+                  <Toggle
+                    label='Change group name'
+                    checked={canChangeName}
+                    onChange={setCanChangeName}
                   />
                   <Toggle
                     label='Clear messages'
