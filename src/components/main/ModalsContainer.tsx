@@ -5,8 +5,9 @@ import { SettingsModal } from '../modals/SettingsModal';
 import { UserProfileModal } from '../../features/friends/modals/UserProfileModal';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import { NotificationsModal } from '../../features/notifications/modals/NotificationsModal';
-import { UserT, NotificationT } from '../../types';
+import { UserT, NotificationT, FriendT } from '../../types';
 import { ConfirmModalData } from '../../shared/hooks/useModals';
+import { CreateGroupModal } from '../../features/chat/components/CreateGroupModal';
 
 interface ModalsContainerProps {
   user: User;
@@ -35,6 +36,11 @@ interface ModalsContainerProps {
   notifications: NotificationT[];
   onMarkNotificationAsRead: (id: string) => void;
   onMarkAllNotificationsAsRead: () => void;
+  groupModalOpen: boolean;
+  closeGroupModal: () => void;
+  friends: FriendT[];
+  privateKey: string;
+  onGroupCreated: (conversationId: string) => void;
 }
 
 export const ModalsContainer = ({
@@ -64,6 +70,11 @@ export const ModalsContainer = ({
   notifications,
   onMarkNotificationAsRead,
   onMarkAllNotificationsAsRead,
+  groupModalOpen,
+  closeGroupModal,
+  friends,
+  privateKey,
+  onGroupCreated,
 }: ModalsContainerProps) => {
   return (
     <>
@@ -110,6 +121,16 @@ export const ModalsContainer = ({
       <FriendRequestsModal
         isOpen={friendRequestsOpen}
         onClose={closeFriendRequestsModal}
+      />
+
+      <CreateGroupModal
+        isOpen={groupModalOpen}
+        onClose={closeGroupModal}
+        friends={friends}
+        selfId={user.id}
+        selfPublicKey={profile?.public_key}
+        privateKey={privateKey}
+        onCreated={onGroupCreated}
       />
 
       <SettingsModal

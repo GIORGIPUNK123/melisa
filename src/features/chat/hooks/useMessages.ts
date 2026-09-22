@@ -1,7 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../db/supabase';
 import { MessageT, PublicProfileT } from '../../../types';
-import { buildEncryptedChatMessageContent } from '../utils/chatCrypto';
+import {
+  buildEncryptedChatMessageContent,
+  decryptGroupMessage,
+  encryptGroupMessage,
+  unwrapGroupKey,
+} from '../utils/chatCrypto';
 import { asId, sameId } from '../../../shared/utils/ids';
 
 type DecryptMessageFn = (args: {
@@ -12,6 +17,7 @@ type DecryptMessageFn = (args: {
 }) => Promise<string>;
 
 const messagesCache = new Map<string, MessageT[]>();
+const groupKeyCache = new Map<string, Uint8Array>();
 
 const memberIdsKey = (members: PublicProfileT[]) =>
   members
@@ -72,6 +78,7 @@ export const useMessages = (
   privateKey: string,
   decryptMessage?: DecryptMessageFn,
   onMessageInserted?: (message: MessageT) => void,
+  conversationType?: string,
 ) => {
   const conversationKey = conversationId ? asId(conversationId) : '';
   const membersKey = memberIdsKey(members);
@@ -88,13 +95,80 @@ export const useMessages = (
   const onMessageInsertedRef = useRef(onMessageInserted);
   const membersRef = useRef(members);
   const currentUserIdRef = useRef(currentUserId);
+  const conversationTypeRef = useRef(conversationType);
+  const privateKeyRef = useRef(privateKey);
+  const decryptGroupContentRef = useRef<
+    (content: string) => Promise<string>
+  >(async () => '[Encrypted message: locked]');
 
   useEffect(() => {
     decryptMessageRef.current = decryptMessage;
     onMessageInsertedRef.current = onMessageInserted;
     membersRef.current = members;
     currentUserIdRef.current = currentUserId;
-  }, [decryptMessage, onMessageInserted, members, currentUserId]);
+    conversationTypeRef.current = conversationType;
+    privateKeyRef.current = privateKey;
+  }, [decryptMessage, onMessageInserted, members, currentUserId, conversationType, privateKey]);
+
+  const ensureGroupKey = async (): Promise<Uint8Array | null> => {
+    const keyOwner = privateKeyRef.current;
+    const userId = currentUserIdRef.current;
+    if (
+      conversationTypeRef.current !== 'group' ||
+      !conversationKey ||
+      !keyOwner ||
+      !userId
+    ) {
+      return null;
+    }
+
+    const cached = groupKeyCache.get(conversationKey);
+    if (cached) return cached;
+
+    const { data, error } = await supabase
+      .from('conversation_key_envelopes')
+      .select('nonce, key_box, wrapped_by')
+      .eq('conversation_id', conversationKey)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error || !data?.key_box || !data.nonce || !data.wrapped_by) {
+      if (error) console.error('Failed to load group key:', error);
+      return null;
+    }
+
+    let wrappedByPublic = membersRef.current.find((member) =>
+      sameId(member.id, data.wrapped_by),
+    )?.public_key;
+
+    if (!wrappedByPublic) {
+      const { data: profile } = await supabase
+        .from('public_profiles')
+        .select('public_key')
+        .eq('id', data.wrapped_by)
+        .maybeSingle();
+      wrappedByPublic = profile?.public_key || undefined;
+    }
+
+    if (!wrappedByPublic) return null;
+
+    const key = unwrapGroupKey(
+      data.key_box,
+      data.nonce,
+      wrappedByPublic,
+      keyOwner,
+    );
+    if (!key) return null;
+    groupKeyCache.set(conversationKey, key);
+    return key;
+  };
+
+  const decryptGroupContent = async (content: string) => {
+    const key = await ensureGroupKey();
+    if (!key) return '[Encrypted message: locked]';
+    return decryptGroupMessage(content, key);
+  };
+  decryptGroupContentRef.current = decryptGroupContent;
 
   const processMessages = async (
     rawMessages: MessageT[],
@@ -108,12 +182,14 @@ export const useMessages = (
       rawMessages.map(async (msg) => {
         const normalized = normalizeMessage(msg);
         try {
-          const decryptedContent = await decryptMessageRef.current!({
-            message: normalized,
-            membersList,
-            currentUserId: currentUserIdRef.current,
-            privateKey,
-          });
+          const decryptedContent = normalized.content.startsWith('enc:g1:')
+            ? await decryptGroupContentRef.current(normalized.content)
+            : await decryptMessageRef.current!({
+                message: normalized,
+                membersList,
+                currentUserId: currentUserIdRef.current,
+                privateKey,
+              });
           return { ...normalized, content: decryptedContent };
         } catch (err) {
           console.error('Decryption failed for message:', normalized.id, err);
@@ -177,7 +253,7 @@ export const useMessages = (
     return () => {
       cancelled = true;
     };
-  }, [conversationKey, membersKey, privateKey]);
+  }, [conversationKey, membersKey, privateKey, conversationType]);
 
   useEffect(() => {
     if (!conversationKey || !membersKey) return;
@@ -231,14 +307,19 @@ export const useMessages = (
             return next;
           });
 
-          if (decryptMessageRef.current && incoming.content.startsWith('enc:')) {
+          if (
+            incoming.content.startsWith('enc:g1:') ||
+            (decryptMessageRef.current && incoming.content.startsWith('enc:'))
+          ) {
             try {
-              const decryptedContent = await decryptMessageRef.current({
-                message: incoming,
-                membersList: membersRef.current,
-                currentUserId: currentUserIdRef.current,
-                privateKey,
-              });
+              const decryptedContent = incoming.content.startsWith('enc:g1:')
+                ? await decryptGroupContentRef.current(incoming.content)
+                : await decryptMessageRef.current!({
+                    message: incoming,
+                    membersList: membersRef.current,
+                    currentUserId: currentUserIdRef.current,
+                    privateKey,
+                  });
               setMessages((prev) => {
                 const next = prev.map((message) =>
                   sameId(message.id, incoming.id) &&
@@ -264,7 +345,7 @@ export const useMessages = (
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationKey, membersKey, privateKey]);
+  }, [conversationKey, membersKey, privateKey, conversationType]);
 
   const ensurePublicKey = async (userId: string): Promise<string | null> => {
     const member = membersRef.current.find((item) => sameId(item.id, userId));
@@ -285,48 +366,62 @@ export const useMessages = (
       return;
     }
 
-    const recipient = membersRef.current.find(
-      (member) => !sameId(member.id, currentUserId),
-    );
-    if (!recipient) {
-      alert('No recipient found for this conversation.');
-      return;
-    }
+    const isGroup = conversationType === 'group';
+    let encryptedContent = '';
 
-    const { data: blockRows, error: blockError } = await supabase
-      .from('blocks')
-      .select('id')
-      .or(
-        `and(blocker_id.eq.${currentUserId},blocked_user_id.eq.${recipient.id}),and(blocker_id.eq.${recipient.id},blocked_user_id.eq.${currentUserId})`,
-      )
-      .limit(1);
+    if (!isGroup) {
+      const recipient = membersRef.current.find(
+        (member) => !sameId(member.id, currentUserId),
+      );
+      if (!recipient) {
+        alert('No recipient found for this conversation.');
+        return;
+      }
 
-    if (blockError) {
-      console.error('Failed to check block status:', blockError);
-    }
+      const { data: blockRows, error: blockError } = await supabase
+        .from('blocks')
+        .select('id')
+        .or(
+          `and(blocker_id.eq.${currentUserId},blocked_user_id.eq.${recipient.id}),and(blocker_id.eq.${recipient.id},blocked_user_id.eq.${currentUserId})`,
+        )
+        .limit(1);
 
-    if (blockRows && blockRows.length > 0) {
-      alert("You can't message this user.");
-      return;
+      if (blockError) {
+        console.error('Failed to check block status:', blockError);
+      }
+
+      if (blockRows && blockRows.length > 0) {
+        alert("You can't message this user.");
+        return;
+      }
+
+      const senderPublicKey = await ensurePublicKey(currentUserId);
+      const recipientPublicKey = await ensurePublicKey(recipient.id);
+
+      if (!senderPublicKey || !recipientPublicKey) {
+        alert('Missing encryption keys for this conversation.');
+        return;
+      }
+
+      encryptedContent = buildEncryptedChatMessageContent(
+        messageContent,
+        senderPublicKey,
+        recipientPublicKey,
+        privateKey,
+      );
+    } else {
+      const groupKey = await ensureGroupKey();
+      if (!groupKey) {
+        alert('Could not unlock this group. Try again in a moment.');
+        return;
+      }
+      encryptedContent = encryptGroupMessage(messageContent, groupKey);
     }
 
     setIsSending(true);
     const tempId = `temp-${Date.now()}`;
 
     try {
-      const senderPublicKey = await ensurePublicKey(currentUserId);
-      const recipientPublicKey = await ensurePublicKey(recipient.id);
-
-      if (!senderPublicKey || !recipientPublicKey) {
-        throw new Error('Missing encryption keys for this conversation.');
-      }
-
-      const encryptedContent = buildEncryptedChatMessageContent(
-        messageContent,
-        senderPublicKey,
-        recipientPublicKey,
-        privateKey,
-      );
 
       const now = new Date().toISOString();
       const tempMessage: MessageT = {

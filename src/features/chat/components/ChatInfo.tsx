@@ -12,6 +12,7 @@ export const ChatInfo = (props: {
   onBlockUser?: (username: string, userId?: string) => void;
   onRemoveFriend?: (username: string, userId?: string) => void;
   onDeleteChat?: () => void;
+  isGroup?: boolean;
   muted?: boolean;
   muteSaving?: boolean;
   muteError?: string | null;
@@ -205,7 +206,7 @@ export const ChatInfo = (props: {
                 {props.muteError}
               </p>
             )}
-            {otherUser && props.isFriend?.(otherUser.id) && (
+            {otherUser && !props.isGroup && props.isFriend?.(otherUser.id) && (
               <button
                 type='button'
                 onClick={() => {
@@ -216,7 +217,7 @@ export const ChatInfo = (props: {
                 Remove friend
               </button>
             )}
-            {otherUser && (
+            {otherUser && !props.isGroup && (
               <button
                 type='button'
                 onClick={() => {
@@ -236,7 +237,7 @@ export const ChatInfo = (props: {
               onClick={props.onDeleteChat}
               className='w-full rounded-lg px-3 py-2.5 text-left text-sm text-rose-400 transition-colors hover:bg-rose-500/10'
             >
-              Delete conversation
+              {props.isGroup ? 'Leave group' : 'Delete conversation'}
             </button>
           </div>
         </div>

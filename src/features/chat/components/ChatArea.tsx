@@ -61,6 +61,7 @@ export const ChatArea = ({
     privateKey,
     async (args) => cryptoDecrypt(args),
     handleIncomingMessage,
+    conversationPreview?.type,
   );
 
   const { catalog, chipsByMessageId, toggleHeart, setReaction, removeMyReaction } =
@@ -69,10 +70,13 @@ export const ChatArea = ({
   const otherUser = members.find(
     (member) => !sameId(member.id, currentUserId),
   );
-  const otherUserId = otherUser?.id || conversationPreview?.otherUserId;
+  const isGroup = conversationPreview?.type === 'group';
+  const otherUserId = isGroup
+    ? undefined
+    : otherUser?.id || conversationPreview?.otherUserId;
   const blockedByMe = Boolean(otherUserId && isBlocked?.(otherUserId));
   const blockedMe = Boolean(otherUserId && isBlockedBy?.(otherUserId));
-  const messagingBlocked = blockedByMe || blockedMe;
+  const messagingBlocked = !isGroup && (blockedByMe || blockedMe);
 
   const handleSend = async (text: string) => {
     if (messagingBlocked) return;
@@ -89,6 +93,8 @@ export const ChatArea = ({
         onToggleChatInfo={onToggleChatInfo!}
         fallbackName={conversationPreview?.otherUserNickname}
         fallbackAvatar={conversationPreview?.otherUserAvatar}
+        isGroup={isGroup}
+        memberCount={members.length}
         blockedByMe={blockedByMe}
         muted={muted}
         muteAvailable={muteAvailable}

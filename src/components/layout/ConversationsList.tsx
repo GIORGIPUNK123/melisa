@@ -1,7 +1,7 @@
 import { ConversationT } from '../../types';
 import { formatConversationTime } from '../../shared/utils/dates';
 import { ui } from '../../shared/ui';
-import { IconVolumeOff } from '../../atoms';
+import { IconUsers, IconVolumeOff } from '../../atoms';
 
 export const ConversationsList = (props: {
   onConversationSelect: (conversationId: string) => void;
@@ -10,11 +10,24 @@ export const ConversationsList = (props: {
   conversations: ConversationT[];
   isLoading: boolean;
   isBlocked?: (userId?: string | null) => boolean;
+  onCreateGroup?: () => void;
 }) => {
   const { conversations, isLoading } = props;
 
   return (
     <div className='flex h-full flex-col'>
+      {props.onCreateGroup && (
+        <div className='px-2 pt-2'>
+          <button
+            type='button'
+            onClick={props.onCreateGroup}
+            className={`${ui.btnSecondary} gap-2 text-[13px]`}
+          >
+            <IconUsers size={16} />
+            New group
+          </button>
+        </div>
+      )}
       {isLoading ? (
         <div className='flex items-center justify-center py-10 text-[13px] text-slate-400'>
           Loading chats...
@@ -26,7 +39,8 @@ export const ConversationsList = (props: {
       ) : (
         <div className='flex-1 space-y-0.5 overflow-y-auto p-2'>
           {conversations.map((conv) => {
-            const blocked = Boolean(props.isBlocked?.(conv.otherUserId));
+            const isGroup = conv.type === 'group';
+            const blocked = !isGroup && Boolean(props.isBlocked?.(conv.otherUserId));
             const isActive = props.activeConversationId === conv.id;
 
             return (
@@ -44,7 +58,11 @@ export const ConversationsList = (props: {
                     className={`${ui.avatar} ${blocked ? 'opacity-70' : ''}`}
                   />
                 ) : (
-                  <div className={ui.avatarFallback}>
+                  <div
+                    className={`${ui.avatarFallback} ${
+                      isGroup ? 'bg-indigo-600 text-white' : ''
+                    }`}
+                  >
                     {conv.otherUserNickname.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -74,13 +92,13 @@ export const ConversationsList = (props: {
                       </div>
                     )}
                   </div>
-                  {blocked && (
+                  {(isGroup || blocked) && (
                     <div
                       className={`mt-0.5 text-[12px] ${
                         isActive ? 'text-indigo-100' : 'text-slate-400'
                       }`}
                     >
-                      Blocked
+                      {isGroup ? 'Group' : 'Blocked'}
                     </div>
                   )}
                 </div>

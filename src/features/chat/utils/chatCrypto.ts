@@ -1,6 +1,8 @@
 import {
   box,
   box_open,
+  secretbox,
+  secretbox_open,
   randomBytes,
   decodeUTF8,
   encodeUTF8,
@@ -14,6 +16,64 @@ type DecryptChatMessageArgs = {
   membersList: PublicProfileT[];
   currentUserId: string | null;
   privateKey: string | null;
+  groupKey?: Uint8Array | null;
+};
+
+export const generateGroupKey = () => randomBytes(32);
+
+export const wrapGroupKey = (
+  groupKey: Uint8Array,
+  recipientPublicKey: string,
+  senderPrivateKey: string,
+) => {
+  const nonce = randomBytes(24);
+  const sealed = box(
+    groupKey,
+    nonce,
+    decodeBase64(recipientPublicKey),
+    decodeBase64(senderPrivateKey),
+  );
+
+  return {
+    nonce: encodeBase64(nonce),
+    keyBox: encodeBase64(sealed),
+  };
+};
+
+export const unwrapGroupKey = (
+  keyBox: string,
+  nonce: string,
+  wrappedByPublicKey: string,
+  privateKey: string,
+) => {
+  const opened = box_open(
+    decodeBase64(keyBox),
+    decodeBase64(nonce),
+    decodeBase64(wrappedByPublicKey),
+    decodeBase64(privateKey),
+  );
+
+  return opened || null;
+};
+
+export const encryptGroupMessage = (messageContent: string, groupKey: Uint8Array) => {
+  const nonce = randomBytes(24);
+  const cipher = secretbox(decodeUTF8(messageContent), nonce, groupKey);
+  return `enc:g1:${encodeBase64(nonce)}:${encodeBase64(cipher)}`;
+};
+
+export const decryptGroupMessage = (content: string, groupKey: Uint8Array) => {
+  const parts = content.split(':');
+  if (parts.length < 4) return '[Encrypted message: invalid payload]';
+
+  const opened = secretbox_open(
+    decodeBase64(parts[3]),
+    decodeBase64(parts[2]),
+    groupKey,
+  );
+
+  if (!opened) return '[Encrypted message: failed to decrypt]';
+  return encodeUTF8(opened);
 };
 
 export const decryptChatMessageContent = async ({
@@ -21,9 +81,15 @@ export const decryptChatMessageContent = async ({
   membersList,
   currentUserId,
   privateKey,
+  groupKey,
 }: DecryptChatMessageArgs): Promise<string> => {
   if (!message.content.startsWith('enc:')) {
     return message.content;
+  }
+
+  if (message.content.startsWith('enc:g1:')) {
+    if (!groupKey) return '[Encrypted message: locked]';
+    return decryptGroupMessage(message.content, groupKey);
   }
 
   if (!currentUserId || !privateKey) {

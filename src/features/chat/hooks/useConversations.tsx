@@ -4,13 +4,23 @@ import { ConversationT } from '../../../types';
 import { PostgrestError } from '@supabase/supabase-js';
 import { asId } from '../../../shared/utils/ids';
 
-const MEMBERSHIP_WITH_MUTE = 'muted, last_message_at, conversations(id, type)';
-const MEMBERSHIP_WITHOUT_MUTE = 'last_message_at, conversations(id, type)';
+const MEMBERSHIP_WITH_MUTE =
+  'muted, last_message_at, conversations(id, type, name, last_message_at)';
+const MEMBERSHIP_WITHOUT_ACTIVITY =
+  'muted, last_message_at, conversations(id, type, name)';
+const MEMBERSHIP_WITHOUT_MUTE = 'last_message_at, conversations(id, type, name)';
+
+type ConversationRow = {
+  id: string;
+  type: string;
+  name?: string | null;
+  last_message_at?: string | null;
+};
 
 type MembershipRow = {
   muted?: boolean | null;
   last_message_at: string | null;
-  conversations: { id: string; type: string } | { id: string; type: string }[] | null;
+  conversations: ConversationRow | ConversationRow[] | null;
 };
 
 let loggedMissingMuteColumn = false;
@@ -103,6 +113,25 @@ export const useConversations = (userId: string | undefined) => {
         error: PostgrestError | null;
       };
 
+      if (
+        membersError &&
+        /conversations\.last_message_at/i.test(membersError.message || '')
+      ) {
+        const withoutActivity = (await supabase
+          .from('conversation_members')
+          .select(
+            muteColumnAvailableRef.current
+              ? MEMBERSHIP_WITHOUT_ACTIVITY
+              : MEMBERSHIP_WITHOUT_MUTE,
+          )
+          .eq('user_id', currentUserId)) as {
+          data: MembershipRow[] | null;
+          error: PostgrestError | null;
+        };
+        conversationMembers = withoutActivity.data;
+        membersError = withoutActivity.error;
+      }
+
       if (membersError && isMissingMutedColumn(membersError)) {
         markMuteUnavailable();
         const fallback = (await supabase
@@ -122,7 +151,26 @@ export const useConversations = (userId: string | undefined) => {
 
       for (const member of conversationMembers || []) {
         const conv = conversationFromRow(member.conversations);
-        if (!conv?.id || conv.type !== 'direct') continue;
+        if (!conv?.id || (conv.type !== 'direct' && conv.type !== 'group')) {
+          continue;
+        }
+
+        if (conv.type === 'group') {
+          const groupName = conv.name?.trim() || 'Group';
+          convs.push({
+            id: asId(conv.id),
+            type: conv.type,
+            name: groupName,
+            otherUserNickname: groupName,
+            otherUserId: '',
+            lastMessageTime: latestTimestamp(
+              member.last_message_at,
+              conv.last_message_at,
+            ),
+            muted: member.muted === true,
+          });
+          continue;
+        }
 
         const { data: otherMember } = await supabase
           .from('conversation_members')
@@ -150,6 +198,7 @@ export const useConversations = (userId: string | undefined) => {
           lastMessageTime: latestTimestamp(
             member.last_message_at,
             otherMember.last_message_at,
+            conv.last_message_at,
           ),
           muted: member.muted === true,
         });

@@ -76,14 +76,20 @@ export const useChatActions = (
     });
   };
 
-  const handleDeleteChat = async (activeConversationId: string | null) => {
+  const handleDeleteChat = async (
+    activeConversationId: string | null,
+    options?: { group?: boolean },
+  ) => {
     if (!activeConversationId || !userId) return;
 
+    const group = Boolean(options?.group);
+
     openConfirmModal({
-      title: 'Delete Chat',
-      message:
-        'Are you sure you want to delete this chat? This action cannot be undone.',
-      confirmText: 'Delete',
+      title: group ? 'Leave group' : 'Delete Chat',
+      message: group
+        ? 'Leave this group? It stays available for the other members.'
+        : 'Are you sure you want to delete this chat? This action cannot be undone.',
+      confirmText: group ? 'Leave' : 'Delete',
       onConfirm: async () => {
         try {
           await supabase

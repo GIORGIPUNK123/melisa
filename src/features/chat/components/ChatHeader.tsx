@@ -9,6 +9,8 @@ interface ChatHeaderProps {
   onToggleChatInfo: () => void;
   fallbackName?: string;
   fallbackAvatar?: string;
+  isGroup?: boolean;
+  memberCount?: number;
   blockedByMe?: boolean;
   muted?: boolean;
   muteAvailable?: boolean;
@@ -24,6 +26,8 @@ export const ChatHeader = ({
   onToggleChatInfo,
   fallbackName,
   fallbackAvatar,
+  isGroup = false,
+  memberCount = 0,
   blockedByMe,
   muted = false,
   muteAvailable = true,
@@ -32,9 +36,17 @@ export const ChatHeader = ({
   onToggleMute,
 }: ChatHeaderProps) => {
   const otherMember = members.find((m) => m.id !== currentUserId);
-  const displayName =
-    otherMember?.nickname || otherMember?.username || fallbackName;
-  const displayAvatar = otherMember?.avatar_url || fallbackAvatar;
+  const displayName = isGroup
+    ? fallbackName || 'Group'
+    : otherMember?.nickname || otherMember?.username || fallbackName;
+  const displayAvatar = isGroup
+    ? undefined
+    : otherMember?.avatar_url || fallbackAvatar;
+  const statusParts = [
+    isGroup ? (memberCount > 0 ? `${memberCount} members` : 'Group') : null,
+    !isGroup && blockedByMe ? 'Blocked' : null,
+    muted ? 'Muted' : null,
+  ].filter((part): part is string => Boolean(part));
   const displayInitial = (displayName || '?').charAt(0).toUpperCase();
 
   return (
@@ -75,12 +87,8 @@ export const ChatHeader = ({
             )}
             <div className='min-w-0'>
               <h2 className={ui.name}>{displayName}</h2>
-              {(blockedByMe || muted) && (
-                <p className={ui.meta}>
-                  {[blockedByMe ? 'Blocked' : null, muted ? 'Muted' : null]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </p>
+              {statusParts.length > 0 && (
+                <p className={ui.meta}>{statusParts.join(' · ')}</p>
               )}
               {muteError && (
                 <p className='text-[12px] leading-4 text-rose-400'>{muteError}</p>

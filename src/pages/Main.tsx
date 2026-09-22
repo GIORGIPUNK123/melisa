@@ -77,6 +77,7 @@ export const Main = () => {
     conversations,
     isLoading: conversationLoading,
     bumpConversation,
+    fetchConversations,
     setConversationMuted,
     muteAvailable,
     muteError,
@@ -259,6 +260,16 @@ export const Main = () => {
           notifications={notifications}
           onMarkNotificationAsRead={markNotificationAsRead}
           onMarkAllNotificationsAsRead={markAllNotificationsAsRead}
+          groupModalOpen={modals.groupModalOpen}
+          closeGroupModal={modals.closeGroupModal}
+          friends={visibleFriends}
+          privateKey={privateKey}
+          onGroupCreated={async (conversationId) => {
+            await fetchConversations();
+            chatState.setActiveTab('chats');
+            chatState.selectConversationAndSwitchToChats(conversationId);
+            modals.closeGroupModal();
+          }}
         />
 
         <Sidebar
@@ -285,6 +296,7 @@ export const Main = () => {
           friendsLoading={friendsLoading}
           getOrCreateConversation={getOrCreateConversation}
           isBlocked={chatActions.isBlocked}
+          onCreateGroup={modals.openGroupModal}
         />
 
         {!chatState.activeConversationId ? (
@@ -319,8 +331,11 @@ export const Main = () => {
             onBlockUser={chatActions.handleBlockUser}
             onRemoveFriend={chatActions.handleRemoveFriend}
             onDeleteChat={() =>
-              chatActions.handleDeleteChat(chatState.activeConversationId)
+              chatActions.handleDeleteChat(chatState.activeConversationId, {
+                group: activeConversation?.type === 'group',
+              })
             }
+            isGroup={activeConversation?.type === 'group'}
             muted={Boolean(activeConversation?.muted)}
             muteSaving={sameId(savingMuteId, chatState.activeConversationId)}
             muteError={activeMuteError}

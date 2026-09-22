@@ -14,6 +14,7 @@ export const useModals = () => {
   const [userProfileModalOpen, setUserProfileModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
+  const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
   const [confirmModalData, setConfirmModalData] =
     useState<ConfirmModalData | null>(null);
@@ -29,6 +30,9 @@ export const useModals = () => {
 
   const openNotificationsModal = () => setNotificationsModalOpen(true);
   const closeNotificationsModal = () => setNotificationsModalOpen(false);
+
+  const openGroupModal = () => setGroupModalOpen(true);
+  const closeGroupModal = () => setGroupModalOpen(false);
 
   const openUserProfileModal = (username: string) => {
     setSelectedUsername(username);
@@ -61,6 +65,9 @@ export const useModals = () => {
     notificationsModalOpen,
     openNotificationsModal,
     closeNotificationsModal,
+    groupModalOpen,
+    openGroupModal,
+    closeGroupModal,
     userProfileModalOpen,
     selectedUsername,
     openUserProfileModal,
