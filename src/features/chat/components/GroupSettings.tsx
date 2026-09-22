@@ -762,17 +762,20 @@ const MemberOptions = (props: {
     props.access?.canClearMessages === true && initialRole === 'moderator',
   );
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const save = async () => {
     setSaving(true);
+    setError(null);
     try {
       await props.onSave(role, {
         canKick,
         canChangePhoto,
         canClearMessages: canClear,
       });
-    } catch (error) {
-      props.onError(error);
+    } catch (saveError) {
+      setError(groupActionError(saveError, 'Could not update this member.'));
+      props.onError(saveError);
     } finally {
       setSaving(false);
     }
@@ -814,7 +817,10 @@ const MemberOptions = (props: {
                 <button
                   key={value}
                   type='button'
-                  onClick={() => setRole(value)}
+                  onClick={() => {
+                    setError(null);
+                    setRole(value);
+                  }}
                   className={`w-full rounded-xl border px-3 py-2.5 text-left ${
                     role === value
                       ? 'border-indigo-500 bg-indigo-600/15'
@@ -867,7 +873,13 @@ const MemberOptions = (props: {
               <button
                 type='button'
                 onClick={() => {
-                  void props.onKick().catch(props.onError);
+                  setError(null);
+                  void props.onKick().catch((kickError) => {
+                    setError(
+                      groupActionError(kickError, 'Could not remove this person.'),
+                    );
+                    props.onError(kickError);
+                  });
                 }}
                 className='w-full border-t border-slate-800 px-3.5 py-3 text-left text-[15px] font-medium text-rose-400 transition-colors hover:bg-rose-500/10'
               >
@@ -875,6 +887,9 @@ const MemberOptions = (props: {
               </button>
             )}
           </div>
+          {error && (
+            <p className='mt-3 text-[13px] leading-5 text-rose-400'>{error}</p>
+          )}
         </div>
       </div>
     </div>
