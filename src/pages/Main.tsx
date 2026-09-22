@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loading } from '../components/Loading';
 import { useAdditionalInfo } from '../features/friends/hooks/useAdditionalInfo';
 import { useAuth } from '../features/auth/hooks/useAuth';
@@ -23,6 +23,7 @@ import { useHeartbeat } from '../features/notifications/hooks/useHeartbeat';
 import { useConversations } from '../features/chat/hooks/useConversations';
 import { useFriendsList } from '../features/friends/hooks/useFriendsList';
 import { PublicProfileT } from '../types';
+import { asId, sameId } from '../shared/utils/ids';
 
 const EMPTY_MEMBERS: PublicProfileT[] = [];
 
@@ -72,8 +73,15 @@ export const Main = () => {
   const modals = useModals();
   const chatState = useChatState();
   const { profile, setProfile } = useCurrentUserProfile(userId);
-  const { conversations, isLoading: conversationLoading, bumpConversation } =
-    useConversations(userId);
+  const {
+    conversations,
+    isLoading: conversationLoading,
+    bumpConversation,
+    setConversationMuted,
+    muteAvailable,
+    muteError,
+    savingMuteId,
+  } = useConversations(userId);
   const membersForActiveChat =
     chatState.membersConversationId === chatState.activeConversationId
       ? chatState.conversationMembers
@@ -101,10 +109,39 @@ export const Main = () => {
     ensureEnabled: ensureNotificationSound,
   } = useAudioNotification(784, 0.32);
 
+  const mutedConversationIdsRef = useRef<Set<string>>(new Set());
+  mutedConversationIdsRef.current = new Set(
+    conversations
+      .filter((conversation) => conversation.muted)
+      .map((conversation) => conversation.id),
+  );
+
+  const playIncomingChatSound = useCallback(
+    (conversationId: string) => {
+      if (mutedConversationIdsRef.current.has(asId(conversationId))) return;
+      void playMessageSound();
+    },
+    [playMessageSound],
+  );
+
+  const activeMuteError =
+    muteError &&
+    sameId(muteError.conversationId, chatState.activeConversationId)
+      ? muteError.message
+      : null;
+
+  const handleToggleMute = useCallback(() => {
+    if (!activeConversation) return;
+    void setConversationMuted(
+      activeConversation.id,
+      !activeConversation.muted,
+    );
+  }, [activeConversation, setConversationMuted]);
+
   const { unreadCounts } = useUnreadMessages(
     userId,
     chatState.activeConversationId,
-    playMessageSound,
+    playIncomingChatSound,
   );
 
   useNotificationSound(notifications.length, playNotificationSound);
@@ -262,7 +299,12 @@ export const Main = () => {
             members={membersForActiveChat}
             conversationPreview={activeConversation}
             onConversationActivity={bumpConversation}
-            onIncomingMessageSound={playMessageSound}
+            onIncomingMessageSound={playIncomingChatSound}
+            muted={Boolean(activeConversation?.muted)}
+            muteAvailable={muteAvailable}
+            muteSaving={sameId(savingMuteId, chatState.activeConversationId)}
+            muteError={activeMuteError}
+            onToggleMute={handleToggleMute}
             isBlocked={chatActions.isBlocked}
             isBlockedBy={chatActions.isBlockedBy}
             onUnblockUser={chatActions.handleBlockUser}
@@ -279,6 +321,10 @@ export const Main = () => {
             onDeleteChat={() =>
               chatActions.handleDeleteChat(chatState.activeConversationId)
             }
+            muted={Boolean(activeConversation?.muted)}
+            muteSaving={sameId(savingMuteId, chatState.activeConversationId)}
+            muteError={activeMuteError}
+            onToggleMute={handleToggleMute}
             isBlocked={chatActions.isBlocked}
             isFriend={isFriend}
           />

@@ -1,6 +1,7 @@
 import { ConversationT } from '../../types';
 import { formatConversationTime } from '../../shared/utils/dates';
 import { ui } from '../../shared/ui';
+import { IconVolumeOff } from '../../atoms';
 
 export const ConversationsList = (props: {
   onConversationSelect: (conversationId: string) => void;
@@ -49,7 +50,20 @@ export const ConversationsList = (props: {
                 )}
                 <div className='min-w-0 flex-1'>
                   <div className='flex items-center gap-2'>
-                    <div className={ui.name}>{conv.otherUserNickname}</div>
+                    <div className={`${ui.name} min-w-0 flex-1`}>
+                      {conv.otherUserNickname}
+                    </div>
+                    {conv.muted && (
+                      <span
+                        title='Muted'
+                        className={`flex-shrink-0 ${
+                          isActive ? 'text-indigo-100' : 'text-slate-400'
+                        }`}
+                      >
+                        <IconVolumeOff size={14} />
+                        <span className='sr-only'>Muted</span>
+                      </span>
+                    )}
                     {conv.lastMessageTime && (
                       <div
                         className={`ml-auto flex-shrink-0 text-[11px] ${

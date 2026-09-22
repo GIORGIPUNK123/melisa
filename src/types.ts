@@ -60,6 +60,7 @@ export interface ConversationT {
   otherUserAvatar?: string;
   otherUserId: string;
   lastMessageTime?: string;
+  muted: boolean;
 }
 export interface ConversationMemberT {
   id: string;
@@ -68,6 +69,7 @@ export interface ConversationMemberT {
   joined_at: string;
   last_read_at: string;
   last_message_at: string;
+  muted?: boolean;
 }
 // Message types (with sender info)
 export interface MessageT {

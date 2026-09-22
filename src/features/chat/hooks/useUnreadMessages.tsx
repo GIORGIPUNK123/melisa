@@ -5,7 +5,7 @@ import { sameId } from '../../../shared/utils/ids';
 export const useUnreadMessages = (
   userId: string | undefined,
   activeConversationId: string | null | undefined,
-  onIncomingMessage?: () => void,
+  onIncomingMessage?: (conversationId: string) => void,
 ) => {
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const activeConversationIdRef = useRef(activeConversationId);
@@ -152,15 +152,15 @@ export const useUnreadMessages = (
 
           if (
             !newMessage.sender_id ||
-            sameId(newMessage.sender_id, userId)
+            sameId(newMessage.sender_id, userId) ||
+            !newMessage.conversation_id
           ) {
             return;
           }
 
-          onIncomingMessageRef.current?.();
-
-          if (!newMessage?.conversation_id) return;
-          bumpUnread(String(newMessage.conversation_id));
+          const conversationId = String(newMessage.conversation_id);
+          onIncomingMessageRef.current?.(conversationId);
+          bumpUnread(conversationId);
         },
       )
       .on(
@@ -177,14 +177,17 @@ export const useUnreadMessages = (
             user_id?: string;
           };
 
-          if (!reaction.user_id || sameId(reaction.user_id, userId)) {
+          if (
+            !reaction.user_id ||
+            sameId(reaction.user_id, userId) ||
+            !reaction.conversation_id
+          ) {
             return;
           }
 
-          if (!reaction.conversation_id) return;
-
-          onIncomingMessageRef.current?.();
-          bumpUnread(String(reaction.conversation_id));
+          const conversationId = String(reaction.conversation_id);
+          onIncomingMessageRef.current?.(conversationId);
+          bumpUnread(conversationId);
         },
       )
       .subscribe();

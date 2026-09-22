@@ -17,7 +17,12 @@ interface Props {
   members: PublicProfileT[];
   conversationPreview?: ConversationT;
   onConversationActivity?: (conversationId: string) => void;
-  onIncomingMessageSound?: () => void;
+  onIncomingMessageSound?: (conversationId: string) => void;
+  muted?: boolean;
+  muteAvailable?: boolean;
+  muteSaving?: boolean;
+  muteError?: string | null;
+  onToggleMute?: () => void;
   isBlocked?: (userId?: string | null) => boolean;
   isBlockedBy?: (userId?: string | null) => boolean;
   onUnblockUser?: (username: string, userId?: string) => void;
@@ -33,6 +38,11 @@ export const ChatArea = ({
   conversationPreview,
   onConversationActivity,
   onIncomingMessageSound,
+  muted = false,
+  muteAvailable = true,
+  muteSaving = false,
+  muteError,
+  onToggleMute,
   isBlocked,
   isBlockedBy,
   onUnblockUser,
@@ -40,7 +50,7 @@ export const ChatArea = ({
   const handleIncomingMessage = (message: MessageT) => {
     onConversationActivity?.(message.conversation_id);
     if (!sameId(message.sender_id, currentUserId)) {
-      onIncomingMessageSound?.();
+      onIncomingMessageSound?.(message.conversation_id);
     }
   };
 
@@ -80,6 +90,11 @@ export const ChatArea = ({
         fallbackName={conversationPreview?.otherUserNickname}
         fallbackAvatar={conversationPreview?.otherUserAvatar}
         blockedByMe={blockedByMe}
+        muted={muted}
+        muteAvailable={muteAvailable}
+        muteSaving={muteSaving}
+        muteError={muteError}
+        onToggleMute={onToggleMute}
       />
 
       <div className='min-h-0 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-5 sm:py-4'>

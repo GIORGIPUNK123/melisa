@@ -12,6 +12,10 @@ export const ChatInfo = (props: {
   onBlockUser?: (username: string, userId?: string) => void;
   onRemoveFriend?: (username: string, userId?: string) => void;
   onDeleteChat?: () => void;
+  muted?: boolean;
+  muteSaving?: boolean;
+  muteError?: string | null;
+  onToggleMute?: () => void;
   isBlocked?: (userId?: string | null) => boolean;
   isFriend?: (userId?: string | null) => boolean;
 }) => {
@@ -182,6 +186,25 @@ export const ChatInfo = (props: {
 
         <div className='border-t border-slate-800 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]'>
           <div className='space-y-1'>
+            {props.onToggleMute && (
+              <button
+                type='button'
+                onClick={props.onToggleMute}
+                disabled={props.muteSaving}
+                className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors disabled:opacity-50 ${
+                  props.muted
+                    ? 'bg-indigo-600/15 text-indigo-300 hover:bg-indigo-600/25'
+                    : 'text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                {props.muted ? 'Unmute conversation' : 'Mute conversation'}
+              </button>
+            )}
+            {props.muteError && (
+              <p className='px-3 text-xs leading-5 text-rose-400'>
+                {props.muteError}
+              </p>
+            )}
             {otherUser && props.isFriend?.(otherUser.id) && (
               <button
                 type='button'
