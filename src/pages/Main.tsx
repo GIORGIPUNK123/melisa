@@ -5,6 +5,7 @@ import { useAdditionalInfo } from '../features/friends/hooks/useAdditionalInfo';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { Sidebar } from '../components/layout/Sidebar';
 import { ChatInfo } from '../features/chat/components/ChatInfo';
+import { GroupSettings } from '../features/chat/components/GroupSettings';
 import { useNotifications } from '../features/notifications/hooks/useNotifications';
 import { useUnreadMessages } from '../features/chat/hooks/useUnreadMessages';
 import { useAudioNotification } from '../features/notifications/hooks/useAudioNotification';
@@ -325,6 +326,11 @@ export const Main = () => {
             privateKey={privateKey}
             members={membersForActiveChat}
             conversationPreview={activeConversation}
+            groupAvatarUrl={chatState.groupAvatarUrl}
+            groupAvatarReady={
+              activeConversation?.type === 'group' &&
+              chatState.membersConversationId === chatState.activeConversationId
+            }
             onConversationActivity={bumpConversation}
             onIncomingMessageSound={playIncomingChatSound}
             muted={Boolean(activeConversation?.muted)}
@@ -338,7 +344,46 @@ export const Main = () => {
           />
         )}
 
-        {chatState.isChatInfoVisible && (
+        {chatState.isChatInfoVisible &&
+          activeConversation?.type === 'group' &&
+          chatState.activeConversationId && (
+            <GroupSettings
+              members={membersForActiveChat}
+              memberAccess={chatState.memberAccess}
+              creatorId={chatState.groupCreatorId}
+              conversationId={chatState.activeConversationId}
+              groupName={activeConversation.otherUserNickname || 'Group'}
+              avatarUrl={
+                chatState.membersConversationId === chatState.activeConversationId
+                  ? chatState.groupAvatarUrl
+                  : activeConversation.otherUserAvatar
+              }
+              currentUserId={user.id}
+              friends={visibleFriends}
+              privateKey={privateKey}
+              muted={Boolean(activeConversation.muted)}
+              muteSaving={sameId(savingMuteId, chatState.activeConversationId)}
+              muteError={activeMuteError}
+              onClose={chatState.closeChatInfo}
+              onToggleMute={handleToggleMute}
+              onViewProfile={modals.openUserProfileModal}
+              onMembersChanged={chatState.refreshConversationMembers}
+              onPhotoUpdated={() => {
+                void fetchConversations();
+              }}
+              onLeft={() => {
+                chatState.clearActiveConversation();
+                void fetchConversations();
+              }}
+              onDeleted={() => {
+                chatState.clearActiveConversation();
+                void fetchConversations();
+              }}
+              onConfirm={modals.openConfirmModal}
+            />
+          )}
+
+        {chatState.isChatInfoVisible && activeConversation?.type !== 'group' && (
           <ChatInfo
             members={membersForActiveChat}
             onClose={chatState.closeChatInfo}
@@ -346,22 +391,11 @@ export const Main = () => {
             onBlockUser={chatActions.handleBlockUser}
             onRemoveFriend={chatActions.handleRemoveFriend}
             onDeleteChat={() =>
-              chatActions.handleDeleteChat(chatState.activeConversationId, {
-                group: activeConversation?.type === 'group',
-              })
+              chatActions.handleDeleteChat(chatState.activeConversationId)
             }
-            isGroup={activeConversation?.type === 'group'}
             conversationId={chatState.activeConversationId}
-            groupName={activeConversation?.otherUserNickname}
-            groupCreatorId={chatState.groupCreatorId}
-            memberRoles={chatState.memberRoles}
             friends={visibleFriends}
             privateKey={privateKey}
-            onMembersChanged={chatState.refreshConversationMembers}
-            onGroupDeleted={() => {
-              chatState.clearActiveConversation();
-              void fetchConversations();
-            }}
             onConfirmAction={modals.openConfirmModal}
             muted={Boolean(activeConversation?.muted)}
             muteSaving={sameId(savingMuteId, chatState.activeConversationId)}

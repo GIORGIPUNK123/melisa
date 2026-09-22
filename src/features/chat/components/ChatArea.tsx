@@ -16,6 +16,8 @@ interface Props {
   privateKey: string;
   members: PublicProfileT[];
   conversationPreview?: ConversationT;
+  groupAvatarUrl?: string | null;
+  groupAvatarReady?: boolean;
   onConversationActivity?: (conversationId: string) => void;
   onIncomingMessageSound?: (conversationId: string) => void;
   muted?: boolean;
@@ -36,6 +38,8 @@ export const ChatArea = ({
   privateKey,
   members,
   conversationPreview,
+  groupAvatarUrl,
+  groupAvatarReady = false,
   onConversationActivity,
   onIncomingMessageSound,
   muted = false,
@@ -92,7 +96,11 @@ export const ChatArea = ({
         onToggleSidebar={onToggleSidebar!}
         onToggleChatInfo={onToggleChatInfo!}
         fallbackName={conversationPreview?.otherUserNickname}
-        fallbackAvatar={conversationPreview?.otherUserAvatar}
+        fallbackAvatar={
+          isGroup && groupAvatarReady
+            ? groupAvatarUrl || undefined
+            : conversationPreview?.otherUserAvatar
+        }
         isGroup={isGroup}
         memberCount={members.length}
         blockedByMe={blockedByMe}

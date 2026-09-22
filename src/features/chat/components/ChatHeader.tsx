@@ -1,6 +1,6 @@
 import { PublicProfileT } from '../../../types';
 import { ui } from '../../../shared/ui';
-import { IconVolume, IconVolumeOff } from '../../../atoms';
+import { IconInfo, IconSettings, IconVolume, IconVolumeOff } from '../../../atoms';
 
 interface ChatHeaderProps {
   members: PublicProfileT[];
@@ -40,7 +40,7 @@ export const ChatHeader = ({
     ? fallbackName || 'Group'
     : otherMember?.nickname || otherMember?.username || fallbackName;
   const displayAvatar = isGroup
-    ? undefined
+    ? fallbackAvatar
     : otherMember?.avatar_url || fallbackAvatar;
   const statusParts = [
     isGroup ? (memberCount > 0 ? `${memberCount} members` : 'Group') : null,
@@ -124,21 +124,10 @@ export const ChatHeader = ({
         <button
           onClick={onToggleChatInfo}
           className={ui.iconBtn}
-          title='Toggle chat info'
+          title={isGroup ? 'Group settings' : 'Conversation details'}
+          aria-label={isGroup ? 'Group settings' : 'Conversation details'}
         >
-          <svg
-            className='h-5 w-5'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-            />
-          </svg>
+          {isGroup ? <IconSettings size={20} /> : <IconInfo size={20} />}
         </button>
       </div>
     </div>

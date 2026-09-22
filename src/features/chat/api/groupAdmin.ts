@@ -105,14 +105,36 @@ export const kickGroupMember = async (
   await api.delete(`/conversations/group/${conversationId}/members/${userId}`);
 };
 
-export const setGroupAdmin = async (
+export const setGroupMemberRole = async (
   conversationId: string,
   userId: string,
-  admin: boolean,
+  role: 'admin' | 'moderator' | 'member',
+  permissions?: {
+    canKick?: boolean;
+    canChangePhoto?: boolean;
+    canClearMessages?: boolean;
+  },
 ) => {
   await api.put(`/conversations/group/${conversationId}/admins/${userId}`, {
-    admin,
+    role,
+    canKick: permissions?.canKick === true,
+    canChangePhoto: permissions?.canChangePhoto === true,
+    canClearMessages: permissions?.canClearMessages === true,
   });
+};
+
+export const updateGroupPhoto = async (
+  conversationId: string,
+  avatarUrl: string | null,
+) => {
+  await api.put(`/conversations/group/${conversationId}/photo`, { avatarUrl });
+};
+
+export const leaveGroup = async (
+  conversationId: string,
+  choice?: { successorId?: string; random?: boolean },
+) => {
+  await api.post(`/conversations/group/${conversationId}/leave`, choice || {});
 };
 
 export const clearGroupMessages = async (conversationId: string) => {

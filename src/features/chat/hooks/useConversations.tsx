@@ -5,7 +5,7 @@ import { PostgrestError } from '@supabase/supabase-js';
 import { asId } from '../../../shared/utils/ids';
 
 const MEMBERSHIP_WITH_MUTE =
-  'muted, last_message_at, conversations(id, type, name, last_message_at)';
+  'muted, last_message_at, conversations(id, type, name, avatar_url, last_message_at)';
 const MEMBERSHIP_WITHOUT_ACTIVITY =
   'muted, last_message_at, conversations(id, type, name)';
 const MEMBERSHIP_WITHOUT_MUTE = 'last_message_at, conversations(id, type, name)';
@@ -14,6 +14,7 @@ type ConversationRow = {
   id: string;
   type: string;
   name?: string | null;
+  avatar_url?: string | null;
   last_message_at?: string | null;
 };
 
@@ -115,6 +116,21 @@ export const useConversations = (userId: string | undefined) => {
 
       if (
         membersError &&
+        /conversations\.avatar_url/i.test(membersError.message || '')
+      ) {
+        const withoutPhoto = (await supabase
+          .from('conversation_members')
+          .select(selection.replace(', avatar_url', ''))
+          .eq('user_id', currentUserId)) as {
+          data: MembershipRow[] | null;
+          error: PostgrestError | null;
+        };
+        conversationMembers = withoutPhoto.data;
+        membersError = withoutPhoto.error;
+      }
+
+      if (
+        membersError &&
         /conversations\.last_message_at/i.test(membersError.message || '')
       ) {
         const withoutActivity = (await supabase
@@ -162,6 +178,7 @@ export const useConversations = (userId: string | undefined) => {
             type: conv.type,
             name: groupName,
             otherUserNickname: groupName,
+            otherUserAvatar: conv.avatar_url || undefined,
             otherUserId: '',
             lastMessageTime: latestTimestamp(
               member.last_message_at,
@@ -272,6 +289,39 @@ export const useConversations = (userId: string | undefined) => {
         },
         () => {
           void fetchConversations();
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversations',
+        },
+        (payload) => {
+          const row = payload.new as {
+            id?: string | number;
+            name?: string | null;
+            avatar_url?: string | null;
+          };
+          if (row?.id == null) return;
+          const id = asId(row.id);
+          setConversations((prev) =>
+            prev.map((conversation) => {
+              if (conversation.id !== id || conversation.type !== 'group') {
+                return conversation;
+              }
+              return {
+                ...conversation,
+                otherUserNickname:
+                  row.name?.trim() || conversation.otherUserNickname,
+                otherUserAvatar:
+                  'avatar_url' in (payload.new as object)
+                    ? row.avatar_url || undefined
+                    : conversation.otherUserAvatar,
+              };
+            }),
+          );
         },
       )
       .subscribe();

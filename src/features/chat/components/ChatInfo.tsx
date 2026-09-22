@@ -10,7 +10,7 @@ import {
   deleteGroup,
   groupActionError,
   kickGroupMember,
-  setGroupAdmin,
+  setGroupMemberRole,
 } from '../api/groupAdmin';
 import { emitGroupMessagesCleared } from '../utils/groupEvents';
 import { InviteGroupMembersModal } from './InviteGroupMembersModal';
@@ -285,10 +285,10 @@ export const ChatInfo = (props: {
                                 'Make admin',
                                 async () => {
                                   if (!props.conversationId) return;
-                                  await setGroupAdmin(
+                                  await setGroupMemberRole(
                                     props.conversationId,
                                     member.id,
-                                    true,
+                                    'admin',
                                   );
                                   props.onMembersChanged?.();
                                 },
@@ -309,10 +309,10 @@ export const ChatInfo = (props: {
                                 'Remove admin',
                                 async () => {
                                   if (!props.conversationId) return;
-                                  await setGroupAdmin(
+                                  await setGroupMemberRole(
                                     props.conversationId,
                                     member.id,
-                                    false,
+                                    'member',
                                   );
                                   props.onMembersChanged?.();
                                 },
