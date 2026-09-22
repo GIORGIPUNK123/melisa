@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../../db/supabase';
 import { PublicProfileT } from '../../../types';
 
+export type GroupRole = 'admin' | 'member';
+
 export const useChatState = () => {
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
@@ -16,6 +18,9 @@ export const useChatState = () => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<'chats' | 'friends'>('chats');
   const [isOpeningConversation, setIsOpeningConversation] = useState(false);
+  const [memberRoles, setMemberRoles] = useState<Record<string, GroupRole>>({});
+  const [groupCreatorId, setGroupCreatorId] = useState<string | null>(null);
+  const [membersVersion, setMembersVersion] = useState(0);
 
   useEffect(() => {
     if (!activeConversationId) {
@@ -27,35 +32,79 @@ export const useChatState = () => {
     if (!activeConversationId) {
       setConversationMembers([]);
       setMembersConversationId(null);
+      setMemberRoles({});
+      setGroupCreatorId(null);
       return;
     }
 
     let cancelled = false;
 
     const fetchInitialMembers = async () => {
-      const { data, error } = await supabase
+      const { data: conversation } = await supabase
+        .from('conversations')
+        .select('type, created_by')
+        .eq('id', activeConversationId)
+        .maybeSingle();
+
+      const creatorId =
+        conversation?.type === 'group' ? conversation.created_by || null : null;
+
+      const withRole = await supabase
         .from('conversation_members')
-        .select('user_id')
+        .select('user_id, role')
         .eq('conversation_id', activeConversationId);
 
-      if (!error && data) {
-        const userIds = data.map((m) => m.user_id);
-
-        const { data: profiles, error: profilesError } = await supabase
-          .from('public_profiles')
-          .select(
-            'id, username, nickname, avatar_url, status, created_at, updated_at, last_seen_at, appear_offline, public_key',
-          )
-          .in('id', userIds);
-
-        if (profilesError) {
-          console.error('Failed to fetch member profiles:', profilesError);
+      let memberRows = withRole.data as
+        | { user_id: string; role?: string | null }[]
+        | null;
+      if (withRole.error) {
+        const fallback = await supabase
+          .from('conversation_members')
+          .select('user_id')
+          .eq('conversation_id', activeConversationId);
+        if (fallback.error || !fallback.data) {
+          console.error('Failed to fetch conversation members:', fallback.error);
           return;
         }
-        if (!cancelled && profiles) {
-          setConversationMembers(profiles);
+        memberRows = fallback.data;
+      }
+
+      const userIds = (memberRows || []).map((member) => member.user_id);
+      if (userIds.length === 0) {
+        if (!cancelled) {
+          setConversationMembers([]);
+          setMemberRoles({});
+          setGroupCreatorId(creatorId);
           setMembersConversationId(activeConversationId);
         }
+        return;
+      }
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from('public_profiles')
+        .select(
+          'id, username, nickname, avatar_url, status, created_at, updated_at, last_seen_at, appear_offline, public_key',
+        )
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Failed to fetch member profiles:', profilesError);
+        return;
+      }
+
+      const roles: Record<string, GroupRole> = {};
+      for (const member of memberRows || []) {
+        const admin =
+          member.role === 'admin' ||
+          (creatorId != null && member.user_id === creatorId);
+        roles[String(member.user_id)] = admin ? 'admin' : 'member';
+      }
+
+      if (!cancelled && profiles) {
+        setConversationMembers(profiles);
+        setMemberRoles(conversation?.type === 'group' ? roles : {});
+        setGroupCreatorId(creatorId);
+        setMembersConversationId(activeConversationId);
       }
     };
 
@@ -71,20 +120,25 @@ export const useChatState = () => {
           table: 'conversation_members',
           filter: `conversation_id=eq.${activeConversationId}`,
         },
+        () => {
+          void fetchInitialMembers();
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversation_members',
+          filter: `conversation_id=eq.${activeConversationId}`,
+        },
         (payload) => {
-          const newMember: PublicProfileT = {
-            id: payload.new.user_id,
-            username: payload.new.username,
-            nickname: payload.new.nickname,
-            avatar_url: payload.new.avatar_url || undefined,
-            status: payload.new.status,
-            created_at: payload.new.created_at,
-            updated_at: payload.new.updated_at,
-            last_seen_at: payload.new.last_seen_at,
-            appear_offline: payload.new.appear_offline,
-            public_key: payload.new.public_key || undefined,
-          };
-          setConversationMembers((prev) => [...prev, newMember]);
+          const userId = String(payload.new.user_id || '');
+          const role = payload.new.role;
+          if (!userId || (role !== 'admin' && role !== 'member')) return;
+          setMemberRoles((prev) =>
+            prev[userId] === role ? prev : { ...prev, [userId]: role },
+          );
         },
       )
       .on(
@@ -96,9 +150,22 @@ export const useChatState = () => {
           filter: `conversation_id=eq.${activeConversationId}`,
         },
         (payload) => {
+          const removedUserId = payload.old.user_id
+            ? String(payload.old.user_id)
+            : '';
+          if (!removedUserId) {
+            void fetchInitialMembers();
+            return;
+          }
           setConversationMembers((prev) =>
-            prev.filter((m) => m.id !== payload.old.id),
+            prev.filter((member) => member.id !== removedUserId),
           );
+          setMemberRoles((prev) => {
+            if (!(removedUserId in prev)) return prev;
+            const next = { ...prev };
+            delete next[removedUserId];
+            return next;
+          });
         },
       )
       .subscribe();
@@ -144,7 +211,7 @@ export const useChatState = () => {
       supabase.removeChannel(dbChannel);
       supabase.removeChannel(presenceChannel);
     };
-  }, [activeConversationId]);
+  }, [activeConversationId, membersVersion]);
 
   const handleFriendSelect = (conversationId: string) => {
     setActiveConversationId(conversationId);
@@ -193,6 +260,9 @@ export const useChatState = () => {
     activeConversationId,
     conversationMembers,
     membersConversationId,
+    memberRoles,
+    groupCreatorId,
+    refreshConversationMembers: () => setMembersVersion((version) => version + 1),
     isChatInfoVisible,
     isSidebarVisible,
     activeTab,

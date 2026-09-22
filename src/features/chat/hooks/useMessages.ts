@@ -8,6 +8,7 @@ import {
   unwrapGroupKey,
 } from '../utils/chatCrypto';
 import { asId, sameId } from '../../../shared/utils/ids';
+import { subscribeGroupMessagesCleared } from '../utils/groupEvents';
 
 type DecryptMessageFn = (args: {
   message: MessageT;
@@ -256,6 +257,15 @@ export const useMessages = (
   }, [conversationKey, membersKey, privateKey, conversationType]);
 
   useEffect(() => {
+    if (!conversationKey) return;
+    return subscribeGroupMessagesCleared((clearedId) => {
+      if (!sameId(clearedId, conversationKey)) return;
+      messagesCache.set(conversationKey, []);
+      setMessages([]);
+    });
+  }, [conversationKey]);
+
+  useEffect(() => {
     if (!conversationKey || !membersKey) return;
 
     void supabase.auth.getSession().then(({ data }) => {
@@ -338,6 +348,46 @@ export const useMessages = (
           if (!isOwn) {
             onMessageInsertedRef.current?.(incoming);
           }
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationKey}`,
+        },
+        (payload) => {
+          const removedId = payload.old?.id;
+          if (removedId == null) return;
+          setMessages((prev) => {
+            const next = prev.filter((message) => !sameId(message.id, removedId));
+            messagesCache.set(conversationKey, next);
+            return next;
+          });
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversations',
+          filter: `id=eq.${conversationKey}`,
+        },
+        (payload) => {
+          const clearedAt = payload.new?.history_cleared_at as string | null;
+          if (!clearedAt) return;
+          const cutoff = new Date(clearedAt).getTime();
+          if (Number.isNaN(cutoff)) return;
+          setMessages((prev) => {
+            const next = prev.filter(
+              (message) => new Date(message.created_at).getTime() > cutoff,
+            );
+            messagesCache.set(conversationKey, next);
+            return next;
+          });
         },
       )
       .subscribe();

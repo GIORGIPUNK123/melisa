@@ -69,6 +69,7 @@ export const Main = () => {
   };
 
   const userId = user && user !== 'loading' ? user.id : undefined;
+  const seenConversationIdsRef = useRef<Set<string>>(new Set());
 
   const modals = useModals();
   const chatState = useChatState();
@@ -90,6 +91,20 @@ export const Main = () => {
   const activeConversation = conversations.find(
     (conversation) => conversation.id === chatState.activeConversationId,
   );
+
+  useEffect(() => {
+    if (conversationLoading) return;
+    const ids = new Set(conversations.map((conversation) => conversation.id));
+    const activeId = chatState.activeConversationId;
+    if (
+      activeId &&
+      seenConversationIdsRef.current.has(activeId) &&
+      !ids.has(activeId)
+    ) {
+      chatState.clearActiveConversation();
+    }
+    seenConversationIdsRef.current = ids;
+  }, [conversations, conversationLoading, chatState.activeConversationId]);
 
   useAdditionalInfo(userId);
   const {
@@ -336,6 +351,18 @@ export const Main = () => {
               })
             }
             isGroup={activeConversation?.type === 'group'}
+            conversationId={chatState.activeConversationId}
+            groupName={activeConversation?.otherUserNickname}
+            groupCreatorId={chatState.groupCreatorId}
+            memberRoles={chatState.memberRoles}
+            friends={visibleFriends}
+            privateKey={privateKey}
+            onMembersChanged={chatState.refreshConversationMembers}
+            onGroupDeleted={() => {
+              chatState.clearActiveConversation();
+              void fetchConversations();
+            }}
+            onConfirmAction={modals.openConfirmModal}
             muted={Boolean(activeConversation?.muted)}
             muteSaving={sameId(savingMuteId, chatState.activeConversationId)}
             muteError={activeMuteError}
