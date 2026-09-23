@@ -69,6 +69,10 @@ All of this is in `src/features/chat/utils/chatCrypto.ts`.
 
 **Group chat.** The browser creates one random group key. That key is sealed for every member with `nacl.box` and sent to the API as envelopes. The API stores the envelopes. It does not learn the group key. Group message text looks like `enc:g1:...` and is encrypted with `nacl.secretbox`.
 
+**Files.** Photos, SVGs, zip files, and other attachments are encrypted once with `nacl.secretbox`, then uploaded to the private Supabase bucket `chat-media`. The message row stores `file:v1:` plus the file path and the key material, not the file itself. Groups seal the file with the group key. Direct chats seal a one-off key for each person. `kind` is `image` for pictures, including SVG, and `file` for everything else. The code is in `src/features/chat/utils/chatFiles.ts`. Files must be under 10 MB. Large photos are resized first. SVG, GIF, and other files are stored as they are.
+
+The paperclip attaches any file. The camera takes a photo, and Flip camera switches between the front and back camera. Tapping a file asks before it downloads. Your own messages have a menu that deletes the text, image, or file for everyone in the chat.
+
 Sending and loading messages is `src/features/chat/hooks/useMessages.ts`. It writes rows straight to the Supabase `messages` table.
 
 ## What the sidebar does

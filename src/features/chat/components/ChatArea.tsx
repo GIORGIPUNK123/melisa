@@ -58,7 +58,7 @@ export const ChatArea = ({
     }
   };
 
-  const { messages, isLoading, sendMessage } = useMessages(
+  const { messages, isLoading, isSending, sendMessage, sendFile, openChatFile, deleteMessage } = useMessages(
     conversationId,
     members,
     currentUserId,
@@ -122,6 +122,8 @@ export const ChatArea = ({
           onToggleHeart={messagingBlocked ? undefined : toggleHeart}
           onSetReaction={messagingBlocked ? undefined : setReaction}
           onRemoveMyReaction={messagingBlocked ? undefined : removeMyReaction}
+          openChatFile={openChatFile}
+          onDeleteMessage={deleteMessage}
         />
       </div>
 
@@ -141,7 +143,14 @@ export const ChatArea = ({
           }
         />
       ) : (
-        <MessageInput onSubmit={handleSend} />
+        <MessageInput
+          onSubmit={handleSend}
+          onSendFile={(file) => {
+            onConversationActivity?.(conversationId);
+            void sendFile(file);
+          }}
+          disabled={isSending}
+        />
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../db/supabase';
+import { api } from '../../../api/instance';
 import { MessageT, PublicProfileT } from '../../../types';
 import {
   buildEncryptedChatMessageContent,
@@ -9,6 +10,15 @@ import {
 } from '../utils/chatCrypto';
 import { asId, sameId } from '../../../shared/utils/ids';
 import { subscribeGroupMessagesCleared } from '../utils/groupEvents';
+import {
+  downloadChatFile,
+  encodeChatFile,
+  openChatFileBytes,
+  prepareChatFile,
+  sealChatFile,
+  uploadChatFile,
+  type ChatFilePayload,
+} from '../utils/chatFiles';
 
 type DecryptMessageFn = (args: {
   message: MessageT;
@@ -331,11 +341,18 @@ export const useMessages = (
 
               if (tempIndex >= 0) {
                 const next = [...prev];
+                const keepLocalText = !incoming.content.startsWith('file:v1:');
                 next[tempIndex] = {
                   ...next[tempIndex],
                   id: incoming.id,
                   created_at: incoming.created_at,
                   updated_at: incoming.updated_at,
+                  ...(keepLocalText
+                    ? {}
+                    : {
+                        content: incoming.content,
+                        message_type: incoming.message_type,
+                      }),
                 };
                 messagesCache.set(conversationKey, next);
                 return next;
@@ -592,11 +609,172 @@ export const useMessages = (
     }
   };
 
+  const sendFile = async (file: File) => {
+    if (!conversationKey || !currentUserId || !privateKey || isSending) return;
+
+    const isGroup = conversationType === 'group';
+    const tempId = `temp-${Date.now()}`;
+
+    try {
+      if (!isGroup) {
+        const recipient = membersRef.current.find(
+          (member) => !sameId(member.id, currentUserId),
+        );
+        if (!recipient) {
+          alert('No recipient found for this conversation.');
+          return;
+        }
+
+        const { data: blockRows, error: blockError } = await supabase
+          .from('blocks')
+          .select('id')
+          .or(
+            `and(blocker_id.eq.${currentUserId},blocked_user_id.eq.${recipient.id}),and(blocker_id.eq.${recipient.id},blocked_user_id.eq.${currentUserId})`,
+          )
+          .limit(1);
+
+        if (blockError) console.error('Failed to check block status:', blockError);
+        if (blockRows && blockRows.length > 0) {
+          alert("You can't message this user.");
+          return;
+        }
+      }
+
+      const prepared = await prepareChatFile(file);
+      const groupKey = isGroup ? await ensureGroupKey() : null;
+      if (isGroup && !groupKey) {
+        alert('Could not unlock this group. Try again in a moment.');
+        return;
+      }
+
+      const sealed = sealChatFile(prepared.bytes, {
+        groupKey,
+        members: membersRef.current,
+        senderId: currentUserId,
+        senderPrivateKey: privateKey,
+      });
+
+      setIsSending(true);
+      const now = new Date().toISOString();
+
+      setMessages((prev) => {
+        const next = [
+          ...prev,
+          {
+            id: tempId,
+            conversation_id: conversationKey,
+            content: prepared.name,
+            sender_id: asId(currentUserId),
+            message_type: prepared.kind,
+            is_edited: false,
+            created_at: now,
+            updated_at: now,
+          },
+        ];
+        messagesCache.set(conversationKey, next);
+        return next;
+      });
+
+      const path = await uploadChatFile(conversationKey, sealed.cipher);
+      const content = encodeChatFile({
+        v: 1,
+        kind: prepared.kind,
+        mime: prepared.mime,
+        name: prepared.name,
+        path,
+        nonce: sealed.nonce,
+        group: sealed.group,
+        wrappedBy: sealed.group ? undefined : sealed.wrappedBy,
+        wraps: sealed.group ? undefined : sealed.wraps,
+      });
+
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationKey,
+          sender_id: currentUserId,
+          content,
+          message_type: prepared.kind,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await supabase
+        .from('conversation_members')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('conversation_id', conversationKey)
+        .eq('user_id', currentUserId);
+
+      if (data) {
+        const saved = normalizeMessage(data as MessageT);
+        setMessages((prev) => {
+          const next = prev.map((message) =>
+            message.id === tempId
+              ? {
+                  ...saved,
+                  content,
+                }
+              : message,
+          );
+          messagesCache.set(conversationKey, next);
+          return next;
+        });
+      }
+    } catch (err) {
+      console.error('Failed to send file:', err);
+      setMessages((prev) => {
+        const next = prev.filter((message) => message.id !== tempId);
+        messagesCache.set(conversationKey, next);
+        return next;
+      });
+      alert(err instanceof Error ? err.message : 'Failed to send file.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const openChatFile = async (payload: ChatFilePayload) => {
+    const cipher = await downloadChatFile(payload.path);
+    const plain = openChatFileBytes(cipher, payload, {
+      privateKey,
+      groupKey: payload.group ? await ensureGroupKey() : null,
+      members: membersRef.current,
+      currentUserId,
+    });
+    if (!plain) throw new Error('Could not decrypt file');
+    return new Blob([plain], { type: payload.mime || 'application/octet-stream' });
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    if (!conversationKey || messageId.startsWith('temp-')) return;
+
+    const previous = messagesCache.get(conversationKey) || [];
+    setMessages((prev) => {
+      const next = prev.filter((message) => !sameId(message.id, messageId));
+      messagesCache.set(conversationKey, next);
+      return next;
+    });
+
+    try {
+      await api.delete(`/conversations/${conversationKey}/messages/${messageId}`);
+    } catch (err) {
+      console.error('Failed to delete message:', err);
+      setMessages(previous);
+      messagesCache.set(conversationKey, previous);
+      alert('Failed to delete message. Please try again.');
+    }
+  };
+
   return {
     messages,
     setMessages,
     isLoading,
     sendMessage,
+    sendFile,
+    openChatFile,
+    deleteMessage,
     isSending,
   };
 };

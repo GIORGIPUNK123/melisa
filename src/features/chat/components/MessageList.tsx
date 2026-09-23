@@ -15,6 +15,9 @@ import {
   hapticLongPress,
   hapticSelection,
 } from '../../../shared/utils/haptic';
+import { ChatAttachment } from './ChatAttachment';
+import { ChatFilePayload, readChatFile } from '../utils/chatFiles';
+import { ConfirmModal } from '../../../components/modals/ConfirmModal';
 
 interface MessageListProps {
   messages: MessageT[];
@@ -26,7 +29,24 @@ interface MessageListProps {
   onToggleHeart?: (messageId: string) => void;
   onSetReaction?: (messageId: string, reactionId: string) => void;
   onRemoveMyReaction?: (messageId: string) => void;
+  openChatFile?: (payload: ChatFilePayload) => Promise<Blob>;
+  onDeleteMessage?: (messageId: string) => void;
 }
+
+const MessageBody = ({
+  content,
+  openChatFile,
+}: {
+  content: string;
+  openChatFile?: (payload: ChatFilePayload) => Promise<Blob>;
+}) => {
+  const file = readChatFile(content);
+  if (file && openChatFile) {
+    return <ChatAttachment payload={file} openFile={openChatFile} />;
+  }
+
+  return <p className='break-words text-[15px] leading-5'>{content}</p>;
+};
 
 const LONG_PRESS_MS = 450;
 const MOVE_THRESHOLD_PX = 10;
@@ -57,8 +77,12 @@ export const MessageList = ({
   onToggleHeart,
   onSetReaction,
   onRemoveMyReaction,
+  openChatFile,
+  onDeleteMessage,
 }: MessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [menuMessageId, setMenuMessageId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const longPressTimerRef = useRef<number | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [pickerForMessageId, setPickerForMessageId] = useState<string | null>(
@@ -224,6 +248,47 @@ export const MessageList = ({
             className={`group flex gap-1.5 py-0.5 ${isSelf ? 'justify-end' : 'justify-start'}`}
           >
             {isSelf && addButton}
+            {isSelf && canReact && onDeleteMessage && (
+              <div className='relative flex shrink-0 items-center self-center'>
+                <button
+                  type='button'
+                  aria-label='Message actions'
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setMenuMessageId((current) =>
+                      current === msg.id ? null : msg.id,
+                    );
+                  }}
+                  className='flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-slate-800 hover:text-slate-100'
+                >
+                  <span className='text-lg leading-none' aria-hidden='true'>
+                    ⋮
+                  </span>
+                </button>
+                {menuMessageId === msg.id && (
+                  <>
+                    <button
+                      type='button'
+                      aria-label='Close message actions'
+                      className='fixed inset-0 z-10 cursor-default'
+                      onClick={() => setMenuMessageId(null)}
+                    />
+                    <div className='absolute bottom-full right-0 z-20 mb-1 min-w-28 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-lg'>
+                      <button
+                        type='button'
+                        onClick={() => {
+                          setMenuMessageId(null);
+                          setPendingDeleteId(msg.id);
+                        }}
+                        className='block w-full px-3 py-2 text-left text-sm text-rose-400 hover:bg-slate-800'
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             <div
               className={`relative max-w-[75%] sm:max-w-sm md:max-w-md ${
@@ -277,7 +342,7 @@ export const MessageList = ({
                       'Unknown'}
                   </div>
                 )}
-                <p className='break-words text-[15px] leading-5'>{msg.content}</p>
+                <MessageBody content={msg.content} openChatFile={openChatFile} />
                 <div className='mt-1 text-[11px] opacity-70'>
                   {formatMessageTime(msg.created_at)}
                 </div>
@@ -332,6 +397,18 @@ export const MessageList = ({
       })}
 
       <div ref={messagesEndRef} />
+      <ConfirmModal
+        isOpen={Boolean(pendingDeleteId)}
+        title='Delete message'
+        message='Delete this message? This cannot be undone.'
+        confirmText='Delete'
+        danger
+        onCancel={() => setPendingDeleteId(null)}
+        onConfirm={() => {
+          if (pendingDeleteId) onDeleteMessage?.(pendingDeleteId);
+          setPendingDeleteId(null);
+        }}
+      />
     </>
   );
 };
