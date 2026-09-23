@@ -256,7 +256,7 @@ export const Main = () => {
 
   if (user != null && privateKey != null) {
     return (
-      <div className='flex h-[100dvh] w-full overflow-hidden bg-slate-900'>
+      <div className='fixed inset-0 flex overflow-hidden bg-slate-900'>
         <ModalsContainer
           user={user}
           profile={profile}

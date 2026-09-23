@@ -39,7 +39,7 @@ export const MessageInput = ({
   };
 
   return (
-    <div className='shrink-0 border-t border-slate-800 bg-slate-900 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:p-4'>
+    <div className='shrink-0 border-t border-slate-800 bg-slate-900 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-4 md:pt-4 md:pb-4'>
       {cameraOpen && (
         <CameraCapture
           onClose={() => setCameraOpen(false)}

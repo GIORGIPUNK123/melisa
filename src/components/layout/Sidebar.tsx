@@ -80,8 +80,8 @@ export const Sidebar = (props: {
       <div
         className={`
         fixed lg:relative inset-y-0 left-0 z-20
-        flex h-[100dvh] w-full flex-col border-r border-slate-800 bg-slate-950
-        lg:h-screen lg:w-full lg:max-w-sm
+        flex h-full w-full flex-col border-r border-slate-800 bg-slate-950
+        lg:h-full lg:w-full lg:max-w-sm
         transform transition-transform duration-300 ease-in-out
         ${props.isVisible ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}
@@ -244,7 +244,7 @@ export const Sidebar = (props: {
           </div>
         </div>
 
-        <div className='grid grid-cols-4 gap-1 border-t border-slate-800 px-2 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden'>
+        <div className='grid grid-cols-4 gap-1 border-t border-slate-800 bg-slate-950 px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden'>
           <button
             onClick={props.onAddFriendClick}
             className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-300 transition-colors hover:bg-slate-800 hover:text-white'
