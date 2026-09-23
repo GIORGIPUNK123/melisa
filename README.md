@@ -33,12 +33,12 @@ Production does not use that variable. The built app always calls `/api`, and Ve
 
 There are two paths.
 
-**Express API.** Friends, settings, blocks, and groups go through Axios. The client is `src/api/instance.ts`. Its base URL is `/api`, and it attaches the Supabase login token. You do not add the token in each call.
+**Express API.** Friends, settings, blocks, groups, and deleting your own message go through Axios. The client is `src/api/instance.ts`. Its base URL is `/api`, and it attaches the Supabase login token. You do not add the token in each call.
 
 - Locally, Vite strips `/api` and proxies to `VITE_API_PROXY_TARGET`.
 - On Vercel, `vercel.json` strips `/api` and proxies to Render.
 
-**Supabase.** Login, messages, reactions, presence, and the chat list go to Supabase from the browser. The client is `src/db/supabase.ts`. Row Level Security decides what a user can read and write.
+**Supabase.** Login, messages, reactions, presence, chat media uploads, and the chat list go to Supabase from the browser. The client is `src/db/supabase.ts`. Row Level Security decides what a user can read and write. Deleting your own message still goes through the Express API so storage can be cleaned up.
 
 ## Screens
 
@@ -69,11 +69,11 @@ All of this is in `src/features/chat/utils/chatCrypto.ts`.
 
 **Group chat.** The browser creates one random group key. That key is sealed for every member with `nacl.box` and sent to the API as envelopes. The API stores the envelopes. It does not learn the group key. Group message text looks like `enc:g1:...` and is encrypted with `nacl.secretbox`.
 
-**Files.** Photos, SVGs, zip files, and other attachments are encrypted once with `nacl.secretbox`, then uploaded to the private Supabase bucket `chat-media`. The message row stores `file:v1:` plus the file path and the key material, not the file itself. Groups seal the file with the group key. Direct chats seal a one-off key for each person. `kind` is `image` for pictures, including SVG, and `file` for everything else. The code is in `src/features/chat/utils/chatFiles.ts`. Files must be under 10 MB. Large photos are resized first. SVG, GIF, and other files are stored as they are.
+**Files.** Photos, SVGs, zip files, and other attachments are encrypted once with `nacl.secretbox`, then uploaded to the private Supabase bucket `chat-media`. The message row stores `file:v1:` plus the file path and the key material, not the file itself. Groups seal the file with the group key. Direct chats seal a one-off key for each person. `kind` is `image` for pictures, including SVG, and `file` for everything else. The code is in `src/features/chat/utils/chatFiles.ts`. Files must be under 10 MB. Large photos are resized first. SVG, GIF, and other files are stored as they are. Deleting your own message, clearing a group, or deleting a group also removes the file from storage. Leaving a chat only hides it for you.
 
 The paperclip attaches any file. The camera takes a photo, and Flip camera switches between the front and back camera. Tapping a file asks before it downloads. Your own messages have a menu that deletes the text, image, or file for everyone in the chat.
 
-Sending and loading messages is `src/features/chat/hooks/useMessages.ts`. It writes rows straight to the Supabase `messages` table.
+Sending and loading messages is `src/features/chat/hooks/useMessages.ts`. It writes rows straight to the Supabase `messages` table. Deleting one of your own messages calls `DELETE /api/conversations/:conversationId/messages/:messageId` so the API can remove the row and any `chat-media` object.
 
 ## What the sidebar does
 
@@ -94,7 +94,7 @@ New friends and new groups show up from Supabase realtime on `friendships` and `
 - Double-click a message for a heart. The reaction picker and chips are in `MessageList.tsx` and `useMessageReactions.ts`.
 - Incoming messages arrive on a Supabase realtime channel in `useMessages.ts`. The sound is separate: `useUnreadMessages.tsx` hears the insert and plays audio unless the chat is muted.
 - Mute is a flag on your `conversation_members` row.
-- Direct chat info is `ChatInfo.tsx`. Group settings, roles, invites, rename, photo, clear, leave, and delete are `GroupSettings.tsx`. Group actions call `/api/conversations/group/...`.
+- Direct chat info is `ChatInfo.tsx`. “Delete chat” there only removes your membership; the other person’s chat and files stay. Group settings, roles, invites, rename, photo, clear, leave, and delete are `GroupSettings.tsx`. Group actions call `/api/conversations/group/...`. Clearing history or deleting the group also removes files from `chat-media`.
 
 Group roles: the creator can grant admin. Admins can remove people, clear messages, and delete the group. Some actions can be limited per member.
 
@@ -108,6 +108,7 @@ Group roles: the creator can grant admin. Admins can remove people, clear messag
 src/pages            Login, Register, Main
 src/features/auth    Session, unlock, password rule
 src/features/chat    Messages, groups, reactions, conversation list
+                     chatFiles.ts and ChatAttachment for encrypted uploads
 src/features/friends Friends, requests, blocks, profiles
 src/features/notifications  Notification list and sounds
 src/components       Sidebar, settings, confirm dialogs
