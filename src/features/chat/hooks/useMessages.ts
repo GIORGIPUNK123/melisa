@@ -189,7 +189,7 @@ export const useMessages = (
                 message: normalized,
                 membersList,
                 currentUserId: currentUserIdRef.current,
-                privateKey,
+                privateKey: privateKeyRef.current,
               });
           return { ...normalized, content: decryptedContent };
         } catch (err) {
@@ -266,7 +266,36 @@ export const useMessages = (
   }, [conversationKey]);
 
   useEffect(() => {
-    if (!conversationKey || !membersKey) return;
+    if (!conversationKey) return;
+
+    let cancelled = false;
+
+    const refetchMessages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversationKey)
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        if (cancelled || !data) return;
+
+        const processed = await processMessages(
+          data as MessageT[],
+          membersRef.current,
+        );
+        if (cancelled) return;
+
+        setMessages((prev) => {
+          const next = mergeServerAndLocal(processed, prev);
+          messagesCache.set(conversationKey, next);
+          return next;
+        });
+      } catch (err) {
+        console.error('Failed to refresh messages:', err);
+      }
+    };
 
     void supabase.auth.getSession().then(({ data }) => {
       const token = data.session?.access_token;
@@ -281,10 +310,11 @@ export const useMessages = (
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `conversation_id=eq.${conversationKey}`,
         },
         async (payload) => {
           const incoming = normalizeMessage(payload.new as MessageT);
+          if (!sameId(incoming.conversation_id, conversationKey)) return;
+
           const isOwn = sameId(incoming.sender_id, currentUserIdRef.current);
 
           setMessages((prev) => {
@@ -312,7 +342,7 @@ export const useMessages = (
               }
             }
 
-            const next = [...prev, incoming];
+            const next = sortMessages([...prev, incoming]);
             messagesCache.set(conversationKey, next);
             return next;
           });
@@ -328,8 +358,9 @@ export const useMessages = (
                     message: incoming,
                     membersList: membersRef.current,
                     currentUserId: currentUserIdRef.current,
-                    privateKey,
+                    privateKey: privateKeyRef.current,
                   });
+              if (cancelled) return;
               setMessages((prev) => {
                 const next = prev.map((message) =>
                   sameId(message.id, incoming.id) &&
@@ -356,18 +387,28 @@ export const useMessages = (
           event: 'DELETE',
           schema: 'public',
           table: 'messages',
-          filter: `conversation_id=eq.${conversationKey}`,
         },
         (payload) => {
           const removedId = payload.old?.id;
           if (removedId == null) return;
           setMessages((prev) => {
+            if (!prev.some((message) => sameId(message.id, removedId))) {
+              return prev;
+            }
             const next = prev.filter((message) => !sameId(message.id, removedId));
             messagesCache.set(conversationKey, next);
             return next;
           });
         },
       )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          void refetchMessages();
+        }
+      });
+
+    const historyChannel = supabase
+      .channel(`room-history:${conversationKey}`)
       .on(
         'postgres_changes',
         {
@@ -393,9 +434,11 @@ export const useMessages = (
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
+      supabase.removeChannel(historyChannel);
     };
-  }, [conversationKey, membersKey, privateKey, conversationType]);
+  }, [conversationKey]);
 
   const ensurePublicKey = async (userId: string): Promise<string | null> => {
     const member = membersRef.current.find((item) => sameId(item.id, userId));
