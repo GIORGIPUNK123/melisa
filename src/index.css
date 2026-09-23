@@ -92,3 +92,35 @@ table {
 .reaction-picker-in-right {
   animation: reaction-picker-in-right 0.18s ease-out forwards;
 }
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 160% 0;
+  }
+  100% {
+    background-position: -60% 0;
+  }
+}
+
+.skeleton {
+  background-image: linear-gradient(
+    100deg,
+    rgb(30 41 59) 20%,
+    rgb(51 65 85) 42%,
+    rgb(71 85 105 / 0.85) 50%,
+    rgb(51 65 85) 58%,
+    rgb(30 41 59) 80%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+@keyframes refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.refresh-spin {
+  animation: refresh-spin 0.7s linear infinite;
+}

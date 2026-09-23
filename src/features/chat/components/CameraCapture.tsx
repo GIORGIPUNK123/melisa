@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { IconCameraFlip } from '../../../atoms/Icon';
 
 type FacingMode = 'user' | 'environment';
 
@@ -121,9 +122,10 @@ export const CameraCapture = (props: {
                 current === 'environment' ? 'user' : 'environment',
               )
             }
-            className='rounded-full px-3 py-2 text-sm text-white'
+            aria-label='Flip camera'
+            className='flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25 active:bg-white/30'
           >
-            Flip
+            <IconCameraFlip size={22} />
           </button>
         </div>
       </div>

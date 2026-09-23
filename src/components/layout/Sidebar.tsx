@@ -13,6 +13,8 @@ import {
 } from '../../atoms/Icon';
 import { supabase } from '../../db/supabase';
 import { ui } from '../../shared/ui';
+import { usePullToRefresh } from '../../shared/hooks/usePullToRefresh';
+import { RefreshSpinner } from './RefreshSpinner';
 
 export const Sidebar = (props: {
   activeTab: 'chats' | 'friends';
@@ -40,9 +42,14 @@ export const Sidebar = (props: {
   getOrCreateConversation: (friendUserId: string) => Promise<string | null>;
   isBlocked?: (userId?: string | null) => boolean;
   onCreateGroup?: () => void;
+  onRefresh?: () => Promise<void> | void;
 }) => {
   const navigate = useNavigate();
   const unreadNotifications = props.notifications.filter((n) => !n.is_read);
+  const pull = usePullToRefresh({
+    enabled: Boolean(props.onRefresh),
+    onRefresh: () => props.onRefresh?.(),
+  });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -79,7 +86,7 @@ export const Sidebar = (props: {
         ${props.isVisible ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}
       >
-        <div className='flex items-center gap-3 border-b border-slate-800 px-3 py-3 lg:px-4 lg:py-4'>
+        <div className='flex items-center gap-3 border-b border-slate-800 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] lg:px-4 lg:py-4 lg:pt-4'>
           {props.avatarUrl ? (
             <img
               src={props.avatarUrl}
@@ -136,27 +143,55 @@ export const Sidebar = (props: {
           </button>
         </div>
 
-        <div className='min-h-0 flex-1 overflow-y-auto'>
-          {props.activeTab === 'chats' ? (
-            <ConversationsList
-              onConversationSelect={props.onFriendSelect}
-              activeConversationId={props.activeConversationId}
-              unreadCounts={props.unreadCounts || {}}
-              conversations={props.conversations}
-              isLoading={props.conversationLoading || false}
-              isBlocked={props.isBlocked}
-              onCreateGroup={props.onCreateGroup}
-            />
-          ) : (
-            <FriendsList
-              friends={props.friends}
-              isLoading={props.friendsLoading || false}
-              getOrCreateConversation={props.getOrCreateConversation}
-              onFriendSelect={props.onFriendSelect}
-              onViewProfile={props.onViewProfile}
-              ensureTargetSubscription={props.ensureTargetSubscription}
-            />
+        <div
+          ref={pull.containerRef}
+          className='relative min-h-0 flex-1 overflow-y-auto overscroll-y-contain'
+        >
+          {(pull.pullDistance > 0 || pull.refreshing) && (
+            <div
+              className='pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-center'
+              style={{ height: Math.max(pull.pullDistance, 0) }}
+              aria-hidden
+            >
+              <RefreshSpinner
+                progress={Math.min(1, pull.pullDistance / 72)}
+                spinning={pull.refreshing}
+              />
+            </div>
           )}
+          <div
+            style={{
+              transform:
+                pull.pullDistance > 0
+                  ? `translateY(${pull.pullDistance}px)`
+                  : undefined,
+              transition:
+                pull.pullDistance === 0 ? 'transform 0.28s ease' : undefined,
+            }}
+          >
+            {props.activeTab === 'chats' ? (
+              <ConversationsList
+                onConversationSelect={props.onFriendSelect}
+                activeConversationId={props.activeConversationId}
+                unreadCounts={props.unreadCounts || {}}
+                conversations={props.conversations}
+                isLoading={props.conversationLoading || false}
+                refreshing={pull.refreshing}
+                isBlocked={props.isBlocked}
+                onCreateGroup={props.onCreateGroup}
+              />
+            ) : (
+              <FriendsList
+                friends={props.friends}
+                isLoading={props.friendsLoading || false}
+                refreshing={pull.refreshing}
+                getOrCreateConversation={props.getOrCreateConversation}
+                onFriendSelect={props.onFriendSelect}
+                onViewProfile={props.onViewProfile}
+                ensureTargetSubscription={props.ensureTargetSubscription}
+              />
+            )}
+          </div>
         </div>
 
         <div className='hidden border-t border-slate-800 px-4 py-3 lg:block'>
@@ -209,7 +244,7 @@ export const Sidebar = (props: {
           </div>
         </div>
 
-        <div className='grid grid-cols-4 gap-1 border-t border-slate-800 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden'>
+        <div className='grid grid-cols-4 gap-1 border-t border-slate-800 px-2 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden'>
           <button
             onClick={props.onAddFriendClick}
             className='flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] text-slate-300 transition-colors hover:bg-slate-800 hover:text-white'

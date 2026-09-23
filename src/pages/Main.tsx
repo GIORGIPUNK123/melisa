@@ -325,6 +325,12 @@ export const Main = () => {
           getOrCreateConversation={getOrCreateConversation}
           isBlocked={chatActions.isBlocked}
           onCreateGroup={modals.openGroupModal}
+          onRefresh={async () => {
+            await Promise.all([
+              fetchFriends({ silent: true }),
+              fetchConversations(),
+            ]);
+          }}
         />
 
         {!chatState.activeConversationId ? (

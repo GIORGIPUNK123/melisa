@@ -2,6 +2,7 @@ import { ConversationT } from '../../types';
 import { formatConversationTime } from '../../shared/utils/dates';
 import { ui } from '../../shared/ui';
 import { IconUsers, IconVolumeOff } from '../../atoms';
+import { ListSkeleton } from './ListSkeleton';
 
 export const ConversationsList = (props: {
   onConversationSelect: (conversationId: string) => void;
@@ -9,14 +10,21 @@ export const ConversationsList = (props: {
   unreadCounts: Record<string, number>;
   conversations: ConversationT[];
   isLoading: boolean;
+  refreshing?: boolean;
   isBlocked?: (userId?: string | null) => boolean;
   onCreateGroup?: () => void;
 }) => {
   const { conversations, isLoading } = props;
+  const showSkeleton = isLoading || Boolean(props.refreshing);
 
   return (
-    <div className='flex h-full flex-col'>
-      {props.onCreateGroup && (
+    <div className='flex flex-col'>
+      {showSkeleton ? (
+        <ListSkeleton
+          withAction={Boolean(props.onCreateGroup)}
+          rows={Math.max(conversations.length, 5)}
+        />
+      ) : props.onCreateGroup ? (
         <div className='px-2 pt-2'>
           <button
             type='button'
@@ -27,17 +35,13 @@ export const ConversationsList = (props: {
             New group
           </button>
         </div>
-      )}
-      {isLoading ? (
-        <div className='flex items-center justify-center py-10 text-[13px] text-slate-400'>
-          Loading chats...
-        </div>
-      ) : conversations.length === 0 ? (
+      ) : null}
+      {showSkeleton ? null : conversations.length === 0 ? (
         <div className='flex items-center justify-center px-6 py-10 text-center text-[13px] text-slate-400'>
           No chats yet. Add friends to start messaging.
         </div>
       ) : (
-        <div className='flex-1 space-y-0.5 overflow-y-auto p-2'>
+        <div className='space-y-0.5 p-2'>
           {conversations.map((conv) => {
             const isGroup = conv.type === 'group';
             const blocked = !isGroup && Boolean(props.isBlocked?.(conv.otherUserId));

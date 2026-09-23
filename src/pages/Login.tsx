@@ -38,7 +38,7 @@ export const Login = () => {
   if (user === null) {
     return (
       // Scroll inside #root (which is overflow:hidden globally for chat mobile).
-      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
+      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'>
         <div className='flex min-h-full items-center justify-center px-4 py-8 sm:py-12'>
           <div className='w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-9'>
             <BrandMark size='sm' subtitle='Private messaging' />

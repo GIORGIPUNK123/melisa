@@ -3,6 +3,7 @@ import { FriendT } from '../../../types';
 import { isUserOnline } from '../../../shared/utils/presence';
 import { useTickingNow } from '../../../shared/hooks/useTickingNow';
 import { ui } from '../../../shared/ui';
+import { ListSkeleton } from '../../../components/layout/ListSkeleton';
 
 const getInitials = (nickname: string) => nickname.charAt(0).toUpperCase();
 
@@ -100,6 +101,7 @@ export const FriendsList = (props: {
   ensureTargetSubscription?: (userId: string) => void;
   friends: FriendT[];
   isLoading: boolean;
+  refreshing?: boolean;
   getOrCreateConversation: (friendUserId: string) => Promise<string | null>;
 }) => {
   const {
@@ -110,23 +112,24 @@ export const FriendsList = (props: {
     onFriendSelect,
   } = props;
   const nowMs = useTickingNow();
+  const showSkeleton = isLoading || Boolean(props.refreshing);
 
   return (
-    <div className='flex flex-col h-full'>
-      <h3 className={`${ui.section} border-b border-slate-800 px-4 py-2.5`}>
-        Friends ({friends.length})
-      </h3>
+    <div className='flex flex-col'>
+      {showSkeleton ? (
+        <ListSkeleton withHeader rows={Math.max(friends.length, 5)} />
+      ) : (
+        <h3 className={`${ui.section} border-b border-slate-800 px-4 py-2.5`}>
+          Friends ({friends.length})
+        </h3>
+      )}
 
-      {isLoading ? (
-        <div className='flex items-center justify-center py-10 text-[13px] text-slate-400'>
-          Loading friends...
-        </div>
-      ) : friends.length === 0 ? (
+      {showSkeleton ? null : friends.length === 0 ? (
         <div className='flex items-center justify-center py-10 text-[13px] text-slate-400'>
           No friends yet
         </div>
       ) : (
-        <div className='flex-1 space-y-0.5 overflow-y-auto p-2'>
+        <div className='space-y-0.5 p-2'>
           {friends.map((friend) => (
             <FriendRow
               key={friend.friendshipId}

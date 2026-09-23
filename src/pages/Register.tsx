@@ -150,7 +150,7 @@ export const Register = () => {
   if (user === null) {
     return (
       // Scroll inside #root (which is overflow:hidden globally for chat mobile).
-      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
+      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'>
         <EmailVerificationModal
           isOpen={isOpen}
           setIsOpen={setIsOpen}
