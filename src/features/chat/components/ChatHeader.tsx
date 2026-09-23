@@ -50,7 +50,7 @@ export const ChatHeader = ({
   const displayInitial = (displayName || '?').charAt(0).toUpperCase();
 
   return (
-    <div className='flex shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900 px-3 py-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] sm:px-4'>
+    <div className='flex shrink-0 items-center justify-between gap-2 border-b border-slate-800 bg-slate-900 px-3 py-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] sm:px-4'>
       <div className='flex min-w-0 items-center gap-2.5'>
         <button
           onClick={onToggleSidebar}
@@ -97,7 +97,7 @@ export const ChatHeader = ({
           </>
         )}
       </div>
-      <div className='flex items-center gap-1'>
+      <div className='flex shrink-0 items-center gap-1'>
         {onToggleMute && (
           <button
             type='button'

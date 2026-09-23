@@ -245,7 +245,7 @@ export const MessageList = ({
               </div>
             )}
           <div
-            className={`group flex gap-1.5 py-0.5 ${isSelf ? 'justify-end' : 'justify-start'}`}
+            className={`group flex min-w-0 max-w-full gap-1.5 py-0.5 ${isSelf ? 'justify-end' : 'justify-start'}`}
           >
             {isSelf && addButton}
             {isSelf && canReact && onDeleteMessage && (
@@ -291,7 +291,7 @@ export const MessageList = ({
             )}
 
             <div
-              className={`relative max-w-[75%] sm:max-w-sm md:max-w-md ${
+              className={`relative min-w-0 max-w-[75%] sm:max-w-sm md:max-w-md ${
                 chips.length ? 'mb-4' : ''
               }`}
             >

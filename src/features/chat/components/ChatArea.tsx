@@ -89,7 +89,7 @@ export const ChatArea = ({
   };
 
   return (
-    <div className='flex h-full min-h-0 flex-1 flex-col bg-slate-900'>
+    <div className='flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-slate-900'>
       <ChatHeader
         members={members}
         currentUserId={currentUserId}
@@ -111,7 +111,7 @@ export const ChatArea = ({
         onToggleMute={onToggleMute}
       />
 
-      <div className='min-h-0 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-5 sm:py-4'>
+      <div className='min-h-0 min-w-0 flex-1 space-y-2 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-5 sm:py-4'>
         <MessageList
           messages={messages}
           members={members}

@@ -49,7 +49,7 @@ export const MessageInput = ({
           }}
         />
       )}
-      <form onSubmit={handleSubmit} className='flex items-center gap-2 md:gap-3'>
+      <form onSubmit={handleSubmit} className='flex min-w-0 items-center gap-2 md:gap-3'>
         <input
           ref={fileRef}
           type='file'
