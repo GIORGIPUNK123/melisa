@@ -144,10 +144,7 @@ export const Main = () => {
 
   const handleToggleMute = useCallback(() => {
     if (!activeConversation) return;
-    void setConversationMuted(
-      activeConversation.id,
-      !activeConversation.muted,
-    );
+    void setConversationMuted(activeConversation.id, !activeConversation.muted);
   }, [activeConversation, setConversationMuted]);
 
   const { unreadCounts } = useUnreadMessages(
@@ -372,7 +369,8 @@ export const Main = () => {
               conversationId={chatState.activeConversationId}
               groupName={activeConversation.otherUserNickname || 'Group'}
               avatarUrl={
-                chatState.membersConversationId === chatState.activeConversationId
+                chatState.membersConversationId ===
+                chatState.activeConversationId
                   ? chatState.groupAvatarUrl
                   : activeConversation.otherUserAvatar
               }
@@ -404,28 +402,29 @@ export const Main = () => {
             />
           )}
 
-        {chatState.isChatInfoVisible && activeConversation?.type !== 'group' && (
-          <ChatInfo
-            members={membersForActiveChat}
-            onClose={chatState.closeChatInfo}
-            onViewProfile={modals.openUserProfileModal}
-            onBlockUser={chatActions.handleBlockUser}
-            onRemoveFriend={chatActions.handleRemoveFriend}
-            onDeleteChat={() =>
-              chatActions.handleDeleteChat(chatState.activeConversationId)
-            }
-            conversationId={chatState.activeConversationId}
-            friends={visibleFriends}
-            privateKey={privateKey}
-            onConfirmAction={modals.openConfirmModal}
-            muted={Boolean(activeConversation?.muted)}
-            muteSaving={sameId(savingMuteId, chatState.activeConversationId)}
-            muteError={activeMuteError}
-            onToggleMute={handleToggleMute}
-            isBlocked={chatActions.isBlocked}
-            isFriend={isFriend}
-          />
-        )}
+        {chatState.isChatInfoVisible &&
+          activeConversation?.type !== 'group' && (
+            <ChatInfo
+              members={membersForActiveChat}
+              onClose={chatState.closeChatInfo}
+              onViewProfile={modals.openUserProfileModal}
+              onBlockUser={chatActions.handleBlockUser}
+              onRemoveFriend={chatActions.handleRemoveFriend}
+              onDeleteChat={() =>
+                chatActions.handleDeleteChat(chatState.activeConversationId)
+              }
+              conversationId={chatState.activeConversationId}
+              friends={visibleFriends}
+              privateKey={privateKey}
+              onConfirmAction={modals.openConfirmModal}
+              muted={Boolean(activeConversation?.muted)}
+              muteSaving={sameId(savingMuteId, chatState.activeConversationId)}
+              muteError={activeMuteError}
+              onToggleMute={handleToggleMute}
+              isBlocked={chatActions.isBlocked}
+              isFriend={isFriend}
+            />
+          )}
       </div>
     );
   }
