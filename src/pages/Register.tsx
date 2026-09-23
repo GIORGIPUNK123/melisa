@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Loading } from '../components/Loading';
 import * as yup from 'yup';
 import { registerSchema } from '../features/auth/schemas/registerSchema';
+import { passwordRuleMessage } from '../features/auth/passwordPolicy';
 import { handleBackdropClick } from '../shared/utils/modal';
 import { BrandMark } from '../atoms/BrandMark';
 import { ui } from '../shared/ui';
@@ -81,7 +82,6 @@ export const Register = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
-    console.log('user: ', user);
     if (user && user !== 'loading') {
       navigate('/');
     }
@@ -139,7 +139,6 @@ export const Register = () => {
       usernameInput.value,
       nicknameInput.value,
     );
-    console.log('response: ', response);
     if (response) {
       setIsOpen(true);
     }
@@ -187,7 +186,7 @@ export const Register = () => {
               </div>
               <TextInput
                 {...passwordInput}
-                placeholder='Password'
+                placeholder={passwordRuleMessage}
                 type='password'
                 required={true}
                 error={errors.password}

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { api } from '../../../api/instance';
-import { supabase } from '../../../db/supabase';
 
 export const useAddFriend = () => {
   const [messageResponse, setMessageResponse] = useState<string>('');
@@ -17,24 +16,9 @@ export const useAddFriend = () => {
 
     setIsLoading(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      if (!token) {
-        setIsSuccess(false);
-        setMessageResponse('Not authenticated');
-        return;
-      }
-
-      const response = await api.post(
-        '/friends/add',
-        { username: trimmedUsername },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      const response = await api.post('/friends/add', {
+        username: trimmedUsername,
+      });
 
       setIsSuccess(true);
       setMessageResponse(

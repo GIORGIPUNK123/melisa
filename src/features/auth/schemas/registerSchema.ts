@@ -1,5 +1,6 @@
 import * as yup from 'yup';
 import { checkUsername } from '../../friends/api/checkUsername';
+import { passwordError, passwordRuleMessage } from '../passwordPolicy';
 
 export const registerSchema = yup.object().shape({
   username: yup
@@ -22,7 +23,10 @@ export const registerSchema = yup.object().shape({
   password: yup
     .string()
     .required('Password is required')
-    .min(6, 'Password must be at least 6 characters'),
+    .test('password-rule', passwordRuleMessage, (value) => {
+      if (!value) return true;
+      return passwordError(value) === null;
+    }),
   repeatPassword: yup
     .string()
     .required('Please repeat your password')

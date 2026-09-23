@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '../../db/supabase';
 import { UserT } from '../../types';
 import { api } from '../../api/instance';
 import { handleBackdropClick } from '../../shared/utils/modal';
 import { useAuth } from '../../features/auth/hooks/useAuth';
+import { passwordError } from '../../features/auth/passwordPolicy';
 import { IconEyeOff, IconLock, IconUser, IconX } from '../../atoms/Icon';
 import { ui } from '../../shared/ui';
 
@@ -52,16 +52,6 @@ export const SettingsModal = (props: {
     setMessage(null);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      if (!token) {
-        setMessageTone('error');
-        setMessage('Not authenticated');
-        setIsSaving(false);
-        return;
-      }
-
       if (password || confirmPassword || currentPassword) {
         if (!currentPassword) {
           setMessageTone('error');
@@ -81,9 +71,10 @@ export const SettingsModal = (props: {
           setIsSaving(false);
           return;
         }
-        if (password.length < 6) {
+        const passwordProblem = passwordError(password);
+        if (passwordProblem) {
           setMessageTone('error');
-          setMessage('New password must be at least 6 characters');
+          setMessage(passwordProblem);
           setIsSaving(false);
           return;
         }
@@ -113,11 +104,7 @@ export const SettingsModal = (props: {
       if (email && email !== props.user.email) payload.email = email;
 
       if (Object.keys(payload).length > 0) {
-        const response = await api.put('/friends/settings', payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.put('/friends/settings', payload);
 
         if (response.data.user) {
           props.onProfileUpdated(response.data.user as UserT);

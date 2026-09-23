@@ -10,6 +10,9 @@ const globals = globalThis as typeof globalThis & {
 export const supabase =
   globals.__melisaSupabase ??
   createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      lock: async (_name, _acquireTimeout, fn) => await fn(),
+    },
     realtime: {
       params: {
         eventsPerSecond: 10,

@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loading } from '../components/Loading';
-import { useAdditionalInfo } from '../features/friends/hooks/useAdditionalInfo';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { Sidebar } from '../components/layout/Sidebar';
 import { ChatInfo } from '../features/chat/components/ChatInfo';
@@ -14,7 +13,6 @@ import { useChatState } from '../features/chat/hooks/useChatState';
 import { useCurrentUserProfile } from '../features/friends/hooks/useCurrentUserProfile';
 import { useChatActions } from '../features/chat/hooks/useChatActions';
 import { useNotificationSound } from '../features/notifications/hooks/useNotificationSound';
-import { supabase } from '../db/supabase';
 import { api } from '../api/instance';
 import { ModalsContainer } from '../components/main/ModalsContainer';
 import { UnlockWithPassword } from '../features/auth/components/UnlockWithPassword';
@@ -107,7 +105,6 @@ export const Main = () => {
     seenConversationIdsRef.current = ids;
   }, [conversations, conversationLoading, chatState.activeConversationId]);
 
-  useAdditionalInfo(userId);
   const {
     notifications,
     isLoading: notificationsLoading,
@@ -224,17 +221,7 @@ export const Main = () => {
       chatState.beginConversationTransition();
 
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData?.session?.access_token;
-
-        if (!token) return;
-
-        const response = await api.get(
-          `/friends/conversation/${friendUserId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+        const response = await api.get(`/friends/conversation/${friendUserId}`);
 
         const conversationId = response.data.conversationId;
         if (conversationId) {

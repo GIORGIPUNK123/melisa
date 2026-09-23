@@ -13,7 +13,8 @@ import { supabase } from '../../../db/supabase';
 import { api } from '../../../api/instance';
 import { AESGCMDecrypt, AESGCMEncrypt } from '../utils/cryptoFunctions';
 import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
-import { box_keyPair, encodeBase64 } from 'tweetnacl-ts';
+import { encodeBase64 } from 'tweetnacl-ts';
+import { passwordError } from '../passwordPolicy';
 
 const isInvalidSessionError = (error: any): boolean => {
   const status = error?.status ?? error?.statusCode ?? error?.__isAuthError;
@@ -49,11 +50,6 @@ type AuthContextValue = {
     currentPassword: string,
     newPassword: string,
   ) => Promise<{ ok: boolean; error?: string }>;
-  generatedPublicKey: string | null;
-  generatedSalt: string | null;
-  derivedEncryptionKey: string | null;
-  generatedIv: string | null;
-  encryptedPrivateKey: string | null;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -64,17 +60,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isResolvingPrivateKey, setIsResolvingPrivateKey] = useState(false);
 
   const [privateKey, setPrivateKey] = useState<string | null>(null);
-  const [generatedPublicKey, setGeneratedPublicKey] = useState<string | null>(
-    null,
-  );
-  const [generatedSalt, setGeneratedSalt] = useState<string | null>(null);
-  const [derivedEncryptionKey, setDerivedEncryptionKey] = useState<
-    string | null
-  >(null);
-  const [generatedIv, setGeneratedIv] = useState<string | null>(null);
-  const [encryptedPrivateKey, setEncryptedPrivateKey] = useState<string | null>(
-    null,
-  );
 
   // Decode base64 to Uint8Array in browser
   const base64ToUint8Array = useCallback(
@@ -270,11 +255,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (!userId) {
           return { ok: false, error: 'Not authenticated' };
         }
-        if (!newPassword || newPassword.length < 6) {
-          return {
-            ok: false,
-            error: 'New password must be at least 6 characters',
-          };
+        const passwordProblem = passwordError(newPassword || '');
+        if (passwordProblem) {
+          return { ok: false, error: passwordProblem };
         }
 
         // Decrypt with the password that currently wraps the key
@@ -313,10 +296,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
 
         setPrivateKey(plaintextKey);
-        setEncryptedPrivateKey(encryptedPrivateKeyBase64);
-        setGeneratedIv(encodeBase64(iv));
-        setGeneratedSalt(encodeBase64(salt));
-        setDerivedEncryptionKey(encodeBase64(passwordKey));
 
         return { ok: true };
       } catch (err: any) {
@@ -341,51 +320,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser('loading');
       setAuthError(null);
       try {
-        const keyPair = box_keyPair();
-        const publicKeyBase64 = encodeBase64(keyPair.publicKey);
-        const privateKeyBase64 = encodeBase64(keyPair.secretKey);
-
-        const salt = crypto.getRandomValues(new Uint8Array(16));
-        const hashResult = await argon2.hash({
-          pass: password,
-          salt,
-          time: 3,
-          mem: 65536,
-          hashLen: 32,
-          parallelism: 4,
-          type: argon2.ArgonType.Argon2id,
-        });
-        const passwordKey = new Uint8Array(hashResult.hash);
-        const saltBase64 = encodeBase64(salt);
-        const passwordKeyBase64 = encodeBase64(passwordKey);
-
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const ivBase64 = encodeBase64(iv);
-        const encryptedPrivateKeyBase64 = await AESGCMEncrypt(
-          privateKeyBase64,
-          passwordKey,
-          iv,
-        );
-
-        setGeneratedPublicKey(publicKeyBase64);
-        setPrivateKey(privateKeyBase64);
-        setGeneratedSalt(saltBase64);
-        setDerivedEncryptionKey(passwordKeyBase64);
-        setGeneratedIv(ivBase64);
-        setEncryptedPrivateKey(encryptedPrivateKeyBase64);
-
         await api.post('/auth/register', {
           email,
           password,
           username,
           nickname,
-          public_key: publicKeyBase64,
-          encrypted_private_key: encryptedPrivateKeyBase64,
-          iv: ivBase64,
-          salt: saltBase64,
         });
 
-        setUser(null); // User needs to verify email first
+        setUser(null);
         return true;
       } catch (err: unknown) {
         const axiosError = err as AxiosError<{ error?: string }>;
@@ -404,11 +346,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
     // Clear sensitive state on logout
     setPrivateKey(null);
-    setEncryptedPrivateKey(null);
-    setGeneratedIv(null);
-    setGeneratedSalt(null);
-    setDerivedEncryptionKey(null);
-    setGeneratedPublicKey(null);
     setIsResolvingPrivateKey(false);
     setUser(null);
   }, []);
@@ -439,11 +376,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       isResolvingPrivateKey,
       authUnlock,
       changeEncryptionPassword,
-      generatedPublicKey,
-      generatedSalt,
-      derivedEncryptionKey,
-      generatedIv,
-      encryptedPrivateKey,
     }),
     [
       authLogin,
@@ -457,11 +389,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       isResolvingPrivateKey,
       authUnlock,
       changeEncryptionPassword,
-      generatedPublicKey,
-      generatedSalt,
-      derivedEncryptionKey,
-      generatedIv,
-      encryptedPrivateKey,
     ],
   );
 

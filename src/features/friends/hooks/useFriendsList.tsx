@@ -14,14 +14,7 @@ export const useFriendsList = (onChanged?: () => void) => {
     if (!options?.silent) setIsLoading(true);
     const generation = ++fetchGenerationRef.current;
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      if (!token) return;
-
-      const response = await api.get('/friends/list', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get('/friends/list');
 
       if (generation !== fetchGenerationRef.current) return;
       setFriends(response.data.friends || []);
@@ -34,14 +27,7 @@ export const useFriendsList = (onChanged?: () => void) => {
 
   const getOrCreateConversation = async (friendUserId: string) => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      if (!token) return null;
-
-      const response = await api.get(`/friends/conversation/${friendUserId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get(`/friends/conversation/${friendUserId}`);
 
       return response.data.conversationId;
     } catch (err) {
@@ -51,16 +37,7 @@ export const useFriendsList = (onChanged?: () => void) => {
   };
 
   const removeFriend = async (friendUserId: string) => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData?.session?.access_token;
-
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
-
-    await api.delete(`/friends/with/${friendUserId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await api.delete(`/friends/with/${friendUserId}`);
 
     setFriends((current) =>
       current.filter((friend) => friend.userId !== friendUserId),

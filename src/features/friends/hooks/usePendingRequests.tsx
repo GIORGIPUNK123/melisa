@@ -21,14 +21,7 @@ export const usePendingRequests = () => {
   const fetchRequests = useCallback(async (options?: { silent?: boolean }) => {
     if (!options?.silent) setIsLoading(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      if (!token) return;
-
-      const response = await api.get('/friends/pending', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get('/friends/pending');
 
       setSentRequests(response.data.sent || []);
       setReceivedRequests(response.data.received || []);
@@ -41,14 +34,7 @@ export const usePendingRequests = () => {
 
   const cancelRequest = async (friendshipId: string) => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      if (!token) return false;
-
-      await api.delete(`/friends/request/${friendshipId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/friends/request/${friendshipId}`);
 
       setSentRequests((prev) =>
         prev.filter((r) => r.friendshipId !== friendshipId),
@@ -62,18 +48,7 @@ export const usePendingRequests = () => {
 
   const acceptRequest = async (friendshipId: string) => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      if (!token) return false;
-
-      await api.post(
-        `/friends/request/${friendshipId}/accept`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      await api.post(`/friends/request/${friendshipId}/accept`, {});
 
       setReceivedRequests((prev) =>
         prev.filter((r) => r.friendshipId !== friendshipId),
@@ -87,14 +62,7 @@ export const usePendingRequests = () => {
 
   const rejectRequest = async (friendshipId: string) => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      if (!token) return false;
-
-      await api.delete(`/friends/request/${friendshipId}/reject`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/friends/request/${friendshipId}/reject`);
 
       setReceivedRequests((prev) =>
         prev.filter((r) => r.friendshipId !== friendshipId),
