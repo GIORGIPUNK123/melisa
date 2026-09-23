@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../../../api/instance';
 import { supabase } from '../../../db/supabase';
 import { FriendT } from '../../../types';
 
-export const useFriendsList = () => {
+export const useFriendsList = (onChanged?: () => void) => {
   const [friends, setFriends] = useState<FriendT[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const onChangedRef = useRef(onChanged);
+  onChangedRef.current = onChanged;
+  const fetchGenerationRef = useRef(0);
 
-  const fetchFriends = async () => {
-    setIsLoading(true);
+  const fetchFriends = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) setIsLoading(true);
+    const generation = ++fetchGenerationRef.current;
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
@@ -19,13 +23,14 @@ export const useFriendsList = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      if (generation !== fetchGenerationRef.current) return;
       setFriends(response.data.friends || []);
     } catch (err) {
       console.error('Failed to fetch friends list:', err);
     } finally {
-      setIsLoading(false);
+      if (generation === fetchGenerationRef.current) setIsLoading(false);
     }
-  };
+  }, []);
 
   const getOrCreateConversation = async (friendUserId: string) => {
     try {
@@ -60,6 +65,7 @@ export const useFriendsList = () => {
     setFriends((current) =>
       current.filter((friend) => friend.userId !== friendUserId),
     );
+    onChangedRef.current?.();
   };
 
   const isFriend = (userId?: string | null) => {
@@ -68,7 +74,23 @@ export const useFriendsList = () => {
   };
 
   useEffect(() => {
-    fetchFriends();
+    void fetchFriends();
+
+    const friendshipsChannel = supabase
+      .channel('friends-list')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'friendships',
+        },
+        () => {
+          void fetchFriends({ silent: true });
+          onChangedRef.current?.();
+        },
+      )
+      .subscribe();
 
     const statusChannel = supabase
       .channel('friends_status_updates')
@@ -112,10 +134,12 @@ export const useFriendsList = () => {
         },
       )
       .subscribe();
+
     return () => {
+      void supabase.removeChannel(friendshipsChannel);
       void supabase.removeChannel(statusChannel);
     };
-  }, []);
+  }, [fetchFriends]);
 
   return {
     friends,

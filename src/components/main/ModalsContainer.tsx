@@ -40,6 +40,7 @@ interface ModalsContainerProps {
   closeGroupModal: () => void;
   friends: FriendT[];
   privateKey: string;
+  onFriendsChanged?: () => void;
   onGroupCreated: (conversationId: string) => void;
 }
 
@@ -74,6 +75,7 @@ export const ModalsContainer = ({
   closeGroupModal,
   friends,
   privateKey,
+  onFriendsChanged,
   onGroupCreated,
 }: ModalsContainerProps) => {
   return (
@@ -121,6 +123,7 @@ export const ModalsContainer = ({
       <FriendRequestsModal
         isOpen={friendRequestsOpen}
         onClose={closeFriendRequestsModal}
+        onFriendsChanged={onFriendsChanged}
       />
 
       <CreateGroupModal

@@ -163,6 +163,10 @@ export const Main = () => {
 
   useNotificationSound(notifications.length, playNotificationSound);
 
+  const refreshConversations = useCallback(() => {
+    void fetchConversations();
+  }, [fetchConversations]);
+
   const {
     friends,
     isLoading: friendsLoading,
@@ -170,7 +174,26 @@ export const Main = () => {
     removeFriend,
     fetchFriends,
     isFriend,
-  } = useFriendsList();
+  } = useFriendsList(refreshConversations);
+
+  const seenFriendNoticeRef = useRef<string | null>(null);
+  const friendNoticesReadyRef = useRef(false);
+  useEffect(() => {
+    if (notificationsLoading) return;
+    const notice = notifications.find(
+      (item) =>
+        item.type === 'friend_accepted' || item.type === 'friend_request',
+    );
+    if (!friendNoticesReadyRef.current) {
+      friendNoticesReadyRef.current = true;
+      seenFriendNoticeRef.current = notice?.id ?? null;
+      return;
+    }
+    if (!notice || notice.id === seenFriendNoticeRef.current) return;
+    seenFriendNoticeRef.current = notice.id;
+    void fetchFriends({ silent: true });
+    void fetchConversations();
+  }, [notifications, notificationsLoading, fetchFriends, fetchConversations]);
 
   const chatActions = useChatActions(
     userId,
@@ -280,6 +303,10 @@ export const Main = () => {
           closeGroupModal={modals.closeGroupModal}
           friends={visibleFriends}
           privateKey={privateKey}
+          onFriendsChanged={() => {
+            void fetchFriends({ silent: true });
+            void fetchConversations();
+          }}
           onGroupCreated={async (conversationId) => {
             await fetchConversations();
             chatState.setActiveTab('chats');

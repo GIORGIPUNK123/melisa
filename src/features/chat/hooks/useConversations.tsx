@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../db/supabase';
 import { ConversationT } from '../../../types';
 import { PostgrestError } from '@supabase/supabase-js';
-import { asId } from '../../../shared/utils/ids';
+import { asId, sameId } from '../../../shared/utils/ids';
 
 const MEMBERSHIP_WITH_MUTE =
   'muted, last_message_at, conversations(id, type, name, avatar_url, last_message_at)';
@@ -86,6 +86,7 @@ export const useConversations = (userId: string | undefined) => {
   conversationsRef.current = conversations;
   const muteColumnAvailableRef = useRef(true);
   const muteRevisionRef = useRef(0);
+  const fetchGenerationRef = useRef(0);
   const pendingMuteRef = useRef<Map<string, PendingMute>>(new Map());
   const confirmedMuteRevisionRef = useRef<Map<string, number>>(new Map());
 
@@ -101,6 +102,7 @@ export const useConversations = (userId: string | undefined) => {
 
     if (showLoading) setIsLoading(true);
     const fetchRevision = muteRevisionRef.current;
+    const generation = ++fetchGenerationRef.current;
     try {
       const selection = muteColumnAvailableRef.current
         ? MEMBERSHIP_WITH_MUTE
@@ -162,6 +164,7 @@ export const useConversations = (userId: string | undefined) => {
       }
 
       if (membersError) throw membersError;
+      if (generation !== fetchGenerationRef.current) return;
 
       const convs: ConversationT[] = [];
 
@@ -253,11 +256,12 @@ export const useConversations = (userId: string | undefined) => {
         return conversation;
       });
 
+      if (generation !== fetchGenerationRef.current) return;
       setConversations(sortByLatestMessage(merged));
     } catch (err) {
       console.error('Failed to fetch conversations:', err);
     } finally {
-      setIsLoading(false);
+      if (generation === fetchGenerationRef.current) setIsLoading(false);
     }
   }, [markMuteUnavailable]);
 
@@ -266,20 +270,28 @@ export const useConversations = (userId: string | undefined) => {
 
     if (!userId) return;
 
-    const channel = supabase
-      .channel(`user_conversations:${userId}`)
+    const membershipChannel = supabase
+      .channel(`user_memberships:${userId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'conversation_members',
-          filter: `user_id=eq.${userId}`,
         },
-        () => {
+        (payload) => {
+          const row = (payload.new ?? payload.old) as {
+            user_id?: string;
+          };
+          if (payload.eventType === 'UPDATE') return;
+          if (row?.user_id && !sameId(row.user_id, userId)) return;
           void fetchConversations();
         },
       )
+      .subscribe();
+
+    const messageChannel = supabase
+      .channel(`user_conversation_messages:${userId}`)
       .on(
         'postgres_changes',
         {
@@ -291,6 +303,10 @@ export const useConversations = (userId: string | undefined) => {
           void fetchConversations();
         },
       )
+      .subscribe();
+
+    const conversationChannel = supabase
+      .channel(`user_conversation_rows:${userId}`)
       .on(
         'postgres_changes',
         {
@@ -327,7 +343,9 @@ export const useConversations = (userId: string | undefined) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(membershipChannel);
+      supabase.removeChannel(messageChannel);
+      supabase.removeChannel(conversationChannel);
     };
   }, [userId, fetchConversations]);
 

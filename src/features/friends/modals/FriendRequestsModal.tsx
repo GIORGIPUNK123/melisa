@@ -8,6 +8,7 @@ import { ui } from '../../../shared/ui';
 export const FriendRequestsModal = (props: {
   isOpen: boolean;
   onClose: () => void;
+  onFriendsChanged?: () => void;
 }) => {
   const {
     sentRequests,
@@ -31,7 +32,9 @@ export const FriendRequestsModal = (props: {
     const success = await acceptRequest(friendshipId);
     if (!success) {
       alert('Failed to accept request');
+      return;
     }
+    props.onFriendsChanged?.();
   };
 
   const handleReject = async (friendshipId: string) => {

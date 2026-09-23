@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../../api/instance';
 import { supabase } from '../../../db/supabase';
 
@@ -18,8 +18,8 @@ export const usePendingRequests = () => {
   );
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchRequests = async () => {
-    setIsLoading(true);
+  const fetchRequests = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) setIsLoading(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
@@ -35,9 +35,9 @@ export const usePendingRequests = () => {
     } catch (err) {
       console.error('Failed to fetch pending requests:', err);
     } finally {
-      setIsLoading(false);
+      if (!options?.silent) setIsLoading(false);
     }
-  };
+  }, []);
 
   const cancelRequest = async (friendshipId: string) => {
     try {
@@ -107,57 +107,27 @@ export const usePendingRequests = () => {
   };
 
   useEffect(() => {
-    fetchRequests();
+    void fetchRequests();
 
-    // Set up real-time subscription for friendships table
-    const setupSubscription = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const user = session?.user;
-      if (!user) return;
-
-      const channel = supabase
-        .channel(`friendships:${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'friendships',
-            filter: `user_id=eq.${user.id}`,
-          },
-          () => {
-            // Refetch when sent requests change
-            fetchRequests();
-          },
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'friendships',
-            filter: `receiver_id=eq.${user.id}`,
-          },
-          () => {
-            // Refetch when received requests change
-            fetchRequests();
-          },
-        )
-        .subscribe();
-
-      return channel;
-    };
-
-    let channelPromise = setupSubscription();
+    const channel = supabase
+      .channel('friend-requests')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'friendships',
+        },
+        () => {
+          void fetchRequests({ silent: true });
+        },
+      )
+      .subscribe();
 
     return () => {
-      channelPromise.then((channel) => {
-        if (channel) supabase.removeChannel(channel);
-      });
+      void supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchRequests]);
 
   return {
     sentRequests,
