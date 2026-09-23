@@ -407,7 +407,7 @@ export const GroupSettings = (props: {
         onClick={props.onClose}
       />
       <aside className='fixed inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-slate-800 bg-slate-900 shadow-2xl'>
-        <div className='flex shrink-0 items-center justify-between border-b border-slate-800 px-3 py-3'>
+        <div className='flex shrink-0 items-center justify-between border-b border-slate-800 px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]'>
           <div className='flex min-w-0 items-center gap-1'>
             {view === 'people' && (
               <button
