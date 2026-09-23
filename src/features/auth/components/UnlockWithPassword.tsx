@@ -24,7 +24,7 @@ export const UnlockWithPassword = (props: {
   const busy = unlocking || loggingOut;
 
   return (
-    <div className='fixed inset-0 flex items-center justify-center bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]'>
+    <div className='flex h-full w-full items-center justify-center bg-slate-900 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]'>
       <div className='w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl'>
         <div className='mb-6'>
           <BrandMark size='sm' subtitle='Unlock to continue' />

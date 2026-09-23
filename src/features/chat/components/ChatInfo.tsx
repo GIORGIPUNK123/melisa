@@ -102,11 +102,11 @@ export const ChatInfo = (props: {
   return (
     <>
       <div
-        className='fixed inset-0 z-30 bg-slate-950/60 backdrop-blur-[2px]'
+        className='absolute inset-0 z-30 bg-slate-950/60 backdrop-blur-[2px]'
         onClick={props.onClose}
       />
 
-      <aside className='fixed inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-slate-700/80 bg-slate-900 shadow-2xl'>
+      <aside className='absolute inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-slate-700/80 bg-slate-900 shadow-2xl'>
         <div className='flex items-center justify-between border-b border-slate-800 px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))]'>
           <div>
             <h3 className='text-sm font-semibold tracking-wide text-white'>

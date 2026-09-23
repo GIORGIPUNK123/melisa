@@ -77,7 +77,7 @@ export const CameraCapture = (props: {
   };
 
   return (
-    <div className='fixed inset-0 z-[80] flex flex-col bg-black'>
+    <div className='absolute inset-0 z-[80] flex flex-col bg-black'>
       <div className='flex items-center px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]'>
         <button
           type='button'

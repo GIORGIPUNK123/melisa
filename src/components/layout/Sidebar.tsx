@@ -72,16 +72,16 @@ export const Sidebar = (props: {
     <>
       {props.isVisible && (
         <div
-          className='fixed inset-0 z-10 bg-black/50 lg:hidden'
+          className='absolute inset-0 z-10 bg-black/50 lg:hidden'
           onClick={handleOverlayClick}
         />
       )}
 
       <div
         className={`
-        fixed lg:relative inset-y-0 left-0 z-20
+        absolute lg:relative inset-0 z-20
         flex h-full w-full flex-col border-r border-slate-800 bg-slate-950
-        lg:h-full lg:w-full lg:max-w-sm
+        lg:w-full lg:max-w-sm
         transform transition-transform duration-300 ease-in-out
         ${props.isVisible ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}

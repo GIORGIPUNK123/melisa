@@ -119,7 +119,7 @@ export const ChatAttachment = (props: {
 
       {lightboxOpen && (
         <div
-          className='fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]'
+          className='absolute inset-0 z-[80] flex items-center justify-center bg-black/90 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]'
           onClick={(event) => {
             event.stopPropagation();
             setLightboxOpen(false);
