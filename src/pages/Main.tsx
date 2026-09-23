@@ -42,9 +42,7 @@ export const Main = () => {
     const ok = await authUnlock(unlockPassword);
     setUnlocking(false);
     if (!ok) {
-      setUnlockError(
-        'Wrong password for your encryption key. If you recently changed login password, try the previous one.',
-      );
+      setUnlockError('Wrong password.');
     } else setUnlockPassword('');
 
     try {

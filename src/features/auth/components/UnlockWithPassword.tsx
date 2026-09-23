@@ -61,11 +61,6 @@ export const UnlockWithPassword = (props: {
           {unlockError && (
             <div className='mt-3 text-sm text-red-400'>{unlockError}</div>
           )}
-          <p className='mt-3 text-xs leading-relaxed text-slate-500'>
-            If you changed your login password recently, try your{' '}
-            <span className='text-slate-300'>previous</span> password here. Login
-            and chat encryption can get out of sync.
-          </p>
           <button
             type='submit'
             disabled={busy || !unlockPassword}

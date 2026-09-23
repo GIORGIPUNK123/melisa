@@ -141,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           );
         } catch (e: any) {
           console.error('Decryption failed:', e?.message ?? e);
-          throw new Error('Wrong password or corrupted key data.');
+          throw new Error('Wrong password.');
         }
 
         setPrivateKey(decryptedPrivateKey);
@@ -209,8 +209,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (!data.user) throw new Error('Login failed');
 
         await fetchPrivateKey(data.user.id, password);
-        // Keep the session even if key unwrap fails (e.g. password was
-        // changed without re-wrapping). Unlock screen can use the old password.
         setUser(data.user);
         return true;
       } catch (err: any) {
@@ -265,8 +263,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (!plaintextKey) {
           return {
             ok: false,
-            error:
-              'Current password is wrong for your encryption key. If you recently changed login password, try the previous one here.',
+            error: 'Current password is wrong.',
           };
         }
 

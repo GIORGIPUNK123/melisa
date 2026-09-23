@@ -77,18 +77,13 @@ export const CameraCapture = (props: {
 
   return (
     <div className='fixed inset-0 z-[80] flex flex-col bg-black'>
-      <div className='flex items-center justify-between px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] text-white'>
-        <button type='button' onClick={props.onClose} className='text-sm'>
-          Cancel
-        </button>
+      <div className='flex items-center px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]'>
         <button
           type='button'
-          onClick={() =>
-            setFacing((current) => (current === 'environment' ? 'user' : 'environment'))
-          }
-          className='text-sm'
+          onClick={props.onClose}
+          className='rounded-full bg-white/15 px-5 py-2.5 text-base font-medium text-white backdrop-blur-sm transition hover:bg-white/25 active:bg-white/30'
         >
-          Flip camera
+          Cancel
         </button>
       </div>
 
@@ -107,14 +102,30 @@ export const CameraCapture = (props: {
         )}
       </div>
 
-      <div className='flex justify-center px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4'>
-        <button
-          type='button'
-          onClick={capture}
-          disabled={!ready}
-          aria-label='Take photo'
-          className='h-16 w-16 rounded-full border-4 border-white bg-white/20 disabled:opacity-40'
-        />
+      <div className='grid grid-cols-3 items-center px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4'>
+        <div />
+        <div className='flex justify-center'>
+          <button
+            type='button'
+            onClick={capture}
+            disabled={!ready}
+            aria-label='Take photo'
+            className='h-16 w-16 rounded-full border-4 border-white bg-white/20 disabled:opacity-40'
+          />
+        </div>
+        <div className='flex justify-end'>
+          <button
+            type='button'
+            onClick={() =>
+              setFacing((current) =>
+                current === 'environment' ? 'user' : 'environment',
+              )
+            }
+            className='rounded-full px-3 py-2 text-sm text-white'
+          >
+            Flip
+          </button>
+        </div>
       </div>
     </div>
   );
