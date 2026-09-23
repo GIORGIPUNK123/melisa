@@ -108,7 +108,7 @@ export const ChatAttachment = (props: {
           setLightboxOpen(true);
         }}
         onDoubleClick={(event) => event.stopPropagation()}
-        className='block max-w-full cursor-zoom-in p-0'
+        className='block max-w-full cursor-pointer p-0'
       >
         <img
           src={url}
