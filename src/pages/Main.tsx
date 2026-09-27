@@ -34,10 +34,9 @@ export const Main = () => {
       setUnlockError('Wrong password.');
     } else {
       setUnlockPassword('');
+      void ensureMessageSoundEnabled();
+      void ensureNotificationSound();
     }
-
-    void ensureMessageSoundEnabled();
-    void ensureNotificationSound();
   };
 
   const handleUnlockLogout = async () => {

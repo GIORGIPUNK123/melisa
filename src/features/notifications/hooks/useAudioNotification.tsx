@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { useSound, type LibrarySoundName } from 'react-sounds';
 
 export const useAudioNotification = (soundName: LibrarySoundName) => {
@@ -28,20 +28,6 @@ export const useAudioNotification = (soundName: LibrarySoundName) => {
       console.error('Failed to play notification sound:', error);
     }
   }, [play]);
-
-  useEffect(() => {
-    const unlock = () => {
-      void ensureEnabled();
-    };
-
-    window.addEventListener('pointerdown', unlock);
-    window.addEventListener('keydown', unlock);
-
-    return () => {
-      window.removeEventListener('pointerdown', unlock);
-      window.removeEventListener('keydown', unlock);
-    };
-  }, [ensureEnabled]);
 
   return { playSound, ensureEnabled };
 };

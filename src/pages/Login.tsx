@@ -7,6 +7,7 @@ import { Loading } from '../components/Loading';
 import { BrandMark } from '../atoms/BrandMark';
 import { ui } from '../shared/ui';
 import { ForgotPasswordModal } from '../features/auth/components/ForgotPasswordModal';
+import { useAudioNotification } from '../features/notifications/hooks/useAudioNotification';
 
 export const Login = () => {
   const { user, authLogin, authError, isResolvingPrivateKey } = useAuth();
@@ -15,6 +16,7 @@ export const Login = () => {
   const passwordInput = useFormInput('');
   const [isLoading, setIsLoading] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const { ensureEnabled } = useAudioNotification('ui/success_bling');
 
   useEffect(() => {
     if (user && user !== 'loading' && !isResolvingPrivateKey) {
@@ -29,6 +31,7 @@ export const Login = () => {
     setIsLoading(false);
 
     if (success) {
+      void ensureEnabled();
       navigate('/');
     }
   };
