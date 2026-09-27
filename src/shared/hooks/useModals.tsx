@@ -10,7 +10,6 @@ export interface ConfirmModalData {
 export const useModals = () => {
   const [addFriendModalOpen, setAddFriendModalOpen] = useState(false);
   const [friendRequestsOpen, setFriendRequestsOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [userProfileModalOpen, setUserProfileModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
@@ -24,9 +23,6 @@ export const useModals = () => {
 
   const openFriendRequestsModal = () => setFriendRequestsOpen(true);
   const closeFriendRequestsModal = () => setFriendRequestsOpen(false);
-
-  const openSettingsModal = () => setSettingsOpen(true);
-  const closeSettingsModal = () => setSettingsOpen(false);
 
   const openNotificationsModal = () => setNotificationsModalOpen(true);
   const closeNotificationsModal = () => setNotificationsModalOpen(false);
@@ -59,9 +55,6 @@ export const useModals = () => {
     friendRequestsOpen,
     openFriendRequestsModal,
     closeFriendRequestsModal,
-    settingsOpen,
-    openSettingsModal,
-    closeSettingsModal,
     notificationsModalOpen,
     openNotificationsModal,
     closeNotificationsModal,

@@ -16,7 +16,7 @@ export const TextInput = (props: {
         type={props.type}
         value={props.value}
         onChange={props.onChange}
-        className={`${ui.input} ${
+        className={`py-2 px-3 w-full min-w-0 rounded-md border border-slate-700/80 bg-slate-800/80 text-sm text-white placeholder:text-slate-500 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/25 disabled:cursor-not-allowed disabled:opacity-50 md:text-[15px] ${
           props.error
             ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/30'
             : ''

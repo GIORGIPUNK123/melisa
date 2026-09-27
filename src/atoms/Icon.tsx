@@ -63,6 +63,13 @@ export const IconX = (props: IconProps) => (
   </svg>
 );
 
+export const IconArrowLeft = (props: IconProps) => (
+  <svg {...base(props)}>
+    <path d='M19 12H5' />
+    <path d='m12 19-7-7 7-7' />
+  </svg>
+);
+
 export const IconLock = (props: IconProps) => (
   <svg {...base(props)}>
     <rect width='18' height='11' x='3' y='11' rx='2' ry='2' />

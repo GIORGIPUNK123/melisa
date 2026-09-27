@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { APP_NAME } from './shared/constants';
 import { useEffect } from 'react';
 import { Main } from './pages/Main';
+import { SettingsPage } from './features/settings/pages/SettingsPage';
 
 export const App = () => {
   useEffect(() => {
@@ -19,6 +20,7 @@ export const App = () => {
           <Route path='/' element={<Main />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
+          <Route path='/settings' element={<SettingsPage />} />
         </Routes>
       </Router>
     </>

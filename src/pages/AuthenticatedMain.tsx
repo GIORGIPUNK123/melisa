@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router';
 import { useNotifications } from '../features/notifications/hooks/useNotifications';
 import { useUnreadMessages } from '../features/chat/hooks/useUnreadMessages';
 import { useAudioNotification } from '../features/notifications/hooks/useAudioNotification';
@@ -28,11 +29,12 @@ export const AuthenticatedMain = (props: {
   privateKey: string;
 }) => {
   const { user, privateKey } = props;
+  const navigate = useNavigate();
   const userId = user.id;
   const seenConversationIdsRef = useRef<Set<string>>(new Set());
   const modals = useModals();
   const chatState = useChatState();
-  const { profile, setProfile } = useCurrentUserProfile(userId);
+  const { profile } = useCurrentUserProfile(userId);
   const {
     conversations,
     isLoading: conversationLoading,
@@ -176,7 +178,7 @@ export const AuthenticatedMain = (props: {
   );
 
   return (
-    <div className='relative flex h-full w-full min-w-0 overflow-hidden bg-slate-900'>
+    <div className='relative flex w-full h-full min-w-0 overflow-hidden bg-slate-900'>
       <WorkspaceModals
         user={user}
         profile={profile}
@@ -184,9 +186,6 @@ export const AuthenticatedMain = (props: {
         closeAddFriendModal={modals.closeAddFriendModal}
         friendRequestsOpen={modals.friendRequestsOpen}
         closeFriendRequestsModal={modals.closeFriendRequestsModal}
-        settingsOpen={modals.settingsOpen}
-        closeSettingsModal={modals.closeSettingsModal}
-        onProfileUpdated={setProfile}
         userProfileModalOpen={modals.userProfileModalOpen}
         selectedUsername={modals.selectedUsername}
         closeUserProfileModal={modals.closeUserProfileModal}
@@ -229,7 +228,7 @@ export const AuthenticatedMain = (props: {
         notificationsLoading={notificationsLoading}
         onAddFriendClick={modals.openAddFriendModal}
         onFriendRequestsClick={modals.openFriendRequestsModal}
-        onSettingsClick={modals.openSettingsModal}
+        onSettingsClick={() => navigate('/settings')}
         onNotificationsClick={modals.openNotificationsModal}
         onFriendSelect={chatState.selectConversationAndSwitchToChats}
         onViewProfile={modals.openUserProfileModal}

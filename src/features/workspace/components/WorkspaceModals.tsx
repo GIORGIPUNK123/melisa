@@ -1,7 +1,6 @@
 import { User } from '@supabase/supabase-js';
 import { AddFriendsModal } from '../../friends/modals/AddFriendsModal';
 import { FriendRequestsModal } from '../../friends/modals/FriendRequestsModal';
-import { SettingsModal } from '../../settings/components/SettingsModal';
 import { UserProfileModal } from '../../friends/modals/UserProfileModal';
 import { ConfirmModal } from '../../../components/modals/ConfirmModal';
 import { NotificationsModal } from '../../notifications/modals/NotificationsModal';
@@ -16,9 +15,6 @@ interface WorkspaceModalsProps {
   closeAddFriendModal: () => void;
   friendRequestsOpen: boolean;
   closeFriendRequestsModal: () => void;
-  settingsOpen: boolean;
-  closeSettingsModal: () => void;
-  onProfileUpdated: (profile: UserT) => void;
   userProfileModalOpen: boolean;
   selectedUsername: string | null;
   closeUserProfileModal: () => void;
@@ -51,9 +47,6 @@ export const WorkspaceModals = ({
   closeAddFriendModal,
   friendRequestsOpen,
   closeFriendRequestsModal,
-  settingsOpen,
-  closeSettingsModal,
-  onProfileUpdated,
   userProfileModalOpen,
   selectedUsername,
   closeUserProfileModal,
@@ -134,14 +127,6 @@ export const WorkspaceModals = ({
         selfPublicKey={profile?.public_key}
         privateKey={privateKey}
         onCreated={onGroupCreated}
-      />
-
-      <SettingsModal
-        isOpen={settingsOpen}
-        onClose={closeSettingsModal}
-        user={user}
-        profile={profile}
-        onProfileUpdated={onProfileUpdated}
       />
     </>
   );
