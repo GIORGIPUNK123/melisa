@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Loading } from '../components/Loading';
 import { BrandMark } from '../atoms/BrandMark';
 import { ui } from '../shared/ui';
+import { ForgotPasswordModal } from '../features/auth/components/ForgotPasswordModal';
 
 export const Login = () => {
   const { user, authLogin, authError, isResolvingPrivateKey } = useAuth();
@@ -13,6 +14,7 @@ export const Login = () => {
   const emailInput = useFormInput('');
   const passwordInput = useFormInput('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   useEffect(() => {
     if (user && user !== 'loading' && !isResolvingPrivateKey) {
@@ -59,12 +61,22 @@ export const Login = () => {
 
               <button
                 type='submit'
-                disabled={isLoading || !emailInput.value || !passwordInput.value}
+                disabled={
+                  isLoading || !emailInput.value || !passwordInput.value
+                }
                 className={`${ui.btnPrimary} mt-2`}
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </button>
             </form>
+
+            <button
+              type='button'
+              onClick={() => setIsForgotPasswordOpen(true)}
+              className='mt-4 block w-full text-center text-[13px] font-medium text-indigo-400 transition hover:text-indigo-300'
+            >
+              Forgot password?
+            </button>
 
             {authError && (
               <p className='mt-4 text-center text-sm text-rose-400'>
@@ -85,6 +97,10 @@ export const Login = () => {
             </div>
           </div>
         </div>
+        <ForgotPasswordModal
+          isOpen={isForgotPasswordOpen}
+          onClose={() => setIsForgotPasswordOpen(false)}
+        />
       </div>
     );
   }

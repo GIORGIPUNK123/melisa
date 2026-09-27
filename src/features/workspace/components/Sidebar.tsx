@@ -1,20 +1,20 @@
 import { User } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router';
-import { ConversationT, FriendT, NotificationT } from '../../types';
-import { FriendsList } from '../../features/friends/components/FriendsList';
-import { ConversationsList } from './ConversationsList';
-import { BrandMark } from '../../atoms/BrandMark';
+import { ConversationT, FriendT, NotificationT } from '../../../types';
+import { FriendsList } from '../../friends/components/FriendsList';
+import { ConversationsList } from '../../chat/components/ConversationsList';
+import { BrandMark } from '../../../atoms/BrandMark';
 import {
   IconBell,
   IconInbox,
   IconLogOut,
   IconSettings,
   IconUserPlus,
-} from '../../atoms/Icon';
-import { supabase } from '../../db/supabase';
-import { ui } from '../../shared/ui';
-import { usePullToRefresh } from '../../shared/hooks/usePullToRefresh';
-import { RefreshSpinner } from './RefreshSpinner';
+} from '../../../atoms/Icon';
+import { supabase } from '../../../db/supabase';
+import { ui } from '../../../shared/ui';
+import { usePullToRefresh } from '../../../shared/hooks/usePullToRefresh';
+import { RefreshSpinner } from '../../../components/layout/RefreshSpinner';
 
 export const Sidebar = (props: {
   activeTab: 'chats' | 'friends';
@@ -283,7 +283,10 @@ export const Sidebar = (props: {
             <IconUserPlus size={16} />
             Add Friends
           </button>
-          <button onClick={props.onFriendRequestsClick} className={navButtonClass}>
+          <button
+            onClick={props.onFriendRequestsClick}
+            className={navButtonClass}
+          >
             <IconInbox size={16} />
             Friend Requests
           </button>

@@ -1,15 +1,15 @@
 import { User } from '@supabase/supabase-js';
-import { AddFriendsModal } from '../../features/friends/modals/AddFriendsModal';
-import { FriendRequestsModal } from '../../features/friends/modals/FriendRequestsModal';
-import { SettingsModal } from '../modals/SettingsModal';
-import { UserProfileModal } from '../../features/friends/modals/UserProfileModal';
-import { ConfirmModal } from '../modals/ConfirmModal';
-import { NotificationsModal } from '../../features/notifications/modals/NotificationsModal';
-import { UserT, NotificationT, FriendT } from '../../types';
-import { ConfirmModalData } from '../../shared/hooks/useModals';
-import { CreateGroupModal } from '../../features/chat/components/CreateGroupModal';
+import { AddFriendsModal } from '../../friends/modals/AddFriendsModal';
+import { FriendRequestsModal } from '../../friends/modals/FriendRequestsModal';
+import { SettingsModal } from '../../settings/components/SettingsModal';
+import { UserProfileModal } from '../../friends/modals/UserProfileModal';
+import { ConfirmModal } from '../../../components/modals/ConfirmModal';
+import { NotificationsModal } from '../../notifications/modals/NotificationsModal';
+import { UserT, NotificationT, FriendT } from '../../../types';
+import { ConfirmModalData } from '../../../shared/hooks/useModals';
+import { CreateGroupModal } from '../../chat/components/CreateGroupModal';
 
-interface ModalsContainerProps {
+interface WorkspaceModalsProps {
   user: User;
   profile: UserT | null;
   addFriendModalOpen: boolean;
@@ -44,7 +44,7 @@ interface ModalsContainerProps {
   onGroupCreated: (conversationId: string) => void;
 }
 
-export const ModalsContainer = ({
+export const WorkspaceModals = ({
   user,
   profile,
   addFriendModalOpen,
@@ -77,7 +77,7 @@ export const ModalsContainer = ({
   privateKey,
   onFriendsChanged,
   onGroupCreated,
-}: ModalsContainerProps) => {
+}: WorkspaceModalsProps) => {
   return (
     <>
       <UserProfileModal

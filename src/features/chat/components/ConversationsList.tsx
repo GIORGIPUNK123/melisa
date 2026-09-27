@@ -1,8 +1,8 @@
-import { ConversationT } from '../../types';
-import { formatConversationTime } from '../../shared/utils/dates';
-import { ui } from '../../shared/ui';
-import { IconUsers, IconVolumeOff } from '../../atoms';
-import { ListSkeleton } from './ListSkeleton';
+import { ConversationT } from '../../../types';
+import { formatConversationTime } from '../../../shared/utils/dates';
+import { ui } from '../../../shared/ui';
+import { IconUsers, IconVolumeOff } from '../../../atoms';
+import { ListSkeleton } from '../../../components/layout/ListSkeleton';
 
 export const ConversationsList = (props: {
   onConversationSelect: (conversationId: string) => void;
@@ -44,7 +44,8 @@ export const ConversationsList = (props: {
         <div className='space-y-0.5 p-2'>
           {conversations.map((conv) => {
             const isGroup = conv.type === 'group';
-            const blocked = !isGroup && Boolean(props.isBlocked?.(conv.otherUserId));
+            const blocked =
+              !isGroup && Boolean(props.isBlocked?.(conv.otherUserId));
             const isActive = props.activeConversationId === conv.id;
 
             return (

@@ -7,28 +7,20 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { User } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 import { AxiosError } from 'axios';
 import { supabase } from '../../../db/supabase';
-import { api } from '../../../api/instance';
-import { AESGCMDecrypt, AESGCMEncrypt } from '../utils/cryptoFunctions';
-import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
-import { encodeBase64 } from 'tweetnacl-ts';
-import { passwordError } from '../passwordPolicy';
-
-const isInvalidSessionError = (error: any): boolean => {
-  const status = error?.status ?? error?.statusCode ?? error?.__isAuthError;
-  const message = String(error?.message ?? '').toLowerCase();
-
-  return (
-    status === 401 ||
-    status === 403 ||
-    message.includes('jwt') ||
-    message.includes('session') ||
-    message.includes('invalid') ||
-    message.includes('forbidden')
-  );
-};
+import {
+  getCurrentUser,
+  isInvalidSessionError,
+  login,
+  logout,
+  register,
+} from '../services/authService';
+import {
+  changePrivateKeyPassword,
+  fetchPrivateKey as fetchPrivateKeyService,
+} from '../services/privateKeyService';
 
 type AuthContextValue = {
   authLogin: (email: string, password: string) => Promise<boolean>;
@@ -61,89 +53,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const [privateKey, setPrivateKey] = useState<string | null>(null);
 
-  // Decode base64 to Uint8Array in browser
-  const base64ToUint8Array = useCallback(
-    (base64: string, fieldName: string = 'unknown') => {
-      try {
-        let padded = base64;
-        const padding = base64.length % 4;
-        if (padding) {
-          padded = base64 + '='.repeat(4 - padding);
-        }
-        const binaryString = atob(padded);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        return bytes;
-      } catch (err) {
-        throw new Error(`Invalid base64 for ${fieldName}: ${err}`);
-      }
-    },
-    [],
-  );
-
-  // Fetch and decrypt private key (independent from login)
   const fetchPrivateKey = useCallback(
     async (userId: string, password: string) => {
       try {
-        type userDataT = {
-          id: string;
-          email: string;
-          username: string;
-          nickname: string;
-          avatar_url: string | null;
-          status: string;
-          public_key: string;
-          encrypted_private_key: string;
-          iv: string;
-          salt: string;
-        };
-        const { data: responseData } = await api.get<
-          userDataT | { result: userDataT }
-        >(`/userinfo/${userId}`);
-        const userData =
-          'result' in responseData ? responseData.result : responseData;
-        if (!userData) throw new Error('Failed to fetch user data');
-        if (!userData.salt || !userData.iv || !userData.encrypted_private_key) {
-          throw new Error(
-            'User profile missing encryption data (salt/iv/encrypted_private_key). Account may need to re-register.',
-          );
-        }
-        const saltArray = base64ToUint8Array(userData.salt, 'salt');
-        const ivArray = base64ToUint8Array(userData.iv, 'iv');
-
-        let passwordKey: Uint8Array;
-        try {
-          const hashResult = await argon2.hash({
-            pass: password,
-            salt: saltArray,
-            time: 3, // Must match backend default (timeCost: 3)
-            mem: 65536, // KiB - must match backend default (memoryCost: 65536)
-            hashLen: 32,
-            parallelism: 4, // Must match backend default
-            type: argon2.ArgonType.Argon2id,
-          });
-          passwordKey = new Uint8Array(hashResult.hash);
-        } catch (e: any) {
-          console.error('Argon2 key derivation failed:', e?.message ?? e);
-          throw new Error(
-            'Key derivation failed. Try a different browser or device.',
-          );
-        }
-
-        let decryptedPrivateKey: string;
-        try {
-          decryptedPrivateKey = await AESGCMDecrypt(
-            userData.encrypted_private_key,
-            passwordKey,
-            ivArray,
-          );
-        } catch (e: any) {
-          console.error('Decryption failed:', e?.message ?? e);
-          throw new Error('Wrong password.');
-        }
-
+        const decryptedPrivateKey = await fetchPrivateKeyService(
+          userId,
+          password,
+        );
         setPrivateKey(decryptedPrivateKey);
         return decryptedPrivateKey;
       } catch (err: any) {
@@ -156,35 +72,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
     },
-    [base64ToUint8Array],
+    [],
   );
 
-  // Fetch the current user from Supabase
   const fetchUser = useCallback(async () => {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        setUser(null);
-        return;
-      }
-
-      const { data, error } = await supabase.auth.getUser();
-
-      if (error || !data.user) {
-        if (error && isInvalidSessionError(error)) {
-          await supabase.auth.signOut({ scope: 'local' });
-          setUser(null);
-          return;
-        }
-
-        setUser(data.user ?? null);
-        return;
-      }
-
-      setUser(data.user);
+      setUser(await getCurrentUser());
     } catch (error: any) {
       if (isInvalidSessionError(error)) {
         await supabase.auth.signOut({ scope: 'local' });
@@ -193,7 +86,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Handle login
   const authLogin = useCallback(
     async (email: string, password: string) => {
       setUser('loading');
@@ -201,15 +93,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsResolvingPrivateKey(true);
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw new Error(error.message);
-        if (!data.user) throw new Error('Login failed');
+        const loggedInUser = await login(email, password);
 
-        await fetchPrivateKey(data.user.id, password);
-        setUser(data.user);
+        await fetchPrivateKey(loggedInUser.id, password);
+        setUser(loggedInUser);
         return true;
       } catch (err: any) {
         setAuthError(err.message || 'Login error');
@@ -222,7 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [fetchPrivateKey],
   );
 
-  // Re-unlock / re-decrypt private key using password (for reloads or redirects)
   const authUnlock = useCallback(
     async (password: string) => {
       try {
@@ -242,7 +128,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [fetchPrivateKey],
   );
 
-  // Re-wrap private key with a new password and update auth password
   const changeEncryptionPassword = useCallback(
     async (currentPassword: string, newPassword: string) => {
       try {
@@ -253,44 +138,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (!userId) {
           return { ok: false, error: 'Not authenticated' };
         }
-        const passwordProblem = passwordError(newPassword || '');
-        if (passwordProblem) {
-          return { ok: false, error: passwordProblem };
-        }
-
-        // Decrypt with the password that currently wraps the key
-        const plaintextKey = await fetchPrivateKey(userId, currentPassword);
-        if (!plaintextKey) {
-          return {
-            ok: false,
-            error: 'Current password is wrong.',
-          };
-        }
-
-        const salt = crypto.getRandomValues(new Uint8Array(16));
-        const hashResult = await argon2.hash({
-          pass: newPassword,
-          salt,
-          time: 3,
-          mem: 65536,
-          hashLen: 32,
-          parallelism: 4,
-          type: argon2.ArgonType.Argon2id,
-        });
-        const passwordKey = new Uint8Array(hashResult.hash);
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const encryptedPrivateKeyBase64 = await AESGCMEncrypt(
-          plaintextKey,
-          passwordKey,
-          iv,
+        const plaintextKey = await changePrivateKeyPassword(
+          userId,
+          currentPassword,
+          newPassword,
         );
-
-        await api.put('/friends/settings', {
-          password: newPassword,
-          encrypted_private_key: encryptedPrivateKeyBase64,
-          iv: encodeBase64(iv),
-          salt: encodeBase64(salt),
-        });
 
         setPrivateKey(plaintextKey);
 
@@ -306,7 +158,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [fetchPrivateKey],
   );
 
-  // Handle registration
   const authRegister = useCallback(
     async (
       email: string,
@@ -317,12 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser('loading');
       setAuthError(null);
       try {
-        await api.post('/auth/register', {
-          email,
-          password,
-          username,
-          nickname,
-        });
+        await register(email, password, username, nickname);
 
         setUser(null);
         return true;
@@ -338,10 +184,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [],
   );
 
-  // Handle logout
   const authLogout = useCallback(async () => {
-    await supabase.auth.signOut();
-    // Clear sensitive state on logout
+    await logout();
     setPrivateKey(null);
     setIsResolvingPrivateKey(false);
     setUser(null);

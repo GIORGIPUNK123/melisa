@@ -3,7 +3,10 @@ import { api } from '../../../api/instance';
 import { supabase } from '../../../db/supabase';
 import { FriendT } from '../../../types';
 
-export const useFriendsList = (onChanged?: () => void) => {
+export const useFriendsList = (
+  userId: string | undefined,
+  onChanged?: () => void,
+) => {
   const [friends, setFriends] = useState<FriendT[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const onChangedRef = useRef(onChanged);
@@ -51,6 +54,12 @@ export const useFriendsList = (onChanged?: () => void) => {
   };
 
   useEffect(() => {
+    if (!userId) {
+      setFriends([]);
+      setIsLoading(false);
+      return;
+    }
+
     void fetchFriends();
 
     const friendshipsChannel = supabase
@@ -116,7 +125,7 @@ export const useFriendsList = (onChanged?: () => void) => {
       void supabase.removeChannel(friendshipsChannel);
       void supabase.removeChannel(statusChannel);
     };
-  }, [fetchFriends]);
+  }, [fetchFriends, userId]);
 
   return {
     friends,

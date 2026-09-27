@@ -16,10 +16,12 @@
     "argon2": "^0.44.0",
     "argon2-browser": "^1.18.0",
     "axios": "^1.4.0",
+    "howler": "^2.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.26.1",
     "react-router-dom": "^6.26.1",
+    "react-sounds": "^1.0.30",
     "socket.io-client": "^4.7.1",
     "tweetnacl-ts": "^1.0.3",
     "yup": "^1.7.1"

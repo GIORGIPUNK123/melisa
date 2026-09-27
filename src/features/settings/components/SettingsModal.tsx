@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { User } from '@supabase/supabase-js';
-import { UserT } from '../../types';
-import { api } from '../../api/instance';
-import { handleBackdropClick } from '../../shared/utils/modal';
-import { useAuth } from '../../features/auth/hooks/useAuth';
-import { passwordError } from '../../features/auth/passwordPolicy';
-import { IconEyeOff, IconLock, IconUser, IconX } from '../../atoms/Icon';
-import { ui } from '../../shared/ui';
+import { UserT } from '../../../types';
+import { api } from '../../../api/instance';
+import { handleBackdropClick } from '../../../shared/utils/modal';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { passwordError } from '../../auth/passwordPolicy';
+import { IconEyeOff, IconLock, IconUser, IconX } from '../../../atoms/Icon';
+import { ui } from '../../../shared/ui';
 
 export const SettingsModal = (props: {
   isOpen: boolean;

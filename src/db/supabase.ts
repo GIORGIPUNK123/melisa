@@ -1,23 +1,6 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
-const globals = globalThis as typeof globalThis & {
-  __melisaSupabase?: SupabaseClient;
-};
-
-export const supabase =
-  globals.__melisaSupabase ??
-  createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      lock: async (_name, _acquireTimeout, fn) => await fn(),
-    },
-    realtime: {
-      params: {
-        eventsPerSecond: 10,
-      },
-    },
-  });
-
-globals.__melisaSupabase = supabase;
+export const supabase = createClient(supabaseUrl, supabaseKey);
