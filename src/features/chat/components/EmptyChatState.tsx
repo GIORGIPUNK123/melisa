@@ -1,10 +1,13 @@
-import { BrandMark } from '../../../atoms/BrandMark';
-
 export const EmptyChatState = () => {
   return (
-    <div className='flex flex-col items-center justify-center flex-1 h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
-      <div className='space-y-4 text-center'>
-        <BrandMark size='sm' subtitle='Select a chat to start messaging' />
+    <div className='flex flex-col h-full w-full bg-[#080D14]'>
+      <div className='flex items-center justify-between h-[60px] px-4 border-b-[1px] border-solid border-[#3d464fc7]'>
+        <span className='font-semibold text-white'>No Conversation</span>
+      </div>
+      <div className='flex-1 p-4 overflow-y-auto'>
+        <div className='text-[#56687B] text-sm'>
+          Select a conversation to start chatting.
+        </div>
       </div>
     </div>
   );

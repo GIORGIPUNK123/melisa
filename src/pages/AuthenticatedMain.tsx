@@ -17,10 +17,11 @@ import { useConversations } from '../features/chat/hooks/useConversations';
 import { useFriendsList } from '../features/friends/hooks/useFriendsList';
 import type { User } from '@supabase/supabase-js';
 import type { PublicProfileT } from '../types';
-import { Sidebar } from '../features/workspace/components/Sidebar';
+import { Sidebar } from '../features/workspace/sidebar/chatSidebar/Sidebar';
 import { ChatInfo } from '../features/chat/components/ChatInfo';
 import { GroupSettings } from '../features/chat/components/GroupSettings';
 import { asId, sameId } from '../shared/utils/ids';
+import { AppSidebar } from '../features/workspace/sidebar/appSidebar/AppSidebar';
 
 const EMPTY_MEMBERS: PublicProfileT[] = [];
 
@@ -141,45 +142,45 @@ export const AuthenticatedMain = (props: {
     void fetchConversations();
   }, [notifications, notificationsLoading, fetchFriends, fetchConversations]);
 
-  const chatActions = useChatActions(
-    userId,
-    modals.openConfirmModal,
-    chatState.clearActiveConversation,
-    removeFriend,
-    fetchFriends,
-  );
-  const visibleFriends = friends.filter(
-    (friend) => !chatActions.hasBlock(friend.userId),
-  );
-  const handleMessageUser = useCallback(
-    async (friendUserId: string) => {
-      if (chatState.isOpeningConversation) return;
-      const existingConversation = conversations.find(
-        (conversation) => conversation.otherUserId === friendUserId,
-      );
-      if (existingConversation) {
-        chatState.handleFriendSelect(existingConversation.id);
-        return;
-      }
-      if (chatActions.hasBlock(friendUserId)) return;
-      chatState.beginConversationTransition();
-      try {
-        const response = await api.get(`/friends/conversation/${friendUserId}`);
-        if (response.data.conversationId) {
-          chatState.handleFriendSelect(response.data.conversationId);
-        }
-      } catch (err) {
-        console.error('Failed to open conversation from profile:', err);
-      } finally {
-        chatState.endConversationTransition();
-      }
-    },
-    [chatActions, chatState, conversations],
-  );
+  // const chatActions = useChatActions(
+  //   userId,
+  //   modals.openConfirmModal,
+  //   chatState.clearActiveConversation,
+  //   removeFriend,
+  //   fetchFriends,
+  // );
+  // const visibleFriends = friends.filter(
+  //   (friend) => !chatActions.hasBlock(friend.userId),
+  // );
+  // const handleMessageUser = useCallback(
+  //   async (friendUserId: string) => {
+  //     if (chatState.isOpeningConversation) return;
+  //     const existingConversation = conversations.find(
+  //       (conversation) => conversation.otherUserId === friendUserId,
+  //     );
+  //     if (existingConversation) {
+  //       chatState.handleFriendSelect(existingConversation.id);
+  //       return;
+  //     }
+  //     if (chatActions.hasBlock(friendUserId)) return;
+  //     chatState.beginConversationTransition();
+  //     try {
+  //       const response = await api.get(`/friends/conversation/${friendUserId}`);
+  //       if (response.data.conversationId) {
+  //         chatState.handleFriendSelect(response.data.conversationId);
+  //       }
+  //     } catch (err) {
+  //       console.error('Failed to open conversation from profile:', err);
+  //     } finally {
+  //       chatState.endConversationTransition();
+  //     }
+  //   },
+  //   [chatActions, chatState, conversations],
+  // );
 
   return (
     <div className='relative flex w-full h-full min-w-0 overflow-hidden bg-slate-900'>
-      <WorkspaceModals
+      {/* <WorkspaceModals
         user={user}
         profile={profile}
         addFriendModalOpen={modals.addFriendModalOpen}
@@ -217,8 +218,9 @@ export const AuthenticatedMain = (props: {
           chatState.selectConversationAndSwitchToChats(conversationId);
           modals.closeGroupModal();
         }}
-      />
-      <Sidebar
+      /> */}
+      <AppSidebar avatarUrl={profile?.avatar_url} />
+      {/* <Sidebar
         user={user}
         activeTab={chatState.activeTab}
         setActiveTab={chatState.setActiveTab}
@@ -249,8 +251,8 @@ export const AuthenticatedMain = (props: {
             fetchConversations(),
           ]);
         }}
-      />
-      {!chatState.activeConversationId ? (
+      /> */}
+      {/* {!chatState.activeConversationId ? (
         <EmptyChatState />
       ) : (
         <ChatArea
@@ -334,7 +336,7 @@ export const AuthenticatedMain = (props: {
           isBlocked={chatActions.isBlocked}
           isFriend={isFriend}
         />
-      )}
+      )} */}
     </div>
   );
 };

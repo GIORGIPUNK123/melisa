@@ -9,11 +9,11 @@ import {
   encodeBase64,
   decodeBase64,
 } from 'tweetnacl-ts';
-import type { MessageT, PublicProfileT } from '../../../types';
+import type { ConversationMemberT, MessageT } from '../../../types';
 
 type DecryptChatMessageArgs = {
   message: MessageT;
-  membersList: PublicProfileT[];
+  membersList: ConversationMemberT[];
   currentUserId: string | null;
   privateKey: string | null;
   groupKey?: Uint8Array | null;
@@ -56,7 +56,10 @@ export const unwrapGroupKey = (
   return opened || null;
 };
 
-export const encryptGroupMessage = (messageContent: string, groupKey: Uint8Array) => {
+export const encryptGroupMessage = (
+  messageContent: string,
+  groupKey: Uint8Array,
+) => {
   const nonce = randomBytes(24);
   const cipher = secretbox(decodeUTF8(messageContent), nonce, groupKey);
   return `enc:g1:${encodeBase64(nonce)}:${encodeBase64(cipher)}`;
@@ -95,13 +98,13 @@ export const decryptChatMessageContent = async ({
   if (!currentUserId || !privateKey) {
     return '[Encrypted message: locked]';
   }
-  const senderId = message.sender_id;
+  const senderId = message.sender.id;
   const senderPublicKey = membersList.find(
     (member) => member.id === senderId,
-  )?.public_key;
+  )?.publicKey;
   const selfPublicKey = membersList.find(
     (member) => member.id === currentUserId,
-  )?.public_key;
+  )?.publicKey;
   if (!senderPublicKey || !selfPublicKey) {
     return '[Encrypted message: missing key]';
   }

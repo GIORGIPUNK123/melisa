@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { Loading } from '../components/Loading';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { UnlockWithPassword } from '../features/auth/components/UnlockWithPassword';
-import { AuthenticatedMain } from './AuthenticatedMain';
 import { useAudioNotification } from '../features/notifications/hooks/useAudioNotification';
+import { TestMain } from './TestMain';
 
 export const Main = () => {
   const { user, authUnlock, authLogout, privateKey, isResolvingPrivateKey } =
@@ -68,5 +68,5 @@ export const Main = () => {
     );
   }
 
-  return <AuthenticatedMain user={user} privateKey={privateKey} />;
+  return <TestMain />;
 };

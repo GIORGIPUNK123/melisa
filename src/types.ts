@@ -53,34 +53,34 @@ export interface BlockT {
 
 // Conversation types
 export interface ConversationT {
-  id: string;
-  type: string;
-  name?: string;
-  otherUserNickname: string;
-  otherUserAvatar?: string;
-  otherUserId: string;
+  id: number;
+  type: 'direct' | 'group';
+  name: string;
   lastMessageTime?: string;
   muted: boolean;
+  conversationMembers: ConversationMemberT[];
 }
 export interface ConversationMemberT {
   id: string;
-  conversation_id: string;
-  user_id: string;
-  joined_at: string;
-  last_read_at: string;
-  last_message_at: string;
+  nickname: string;
+  username: string;
+  avatarUrl?: string;
+  publicKey: string;
+  lastReadAt: string;
+  lastMessageAt: string;
+  joinedAt: string;
   muted?: boolean;
 }
 // Message types (with sender info)
 export interface MessageT {
   id: string;
-  conversation_id: string;
-  sender_id: string;
+  conversationId: string;
   content: string;
-  message_type: 'text' | 'image' | 'file';
-  is_edited: boolean;
-  created_at: string;
-  updated_at: string;
+  messageType: 'text' | 'image' | 'file';
+  isEdited: boolean;
+  createdAt: string;
+  updatedAt: string;
+  sender: ConversationMemberT;
 }
 
 export interface ReactionTypeT {
