@@ -5,18 +5,28 @@ import { TestSidebar } from './TestSidebar';
 import { ChatArea } from '../features/chat/components/ChatArea';
 
 export const ChatsPanel = () => {
-  const { user, privateKey } = useAuth();
+  const { user, privateKey, isLoadingSession } = useAuth();
   const { conversations, isLoading, fetchConversations, activeConversationId } =
     useChatStore();
 
   useEffect(() => {
-    if (user && user !== 'loading') {
+    if (user) {
       fetchConversations(user.id);
     }
   }, [user, fetchConversations]);
 
-  if (!user || !privateKey || user === 'loading' || isLoading) {
+  // Handle session loading and chat loading cleanly together
+  if (isLoadingSession || isLoading) {
     return <div className='flex w-full h-full'>Loading...</div>;
+  }
+
+  // Handle unauthenticated states or locked private keys
+  if (!user || !privateKey) {
+    return (
+      <div className='flex w-full h-full'>
+        Please log in and unlock your private key.
+      </div>
+    );
   }
 
   const activeConversation = conversations.find(
@@ -28,7 +38,11 @@ export const ChatsPanel = () => {
   return (
     <div className='flex w-full h-full'>
       {/* sidebar */}
-      <TestSidebar conversations={conversations} isLoading={isLoading} />
+      <TestSidebar
+        currentUserId={user?.id}
+        conversations={conversations}
+        isLoading={isLoading}
+      />
       {/* chatArea */}
       <ChatArea conversation={activeConversation} />
     </div>

@@ -5,10 +5,18 @@ import { useAuth } from '../features/auth/hooks/useAuth';
 import { UnlockWithPassword } from '../features/auth/components/UnlockWithPassword';
 import { useAudioNotification } from '../features/notifications/hooks/useAudioNotification';
 import { TestMain } from './TestMain';
+import { usePresence } from '../shared/hooks/usePresence';
+import { useGlobalChatSync } from '../features/chat/hooks/useGlobalChatSync';
 
 export const Main = () => {
-  const { user, authUnlock, authLogout, privateKey, isResolvingPrivateKey } =
-    useAuth();
+  const {
+    user,
+    authUnlock,
+    authLogout,
+    privateKey,
+    isResolvingPrivateKey,
+    isLoadingSession,
+  } = useAuth();
   const navigate = useNavigate();
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState<string | null>(null);
@@ -20,6 +28,12 @@ export const Main = () => {
     'notification/notification',
   );
 
+  useGlobalChatSync(user?.id);
+  const activeUserId =
+    user && user !== null && privateKey && isLoadingSession === false
+      ? user.id
+      : undefined;
+  usePresence(activeUserId);
   useEffect(() => {
     if (user === null) navigate('/login');
   }, [user, navigate]);
@@ -51,7 +65,7 @@ export const Main = () => {
     }
   };
 
-  if (user === 'loading' || isResolvingPrivateKey) return <Loading />;
+  if (isLoadingSession || isResolvingPrivateKey) return <Loading />;
   if (user === null) return <Loading />;
 
   if (!privateKey) {

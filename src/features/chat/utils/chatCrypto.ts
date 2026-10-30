@@ -173,6 +173,10 @@ export const buildEncryptedChatMessageContent = (
   recipientPublicKey: string,
   privateKey: string,
 ): string => {
+  if (!senderPublicKey) throw new Error('senderPublicKey is missing or empty!');
+  if (!recipientPublicKey)
+    throw new Error('recipientPublicKey is missing or empty!');
+  if (!privateKey) throw new Error('privateKey is missing or empty!');
   const nonceSelf = randomBytes(24);
   const noncePeer = randomBytes(24);
 

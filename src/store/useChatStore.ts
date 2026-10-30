@@ -1,16 +1,23 @@
 import { create } from 'zustand';
 import { supabase } from '../db/supabase';
-import { ConversationT } from '../types';
+import { ConversationMemberT, ConversationT } from '../types';
 
 interface ChatStore {
   conversations: ConversationT[];
   activeConversationId?: number | null;
   setActiveConversationId: (id: number | null) => void;
   isLoading: boolean;
-  hasFetched: boolean; // Prevents re-fetching on tab switch!
+  hasFetched: boolean;
 
   fetchConversations: (userId: string) => Promise<void>;
   setConversations: (convs: ConversationT[]) => void;
+
+  // Global Realtime handler
+  handleIncomingMessage: (msg: any) => void;
+  updateConversationMember: (
+    conversationId: string | number,
+    updates: Partial<ConversationMemberT>,
+  ) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -33,17 +40,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         .select(
           `
           muted,
+          last_read_at,
+          last_message_at,
+          joined_at,
             conversations (
             id,
             type,
             name,
-            last_message_at,
             conversation_members (
                 public_profiles (
                 id,
                 nickname,
                 username,
-                avatar_url
+                avatar_url,
+                public_key
                 )
             )
             )
@@ -57,6 +67,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         const otherUser = m.conversations.conversation_members.find(
           (member: any) => member.public_profiles.id !== userId,
         );
+
         return {
           id: m.conversations.id,
           type: m.conversations.type,
@@ -65,15 +76,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             otherUser?.public_profiles?.nickname ||
             'Unknown',
           conversationMembers: m.conversations.conversation_members.map(
-            (m2: any) => ({
-              id: m2.public_profiles.id,
-              nickname: m2.public_profiles.nickname,
-              username: m2.public_profiles.username,
-              avatarUrl: m2.public_profiles.avatar_url,
-            }),
+            (m2: any) => {
+              const profile = m2.public_profiles;
+              return {
+                id: profile.id,
+                nickname: profile.nickname,
+                username: profile.username,
+                avatarUrl: profile.avatar_url,
+                publicKey: profile.public_key,
+                lastReadAt: m2.last_read_at || m.last_read_at,
+                lastMessageAt: m2.last_message_at || m.last_message_at,
+                joinedAt: m2.joined_at || m.joined_at,
+              };
+            },
           ),
           muted: m.muted,
-          lastMessageTime: m.conversations.last_message_at,
+          lastMessageTime: m.last_message_at,
         };
       });
 
@@ -86,5 +104,47 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       console.error('Failed to fetch chats:', err);
       set({ isLoading: false });
     }
+  },
+
+  handleIncomingMessage: (msg) => {
+    set((state) => {
+      const updated = state.conversations.map((conv) => {
+        if (conv.id.toString() === msg.conversation_id.toString()) {
+          return {
+            ...conv,
+            lastMessageTime: msg.created_at,
+          };
+        }
+        return conv;
+      });
+
+      // Sort conversations so the newest message floats to the top of the sidebar
+      return {
+        conversations: updated.sort(
+          (a, b) =>
+            new Date(b.lastMessageTime || 0).getTime() -
+            new Date(a.lastMessageTime || 0).getTime(),
+        ),
+      };
+    });
+  },
+  updateConversationMember: (
+    conversationId: string | number,
+    updates: Partial<ConversationMemberT>,
+  ) => {
+    set((state) => ({
+      conversations: state.conversations.map((conv) => {
+        if (conv.id.toString() === conversationId.toString()) {
+          return {
+            ...conv,
+            muted: updates.muted !== undefined ? updates.muted : conv.muted,
+            conversationMembers: conv.conversationMembers.map((m) =>
+              m.id === updates.id ? { ...m, ...updates } : m,
+            ),
+          };
+        }
+        return conv;
+      }),
+    }));
   },
 }));

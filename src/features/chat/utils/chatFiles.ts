@@ -21,6 +21,15 @@ export type ChatFileWrap = {
   keyBox: string;
 };
 
+export type ChatFileMember = {
+  id: string;
+  public_key?: string;
+  publicKey?: string;
+};
+
+const memberPublicKey = (member: ChatFileMember) =>
+  member.public_key ?? member.publicKey ?? null;
+
 // file:v1 is the envelope for any attachment. Images use kind "image".
 // Other files can use kind "file" later without a new message format.
 export type ChatFilePayload = {
@@ -219,7 +228,7 @@ export const openChatFileBytes = (
   options: {
     privateKey: string;
     groupKey: Uint8Array | null;
-    members: PublicProfileT[];
+    members: ChatFileMember[];
     currentUserId: string;
   },
 ) => {
@@ -232,9 +241,10 @@ export const openChatFileBytes = (
     const wrap = payload.wraps?.find((item) =>
       sameId(item.userId, options.currentUserId),
     );
-    const senderKey = options.members.find((member) =>
+    const sender = options.members.find((member) =>
       sameId(member.id, payload.wrappedBy),
-    )?.public_key;
+    );
+    const senderKey = sender ? memberPublicKey(sender) : null;
     if (wrap && senderKey) {
       fileKey = unwrapGroupKey(
         wrap.keyBox,

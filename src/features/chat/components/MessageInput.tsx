@@ -1,6 +1,6 @@
 import { FormEvent, useRef, useState } from 'react';
 import { CameraCapture } from './CameraCapture';
-import { Send } from 'lucide-react';
+import { Send, Paperclip } from 'lucide-react';
 
 interface MessageInputProps {
   onSubmit: (message: string) => void;
@@ -50,7 +50,7 @@ export const MessageInput = ({
       )} */}
       <form
         onSubmit={handleSubmit}
-        className='flex items-center min-w-0 gap-2 md:gap-3'
+        className='flex gap-2 items-center min-w-0 md:gap-3'
       >
         {/* <input
           ref={fileRef}
@@ -67,7 +67,7 @@ export const MessageInput = ({
             disabled={disabled}
             onClick={() => setCameraOpen(true)}
             aria-label='Take photo'
-            className='flex items-center justify-center rounded-lg h-11 w-11 shrink-0 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-50'
+            className='flex justify-center items-center w-11 h-11 rounded-lg shrink-0 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-50'
           >
             <svg viewBox='0 0 24 24' className='w-5 h-5' fill='none' aria-hidden='true'>
               <path
@@ -84,21 +84,9 @@ export const MessageInput = ({
           disabled={disabled}
           onClick={() => fileRef.current?.click()}
           aria-label='Attach file'
-          className='flex items-center justify-center rounded-lg h-11 w-11 shrink-0 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-50'
+          className='flex justify-center items-center w-11 h-11 rounded-lg shrink-0 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-50'
         >
-          <svg
-            viewBox='0 0 24 24'
-            className='w-5 h-5'
-            fill='none'
-            aria-hidden='true'
-          >
-            <path
-              d='m8.5 12.5 5.2-5.2a3 3 0 0 1 4.2 4.2l-6.4 6.4a4.2 4.2 0 0 1-6-6l6.8-6.8'
-              stroke='currentColor'
-              strokeWidth='1.6'
-              strokeLinecap='round'
-            />
-          </svg>
+          <Paperclip className='w-5 h-5' />
         </button>
         <input
           ref={inputRef}

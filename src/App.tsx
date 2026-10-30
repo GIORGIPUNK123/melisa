@@ -12,8 +12,10 @@ import { useEffect } from 'react';
 import { Main } from './pages/Main';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { ChatsPanel } from './pages/ChatsPanel';
+import { useInitAuth } from './features/auth/hooks/useAuthInit';
 
 export const App = () => {
+  useInitAuth();
   useEffect(() => {
     document.title = APP_NAME;
   }, []);

@@ -60,18 +60,22 @@ export interface ConversationT {
   muted: boolean;
   conversationMembers: ConversationMemberT[];
 }
-export interface ConversationMemberT {
+export interface SenderT {
   id: string;
   nickname: string;
   username: string;
   avatarUrl?: string;
   publicKey: string;
+}
+
+export interface ConversationMemberT extends SenderT {
   lastReadAt: string;
   lastMessageAt: string;
   joinedAt: string;
   muted?: boolean;
 }
-// Message types (with sender info)
+
+// Message types (with lightweight sender info)
 export interface MessageT {
   id: string;
   conversationId: string;
@@ -80,7 +84,7 @@ export interface MessageT {
   isEdited: boolean;
   createdAt: string;
   updatedAt: string;
-  sender: ConversationMemberT;
+  sender: SenderT; // 👈 Now only requires the basic profile fields!
 }
 
 export interface ReactionTypeT {
