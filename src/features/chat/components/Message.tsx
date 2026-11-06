@@ -1,19 +1,48 @@
-import { FaceSlightlySmilingPlus, Reply } from 'lucide-react';
-import { MessageT } from '../../../types';
+import { Reply } from 'lucide-react';
+import { useMemo } from 'react';
+import { MessageReactionT, MessageT, ReactionTypeT } from '../../../types';
 import { ChatAttachment } from './ChatAttachment';
 import { ChatFilePayload, readChatFile } from '../utils/chatFiles';
+import { useAuthStore } from '../../../store/useAuthStore';
+import {
+  groupReactions,
+  ReactionBadges,
+  ReactionPicker,
+} from './MessageReactions';
 
 export const Message = (props: {
   message: MessageT;
   owner: boolean;
   openFile: (payload: ChatFilePayload) => Promise<Blob>;
-  isSameSender?: boolean; // 👈 Accept the flag from MessageList
+  isSameSender?: boolean;
+  conversationId: number;
+  catalog: ReactionTypeT[];
+  reactions: MessageReactionT[];
+  onToggleReaction?: (reactionId: string) => void;
 }) => {
-  const { message: msg, owner, isSameSender } = props;
+  const {
+    owner,
+    openFile,
+    message: msg,
+    isSameSender,
+    catalog,
+    reactions,
+    onToggleReaction,
+  } = props;
+
+  const { user } = useAuthStore();
   const file = readChatFile(msg.content);
-  // Only direct-chat images for now; group images still need the group key.
   const viewableImage =
     file && !file.group && file.kind === 'image' ? file : null;
+
+  const groupedReactions = useMemo(
+    () => groupReactions(reactions, catalog, user?.id),
+    [reactions, catalog, user?.id],
+  );
+
+  const myReactionId = reactions.find(
+    (r) => r.user_id === user?.id,
+  )?.reaction_id;
 
   return (
     <div
@@ -22,40 +51,55 @@ export const Message = (props: {
       }`}
     >
       <div className={`flex flex-col gap-1 ${owner ? 'items-end' : ''}`}>
-        {/* 👇 Only show name/label if it's NOT the same sender as the previous message */}
         {!isSameSender && (
           <span className='px-1 text-xs text-gray-400'>
             {owner ? 'You' : msg.sender.nickname}
           </span>
         )}
-        <div className='flex items-center'>
+
+        <div
+          className={`flex gap-2 items-center ${owner ? 'flex-row-reverse' : ''}`}
+        >
+          {/* Message Content Bubble */}
           <div
             className={`break-words max-w-2xl shrink px-3 py-2 rounded-md flex justify-center text-xs text-[#E3F3EF] ${
               owner ? 'bg-[#274D49]' : 'bg-[#162231]'
             }`}
           >
             {viewableImage ? (
-              <ChatAttachment
-                payload={viewableImage}
-                openFile={props.openFile}
-              />
+              <ChatAttachment payload={viewableImage} openFile={openFile} />
             ) : (
               <span className='text-[#E3F3EF] text-sm whitespace-pre-wrap'>
                 {msg.content}
               </span>
             )}
           </div>
-          <div className={`ml-2 flex gap-2 ${owner ? 'hidden' : ''}`}>
-            <div className='p-2 flex justify-center items-center rounded-md hover:bg-[#162231] cursor-pointer'>
-              <FaceSlightlySmilingPlus className='' size={20} />
-            </div>
-            <div className='p-2 rounded-md hover:bg-[#162231] cursor-pointer flex justify-center items-center'>
-              <Reply className='' size={20} />
-            </div>
+
+          {/* Action Buttons */}
+          <div className='flex gap-1 items-center'>
+            <ReactionPicker
+              catalog={catalog}
+              selectedReactionId={myReactionId}
+              onSelect={(reactionId) => onToggleReaction?.(reactionId)}
+            />
+
+            {/* Reply Button */}
+            <button
+              type='button'
+              aria-label='Reply to message'
+              className='p-2 rounded-md hover:bg-[#162231] cursor-pointer flex items-center justify-center focus:outline-none text-gray-300 hover:text-white transition-colors'
+            >
+              <Reply size={20} />
+            </button>
           </div>
         </div>
+
+        {/* Reaction Badges with Counts */}
+        <ReactionBadges
+          reactions={groupedReactions}
+          onToggle={(reactionId) => onToggleReaction?.(reactionId)}
+        />
       </div>
-      <div></div>
     </div>
   );
 };

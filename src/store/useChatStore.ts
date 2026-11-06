@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { supabase } from '../db/supabase';
-import { ConversationMemberT, ConversationT } from '../types';
+import {
+  ConversationMemberT,
+  ConversationT,
+  MessageReactionT,
+  ReactionTypeT,
+} from '../types';
 
 interface ChatStore {
   conversations: ConversationT[];
@@ -8,11 +13,8 @@ interface ChatStore {
   setActiveConversationId: (id: number | null) => void;
   isLoading: boolean;
   hasFetched: boolean;
-
   fetchConversations: (userId: string) => Promise<void>;
   setConversations: (convs: ConversationT[]) => void;
-
-  // Global Realtime handler
   handleIncomingMessage: (msg: any) => void;
   updateConversationMember: (
     conversationId: string | number,
@@ -26,7 +28,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setActiveConversationId: (id) => set({ activeConversationId: id }),
   isLoading: false,
   hasFetched: false,
-
   setConversations: (conversations) => set({ conversations }),
 
   fetchConversations: async (userId: string) => {
@@ -118,7 +119,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         return conv;
       });
 
-      // Sort conversations so the newest message floats to the top of the sidebar
       return {
         conversations: updated.sort(
           (a, b) =>
@@ -128,6 +128,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       };
     });
   },
+
   updateConversationMember: (
     conversationId: string | number,
     updates: Partial<ConversationMemberT>,

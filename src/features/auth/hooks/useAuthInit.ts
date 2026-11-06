@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { supabase } from '../../../db/supabase';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore } from '../../../store/useAuthStore';
 
 export const useInitAuth = () => {
   const initializeAuth = useAuthStore((s) => s.initializeAuth);
@@ -11,10 +11,10 @@ export const useInitAuth = () => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         useAuthStore.setState({ user: session.user });
-        await fetchUserProfile(session.user.id);
+        void fetchUserProfile(session.user.id);
       } else {
         useAuthStore.setState({ user: null, profile: null, privateKey: null });
       }

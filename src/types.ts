@@ -96,7 +96,7 @@ export interface ReactionTypeT {
 export interface MessageReactionT {
   id: string;
   message_id: string;
-  conversation_id: string;
+  conversation_id: number;
   user_id: string;
   reaction_id: string;
   created_at: string;

@@ -82,20 +82,12 @@ export const useUnreadMessages = (
           ? new Date(member.last_read_at)
           : null;
 
-        const [{ data: messages }, { data: reactions }] = await Promise.all([
-          supabase
-            .from('messages')
-            .select('id, sender_id, created_at')
-            .eq('conversation_id', member.conversation_id)
-            .neq('sender_id', userId)
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('message_reactions')
-            .select('id, user_id, created_at')
-            .eq('conversation_id', member.conversation_id)
-            .neq('user_id', userId)
-            .order('created_at', { ascending: false }),
-        ]);
+        const { data: messages } = await supabase
+          .from('messages')
+          .select('id, sender_id, created_at')
+          .eq('conversation_id', member.conversation_id)
+          .neq('sender_id', userId)
+          .order('created_at', { ascending: false });
 
         const unreadMessages = messages
           ? lastRead
@@ -104,14 +96,7 @@ export const useUnreadMessages = (
             : messages.length
           : 0;
 
-        const unreadReactions = reactions
-          ? lastRead
-            ? reactions.filter((row) => new Date(row.created_at) > lastRead)
-                .length
-            : reactions.length
-          : 0;
-
-        counts[member.conversation_id] = unreadMessages + unreadReactions;
+        counts[member.conversation_id] = unreadMessages;
       }
 
       if (viewingId) {
@@ -159,33 +144,6 @@ export const useUnreadMessages = (
           }
 
           const conversationId = String(newMessage.conversation_id);
-          onIncomingMessageRef.current?.(conversationId);
-          bumpUnread(conversationId);
-        },
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'message_reactions',
-        },
-        (payload) => {
-          const reaction = payload.new as {
-            id?: string;
-            conversation_id?: string;
-            user_id?: string;
-          };
-
-          if (
-            !reaction.user_id ||
-            sameId(reaction.user_id, userId) ||
-            !reaction.conversation_id
-          ) {
-            return;
-          }
-
-          const conversationId = String(reaction.conversation_id);
           onIncomingMessageRef.current?.(conversationId);
           bumpUnread(conversationId);
         },

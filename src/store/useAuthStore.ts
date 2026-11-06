@@ -7,13 +7,13 @@ import {
   login,
   logout,
   register,
-} from '../services/authService';
+} from '../features/auth/services/authService';
 import {
   changePrivateKeyPassword,
   fetchPrivateKey as fetchPrivateKeyService,
-} from '../services/privateKeyService';
-import { supabase } from '../../../db/supabase';
-import { PublicProfileT } from '../../../types';
+} from '../features/auth/services/privateKeyService';
+import { supabase } from '../db/supabase';
+import { PublicProfileT } from '../types';
 
 interface AuthState {
   // State
@@ -154,11 +154,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   authUnlock: async (password: string) => {
+    set({ authError: null, isResolvingPrivateKey: true });
+
     try {
+      const currentUser = get().user;
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
+      const userId = currentUser?.id || session?.user?.id;
       if (!userId) return false;
 
       const key = await get().fetchPrivateKey(userId, password);
@@ -166,6 +169,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (err) {
       console.error('authUnlock failed:', err);
       return false;
+    } finally {
+      set({ isResolvingPrivateKey: false });
     }
   },
 

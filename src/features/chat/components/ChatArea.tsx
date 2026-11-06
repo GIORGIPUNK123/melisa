@@ -1,27 +1,29 @@
-// import { Loading } from '../../../components/Loading';
 import { useAuth } from '../../../features/auth/hooks/useAuth';
 import { EmptyChatState } from '../../../features/chat/components/EmptyChatState';
 import { ConversationT } from '../../../types';
-import { useTestMessages } from './../../../pages/useTestMessages';
+import { useMessages } from '../hooks/useMessages';
 import { MessageList } from './MessageList';
 import { ChatHeader } from './ChatHeader';
 import { MessageInput } from './MessageInput';
 import { ChatInfo } from './ChatInfo';
 import { useState } from 'react';
 import { usePresenceStore } from '../../../store/usePresenceStore';
+import { useMessageReactions } from '../hooks/useMessageReactions';
 
 export const ChatArea = (props: { conversation?: ConversationT }) => {
   const { conversation } = props;
 
-  // 1. All hooks must be called at the top level
-  const { messages, openChatFile, sendMessage, toggleMute } = useTestMessages(
+  const { messages, openChatFile, sendMessage, toggleMute } = useMessages(
     conversation?.id ?? '',
   );
   const { user } = useAuth();
   const [chatInfoOpen, setChatInfoOpen] = useState(false);
   const onlineUserIds = usePresenceStore((state) => state.onlineUserIds);
 
-  // 2. Conditional return comes AFTER all hooks
+  const { catalog, reactions, toggleReaction } = useMessageReactions(
+    conversation?.id,
+    user?.id ?? '',
+  );
   if (!conversation) {
     return <EmptyChatState />;
   }
@@ -43,6 +45,10 @@ export const ChatArea = (props: { conversation?: ConversationT }) => {
           messages={messages}
           userId={user!.id}
           openFile={openChatFile}
+          conversationId={conversation.id}
+          catalog={catalog}
+          reactions={reactions}
+          onToggleReaction={toggleReaction}
         />
         <MessageInput
           onSubmit={(message) => {
@@ -50,6 +56,7 @@ export const ChatArea = (props: { conversation?: ConversationT }) => {
           }}
         />
       </div>
+
       <ChatInfo
         onlineUserIds={onlineUserIds}
         otherConversationMembers={otherConversationMembers}

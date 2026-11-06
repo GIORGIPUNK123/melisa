@@ -17,6 +17,9 @@ export const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const { ensureEnabled } = useAudioNotification('ui/success_bling');
+  const { ensureEnabled: ensureNotificationSound } = useAudioNotification(
+    'notification/notification',
+  );
 
   useEffect(() => {
     if (user && user !== 'loading' && !isResolvingPrivateKey) {
@@ -32,6 +35,7 @@ export const Login = () => {
 
     if (success) {
       void ensureEnabled();
+      void ensureNotificationSound();
       navigate('/');
     }
   };
