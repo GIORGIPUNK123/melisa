@@ -36,15 +36,20 @@ export const ChatsPanel = () => {
   console.log('conversations', conversations);
 
   return (
-    <div className='flex w-full h-full'>
+    <div className='flex overflow-hidden w-full min-w-0 h-full min-h-0'>
       {/* sidebar */}
       <TestSidebar
         currentUserId={user?.id}
         conversations={conversations}
         isLoading={isLoading}
+        className={activeConversation ? 'hidden xl:flex' : 'flex'}
       />
       {/* chatArea */}
-      <ChatArea conversation={activeConversation} />
+      <ChatArea
+        conversation={activeConversation}
+        onBack={() => useChatStore.getState().setActiveConversationId(null)}
+        className={activeConversation ? 'flex' : 'hidden xl:flex'}
+      />
     </div>
   );
 };

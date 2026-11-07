@@ -1,3 +1,4 @@
+import { Settings } from 'lucide-react';
 import { ListSkeleton } from '../components/layout/ListSkeleton';
 import { useChatStore } from '../store/useChatStore';
 import { ConversationT } from '../types';
@@ -30,10 +31,12 @@ export const TestSidebar = ({
   conversations,
   isLoading,
   currentUserId, // 👈 Accept currentUserId here
+  className = '',
 }: {
   conversations: ConversationT[];
   isLoading: boolean;
   currentUserId: string | undefined;
+  className?: string;
 }) => {
   const { activeConversationId, setActiveConversationId } = useChatStore();
   const [activeType, setActiveType] = useState<'all' | 'direct' | 'group'>(
@@ -46,16 +49,27 @@ export const TestSidebar = ({
   });
 
   return (
-    <div className='w-80 shrink-0 h-full bg-[#0E1621] flex flex-col  text-white'>
+    <div
+      className={`${className} h-full w-full shrink-0 bg-[#0E1621] text-white xl:flex xl:w-80 xl:flex-col`}
+    >
       {/* ... header and tabs ... */}
-      <div className='px-2 mt-3'>
-        <span className='text-[#56687B] font-bold text-xs ml-3'>
-          RECENT CONVERSATIONS
-        </span>
+      <div className='px-2 mt-3 w-full'>
+        <div className='flex justify-between items-center'>
+          <h2 className='text-[#F4F8FB] font-bold text-2xl ml-3 mb-4'>
+            Messages
+          </h2>
+          <div className='xl:hidden  text-[#8192A4] bg-[#162231] w-[42px] h-[42px] flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-white duration-200'>
+            <Settings width={16} height={16} />
+          </div>
+        </div>
+
         {isLoading ? (
           <ListSkeleton rows={Math.max(conversations.length, 5)} />
         ) : (
           <div className='mt-2'>
+            <span className='text-[#56687B] font-bold text-xs ml-3'>
+              RECENT CONVERSATIONS
+            </span>
             {filteredConversations.map((conversation) => {
               // 🔍 Calculate unread status dynamically
               const currentMember = conversation.conversationMembers.find(

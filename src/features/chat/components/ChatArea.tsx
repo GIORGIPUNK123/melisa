@@ -10,8 +10,12 @@ import { useState } from 'react';
 import { usePresenceStore } from '../../../store/usePresenceStore';
 import { useMessageReactions } from '../hooks/useMessageReactions';
 
-export const ChatArea = (props: { conversation?: ConversationT }) => {
-  const { conversation } = props;
+export const ChatArea = (props: {
+  conversation?: ConversationT;
+  onBack?: () => void;
+  className?: string;
+}) => {
+  const { conversation, onBack, className = '' } = props;
 
   const { messages, openChatFile, sendMessage, toggleMute } = useMessages(
     conversation?.id ?? '',
@@ -33,13 +37,17 @@ export const ChatArea = (props: { conversation?: ConversationT }) => {
   );
 
   return (
-    <div className='w-full bg-[#080D14] flex '>
-      <div className='flex flex-col w-full h-full'>
+    <div
+      className={`${className} relative flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-[#080D14]`}
+    >
+      <div className='flex flex-col w-full min-w-0 h-full min-h-0'>
         <ChatHeader
           onlineUserIds={onlineUserIds}
           otherConversationMembers={otherConversationMembers}
           toggle={() => setChatInfoOpen(!chatInfoOpen)}
           conversation={conversation}
+          onBack={onBack}
+          isActive={chatInfoOpen}
         />
         <MessageList
           messages={messages}

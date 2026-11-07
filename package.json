@@ -22,6 +22,7 @@
     "react-router-dom": "^6.26.1",
     "react-sounds": "^1.0.30",
     "socket.io-client": "^4.7.1",
+    "tailwindcss-animate": "^1.0.7",
     "tweetnacl-ts": "^1.0.3",
     "yup": "^1.7.1",
     "zustand": "^5.0.15"
@@ -29,10 +30,10 @@
   "devDependencies": {
     "@types/argon2": "^0.14.1",
     "@types/argon2-browser": "^1.18.4",
-    "@types/react-router": "^5.1.20",
-    "@types/react-router-dom": "^5.3.3",
     "@types/react": "^18.0.37",
     "@types/react-dom": "^18.0.11",
+    "@types/react-router": "^5.1.20",
+    "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
     "@vitejs/plugin-react": "^4.0.0",
