@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import { checkUsername } from '../../friends/api/checkUsername';
+import { checkUsername } from '../../friends/utils/friendsFunctions';
 import { passwordError, passwordRuleMessage } from '../passwordPolicy';
 
 export const registerSchema = yup.object().shape({

@@ -6,7 +6,8 @@ export const SidebarChatBox = (props: {
   active: boolean;
   onClick: () => void;
   conversation: ConversationT;
-  hasUnread: boolean; // 👈 Add to props
+  hasUnread: boolean;
+  online: boolean;
 }) => {
   return (
     <div
@@ -35,8 +36,8 @@ export const SidebarChatBox = (props: {
         </div>
       </div>
 
-      {/* 🟢 Render unread dot badge only if there are unread messages */}
-      {props.hasUnread && (
+      {/* 🟢 Render online dot badge only if the user is online */}
+      {props.online && (
         <div className='flex justify-center items-center rounded-full bg-[#65E0C1] w-2.5 h-2.5' />
       )}
     </div>

@@ -13,20 +13,30 @@ import { Main } from './pages/Main';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { ChatsPanel } from './pages/ChatsPanel';
 import { useInitAuth } from './features/auth/hooks/useAuthInit';
+import { FriendsPanel } from './pages/FriendsPanel';
+import { usePresenceStore } from './store/usePresenceStore';
 
 export const App = () => {
   useInitAuth();
   useEffect(() => {
     document.title = APP_NAME;
   }, []);
+
+  const onlineUserIds = usePresenceStore((state) => state.onlineUserIds);
   return (
     <>
       <BackendStatusBanner />
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
-          <Route path='/' element={<Main />}>
-            <Route path='chats' element={<ChatsPanel />} />
-            <Route path='friends' element={<SettingsPage />} />
+          <Route path='/' element={<Main onlineUserIds={onlineUserIds} />}>
+            <Route
+              path='chats'
+              element={<ChatsPanel onlineUserIds={onlineUserIds} />}
+            />
+            <Route
+              path='friends'
+              element={<FriendsPanel onlineUserIds={onlineUserIds} />}
+            />
             {/* <Route path='notifications' element={<NotificationsPanel />} /> */}
             {/* Optional: default redirect when hitting root */}
             <Route index element={<Navigate to='chats' replace />} />

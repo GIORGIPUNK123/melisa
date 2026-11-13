@@ -1,9 +1,11 @@
 import { Settings } from 'lucide-react';
 import { ListSkeleton } from '../components/layout/ListSkeleton';
 import { useChatStore } from '../store/useChatStore';
-import { ConversationT } from '../types';
+import { ConversationT, FriendT } from '../types';
 import { SidebarChatBox } from './SidebarChatBox';
+import { SidebarFriendBox } from './SidebarFriendBox';
 import { useState } from 'react';
+
 const SidebarTab = (props: {
   name: string;
   isActive: boolean;
@@ -21,76 +23,175 @@ const SidebarTab = (props: {
     >
       <span>{name}</span>
       <div
-        className={` mt-2 px-5 h-0.5 ${isActive ? 'scale-100' : 'scale-0'} duration-100 bg-[#65E0C1] group-hover:bg-[#65E0C1] group-hover:scale-100`}
+        className={`mt-2 px-5 h-0.5 ${isActive ? 'scale-100' : 'scale-0'} duration-100 bg-[#65E0C1] group-hover:bg-[#65E0C1] group-hover:scale-100`}
+      />
+    </div>
+  );
+};
+const Tabs = (props: {
+  activeConversationType: 'all' | 'direct' | 'group';
+  setActiveConversationType: (type: 'all' | 'direct' | 'group') => void;
+}) => {
+  const { activeConversationType, setActiveConversationType } = props;
+  return (
+    <div className='flex items-center gap-2 mb-4 border-b border-[#162231] pb-2'>
+      <SidebarTab
+        name='All'
+        isActive={activeConversationType === 'all'}
+        onClick={() => setActiveConversationType('all')}
+      />
+      <SidebarTab
+        name='Direct'
+        isActive={activeConversationType === 'direct'}
+        onClick={() => setActiveConversationType('direct')}
+      />
+      <SidebarTab
+        name='Groups'
+        isActive={activeConversationType === 'group'}
+        onClick={() => setActiveConversationType('group')}
       />
     </div>
   );
 };
 
+const ListConversations = (props: {
+  convos: ConversationT[];
+  currentUserId: string;
+  activeConversationId: number;
+  setActiveConversationId: (id: number) => void;
+
+  onlineUserIds: Set<string>;
+}) => {
+  const {
+    convos,
+    currentUserId,
+    activeConversationId,
+    setActiveConversationId,
+    onlineUserIds,
+  } = props;
+  return convos.map((conversation) => {
+    const currentMember = conversation.conversationMembers?.find(
+      (m) => m.id === currentUserId,
+    );
+    const hasUnread = Boolean(
+      conversation.lastMessageTime &&
+      currentMember?.lastReadAt &&
+      conversation.lastMessageTime > currentMember.lastReadAt,
+    );
+
+    return (
+      <SidebarChatBox
+        active={activeConversationId === conversation.id}
+        onClick={() => setActiveConversationId(conversation.id)}
+        key={conversation.id}
+        conversation={conversation}
+        hasUnread={hasUnread}
+        online={conversation.conversationMembers.some((m) =>
+          onlineUserIds.has(m.id !== currentUserId ? m.id : ''),
+        )}
+      />
+    );
+  });
+};
+const ListFriends = (props: {
+  friends: FriendT[];
+  onClick: (friend: FriendT) => void;
+  activeConversationId: number | null;
+  setActiveConversationId: (id: number) => void;
+  onlineUserIds: Set<string>;
+}) => {
+  const { friends, activeConversationId, setActiveConversationId } = props;
+  return friends.map((friend, _) => {
+    return (
+      <SidebarFriendBox
+        active={activeConversationId === friend.conversationId}
+        onClick={() => setActiveConversationId(friend.conversationId!)}
+        key={_}
+        friend={friend}
+        online={props.onlineUserIds.has(friend.userId)}
+      />
+    );
+  });
+};
+
 export const TestSidebar = ({
-  conversations,
+  conversations = [],
   isLoading,
-  currentUserId, // 👈 Accept currentUserId here
+  currentUserId,
   className = '',
+  showTabs,
+  activeTab,
+  friends,
+  handleFriendClick,
+  onlineUserIds,
 }: {
-  conversations: ConversationT[];
+  conversations?: ConversationT[];
+  friends?: FriendT[];
   isLoading: boolean;
   currentUserId: string | undefined;
   className?: string;
+  title?: string;
+  showTabs: boolean;
+  activeTab: 'messages' | 'friends' | 'requests' | 'notifications';
+  handleFriendClick?: (conversationId: number) => any;
+  onlineUserIds: Set<string>;
 }) => {
   const { activeConversationId, setActiveConversationId } = useChatStore();
-  const [activeType, setActiveType] = useState<'all' | 'direct' | 'group'>(
-    'all',
-  );
-
+  const [activeConversationType, setActiveConversationType] = useState<
+    'all' | 'direct' | 'group'
+  >('all');
   const filteredConversations = conversations.filter((conv) => {
-    if (activeType === 'all') return true;
-    return conv.type === activeType;
+    if (activeConversationType === 'all') return true;
+    return conv.type === activeConversationType;
   });
 
   return (
     <div
-      className={`${className} h-full w-full shrink-0 bg-[#0E1621] text-white xl:flex xl:w-80 xl:flex-col`}
+      className={`${className} h-full w-full shrink-0 bg-[#0E1621] text-white xl:flex xl:w-80 xl:flex-col border-r border-[#162231]`}
     >
-      {/* ... header and tabs ... */}
-      <div className='px-2 mt-3 w-full'>
+      <div className='overflow-y-auto flex-1 px-2 mt-3 w-full'>
         <div className='flex justify-between items-center'>
           <h2 className='text-[#F4F8FB] font-bold text-2xl ml-3 mb-4'>
-            Messages
+            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
           </h2>
-          <div className='xl:hidden  text-[#8192A4] bg-[#162231] w-[42px] h-[42px] flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-white duration-200'>
+          <div className='xl:hidden text-[#8192A4] bg-[#162231] w-[42px] h-[42px] flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-white duration-200'>
             <Settings width={16} height={16} />
           </div>
         </div>
+
+        {showTabs && (
+          <Tabs
+            activeConversationType={activeConversationType}
+            setActiveConversationType={setActiveConversationType}
+          />
+        )}
 
         {isLoading ? (
           <ListSkeleton rows={Math.max(conversations.length, 5)} />
         ) : (
           <div className='mt-2'>
             <span className='text-[#56687B] font-bold text-xs ml-3'>
-              RECENT CONVERSATIONS
+              {activeTab === 'friends' ? 'ALL FRIENDS' : 'RECENT CONVERSATIONS'}
             </span>
-            {filteredConversations.map((conversation) => {
-              // 🔍 Calculate unread status dynamically
-              const currentMember = conversation.conversationMembers.find(
-                (m) => m.id === currentUserId,
-              );
-              const hasUnread = Boolean(
-                conversation.lastMessageTime &&
-                currentMember?.lastReadAt &&
-                conversation.lastMessageTime > currentMember.lastReadAt,
-              );
-
-              return (
-                <SidebarChatBox
-                  active={activeConversationId === conversation.id}
-                  onClick={() => setActiveConversationId(conversation.id)}
-                  key={conversation.id}
-                  conversation={conversation}
-                  hasUnread={hasUnread} // 👈 Pass boolean state down
-                />
-              );
-            })}
+            {activeTab === 'friends' ? (
+              <ListFriends
+                friends={friends!}
+                onClick={(friend) =>
+                  handleFriendClick?.(friend.conversationId!)
+                }
+                activeConversationId={activeConversationId!}
+                setActiveConversationId={setActiveConversationId}
+                onlineUserIds={onlineUserIds}
+              />
+            ) : (
+              <ListConversations
+                onlineUserIds={onlineUserIds}
+                convos={filteredConversations}
+                currentUserId={currentUserId!}
+                activeConversationId={activeConversationId!}
+                setActiveConversationId={setActiveConversationId}
+              />
+            )}
           </div>
         )}
       </div>

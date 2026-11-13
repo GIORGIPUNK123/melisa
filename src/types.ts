@@ -40,7 +40,7 @@ export interface FriendT {
   status: 'online' | 'offline' | 'away';
   last_seen_at?: string | null;
   appear_offline?: boolean;
-  conversationId?: string | null;
+  conversationId?: number | null;
 }
 
 // Block types

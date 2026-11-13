@@ -1,56 +1,56 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { api } from '../../../api/instance';
+// src/features/friends/hooks/useFriendsList.ts
+import { useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../../../db/supabase';
-import { FriendT } from '../../../types';
+import { useFriendStore } from '../../../store/useFriendStore';
+import {
+  fetchFriendsList,
+  getOrCreateConversationApi,
+  removeFriendApi,
+} from '../utils/friendsFunctions';
 
 export const useFriendsList = (
   userId: string | undefined,
   onChanged?: () => void,
 ) => {
-  const [friends, setFriends] = useState<FriendT[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    friends,
+    isLoading,
+    setFriends,
+    setIsLoading,
+    removeFriendFromStore,
+  } = useFriendStore();
   const onChangedRef = useRef(onChanged);
   onChangedRef.current = onChanged;
   const fetchGenerationRef = useRef(0);
 
   const fetchFriends = useCallback(async (options?: { silent?: boolean }) => {
-    if (!options?.silent) setIsLoading(true);
-    const generation = ++fetchGenerationRef.current;
-    try {
-      const response = await api.get('/friends/list');
-
-      if (generation !== fetchGenerationRef.current) return;
-      setFriends(response.data.friends || []);
-    } catch (err) {
-      console.error('Failed to fetch friends list:', err);
-    } finally {
-      if (generation === fetchGenerationRef.current) setIsLoading(false);
+    // Only show skeleton loading state if we don't have friends in the store yet
+    if (!options?.silent && useFriendStore.getState().friends.length === 0) {
+      setIsLoading(true);
     }
+
+    const generation = ++fetchGenerationRef.current;
+    const data = await fetchFriendsList();
+
+    if (generation !== fetchGenerationRef.current) return;
+    setFriends(data);
   }, []);
 
   const getOrCreateConversation = async (friendUserId: string) => {
-    try {
-      const response = await api.get(`/friends/conversation/${friendUserId}`);
-
-      return response.data.conversationId;
-    } catch (err) {
-      console.error('Failed to get or create conversation:', err);
-      return null;
-    }
+    return await getOrCreateConversationApi(friendUserId);
   };
 
   const removeFriend = async (friendUserId: string) => {
-    await api.delete(`/friends/with/${friendUserId}`);
-
-    setFriends((current) =>
-      current.filter((friend) => friend.userId !== friendUserId),
-    );
-    onChangedRef.current?.();
+    const success = await removeFriendApi(friendUserId);
+    if (success) {
+      removeFriendFromStore(friendUserId);
+      onChangedRef.current?.();
+    }
   };
 
-  const isFriend = (userId?: string | null) => {
-    if (!userId) return false;
-    return friends.some((friend) => friend.userId === userId);
+  const isFriend = (targetUserId?: string | null) => {
+    if (!targetUserId) return false;
+    return friends.some((friend) => friend.userId === targetUserId);
   };
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export const useFriendsList = (
       return;
     }
 
-    void fetchFriends();
+    fetchFriends();
 
     const friendshipsChannel = supabase
       .channel('friends-list')
@@ -72,60 +72,16 @@ export const useFriendsList = (
           table: 'friendships',
         },
         () => {
-          void fetchFriends({ silent: true });
+          fetchFriends({ silent: true });
           onChangedRef.current?.();
         },
       )
       .subscribe();
 
-    const statusChannel = supabase
-      .channel('friends_status_updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'user_presence',
-        },
-        (payload) => {
-          const presence = payload.new as {
-            user_id?: string;
-            last_seen_at?: string | null;
-            appear_offline?: boolean;
-          };
-          if (!presence?.user_id) return;
-
-          const timeChanged =
-            payload.old?.last_seen_at !== presence.last_seen_at;
-          const privacyChanged =
-            payload.old?.appear_offline !== presence.appear_offline;
-          if (!timeChanged && !privacyChanged) return;
-
-          setFriends((currentFriends) => {
-            const friendExists = currentFriends.some(
-              (f) => f.userId === presence.user_id,
-            );
-            if (!friendExists) return currentFriends;
-
-            return currentFriends.map((friend) =>
-              friend.userId === presence.user_id
-                ? {
-                    ...friend,
-                    last_seen_at: presence.last_seen_at,
-                    appear_offline: presence.appear_offline,
-                  }
-                : friend,
-            );
-          });
-        },
-      )
-      .subscribe();
-
     return () => {
-      void supabase.removeChannel(friendshipsChannel);
-      void supabase.removeChannel(statusChannel);
+      supabase.removeChannel(friendshipsChannel);
     };
-  }, [fetchFriends, userId]);
+  }, [fetchFriends, userId, setFriends, setIsLoading]);
 
   return {
     friends,

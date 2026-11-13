@@ -14,15 +14,15 @@ export const ChatArea = (props: {
   conversation?: ConversationT;
   onBack?: () => void;
   className?: string;
+  onlineUserIds: Set<string>;
 }) => {
-  const { conversation, onBack, className = '' } = props;
+  const { conversation, onBack, className = '', onlineUserIds } = props;
 
   const { messages, openChatFile, sendMessage, toggleMute } = useMessages(
     conversation?.id ?? '',
   );
   const { user } = useAuth();
   const [chatInfoOpen, setChatInfoOpen] = useState(false);
-  const onlineUserIds = usePresenceStore((state) => state.onlineUserIds);
 
   const { catalog, reactions, toggleReaction } = useMessageReactions(
     conversation?.id,

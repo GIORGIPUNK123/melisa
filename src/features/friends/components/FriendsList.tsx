@@ -1,6 +1,5 @@
 import { MouseEvent } from 'react';
 import { FriendT } from '../../../types';
-import { isUserOnline } from '../../../shared/utils/presence';
 import { useTickingNow } from '../../../shared/hooks/useTickingNow';
 import { ui } from '../../../shared/ui';
 import { ListSkeleton } from '../../../components/layout/ListSkeleton';
@@ -20,11 +19,13 @@ const FriendRow = ({
   onViewProfile: (username: string) => void;
   onOpenConversation: (friendUserId: string) => Promise<string | null>;
 }) => {
-  const isOnline = isUserOnline(
-    friend.last_seen_at,
-    friend.appear_offline,
-    nowMs,
-  );
+  const isOnline = true;
+
+  // isUserOnline(
+  //   friend.last_seen_at,
+  //   friend.appear_offline,
+  //   nowMs,
+  // );
 
   const handleFriendClick = async () => {
     if (friend.conversationId) {
@@ -60,7 +61,7 @@ const FriendRow = ({
             {getInitials(friend.nickname)}
           </div>
         )}
-        <div className='min-w-0 flex-1'>
+        <div className='flex-1 min-w-0'>
           <div className={ui.name}>{friend.nickname}</div>
           <div className={ui.meta}>@{friend.username}</div>
         </div>
@@ -74,7 +75,7 @@ const FriendRow = ({
 
       <button
         onClick={handleViewProfile}
-        className='absolute p-2 transition-all -translate-y-1/2 rounded-lg right-2 top-1/2 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white opacity-100 lg:opacity-0 lg:group-hover:opacity-100'
+        className='absolute right-2 top-1/2 p-2 rounded-lg opacity-100 transition-all -translate-y-1/2 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white lg:opacity-0 lg:group-hover:opacity-100'
         title='View Profile'
       >
         <svg

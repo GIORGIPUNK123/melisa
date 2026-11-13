@@ -8,7 +8,7 @@ import { TestMain } from './TestMain';
 import { usePresence } from '../shared/hooks/usePresence';
 import { useGlobalChatSync } from '../features/chat/hooks/useGlobalChatSync';
 
-export const Main = () => {
+export const Main = (props: { onlineUserIds: Set<string> }) => {
   const {
     user,
     authUnlock,
@@ -82,5 +82,5 @@ export const Main = () => {
     );
   }
 
-  return <TestMain />;
+  return <TestMain onlineUserIds={props.onlineUserIds} />;
 };
