@@ -6,14 +6,9 @@ export const SidebarChatBox = (props: {
   active: boolean;
   onClick: () => void;
   conversation: ConversationT;
-  unreadCount?: number;
+  hasUnread: boolean;
+  online: boolean;
 }) => {
-  const unread = props.unreadCount ?? 0;
-  const name =
-    props.conversation.name ||
-    props.conversation.conversationMembers[0]?.nickname ||
-    'Unknown';
-
   return (
     <div
       onClick={props.onClick}
@@ -21,23 +16,29 @@ export const SidebarChatBox = (props: {
     >
       <div className='flex gap-3 items-center'>
         <SidebarChatUserCircle
-          firstLetter={name.charAt(0)}
+          firstLetter={props.conversation.name!.charAt(0)}
           avatarUrl={props.conversation.avatarUrl}
         />
 
         <div className='flex flex-col'>
-          <span className='text-sm font-semibold text-foreground'>{name}</span>
-          <span className='text-xs text-subtle'>
+          <span
+            className={`text-sm font-semibold ${props.hasUnread ? 'text-foreground font-bold' : 'text-muted-foreground'}`}
+          >
+            {props.conversation.name}
+          </span>
+          <span
+            className={`text-xs ${props.hasUnread ? 'text-primary font-medium' : 'text-subtle'}`}
+          >
             {props.conversation.lastMessageTime
               ? formatConversationTime(props.conversation.lastMessageTime)
               : 'No messages'}
           </span>
         </div>
       </div>
-      {unread > 0 && (
-        <div className='text-sm font-bold flex justify-center items-center rounded-full bg-primary w-5 h-5 text-background'>
-          {unread}
-        </div>
+
+      {/* 🟢 Render online dot badge only if the user is online */}
+      {props.online && (
+        <div className='flex justify-center items-center rounded-full bg-primary w-2.5 h-2.5' />
       )}
     </div>
   );

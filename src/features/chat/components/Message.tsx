@@ -62,7 +62,7 @@ export const Message = (props: {
         >
           {/* Message Content Bubble */}
           <div
-            className={`break-words max-w-2xl shrink px-3 py-2 rounded-md flex justify-center text-xs text-foreground ${
+            className={`wrap-break-word max-w-2xl shrink px-3 py-2 rounded-md flex justify-center text-xs text-foreground ${
               owner ? 'bg-primary/25' : 'bg-surface'
             }`}
           >

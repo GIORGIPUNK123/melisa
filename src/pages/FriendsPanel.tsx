@@ -4,7 +4,7 @@ import { useFriendsList } from '../features/friends/hooks/useFriendsList';
 import { useChatStore } from '../store/useChatStore';
 import { fetchConversations } from '../features/chat/utils/conversationFunctions';
 import { supabase } from '../db/supabase';
-import { TestSidebar } from './TestSidebar';
+import { PanelSidebar } from '../features/workspace/sidebar/PanelSidebar';
 import { useFriendStore } from '../store/useFriendStore';
 // import { getOrCreateConversationApi } from '../features/friends/utils/friendsFunctions';
 import { AddFriendsModal } from '../features/friends/modals/AddFriendsModal';
@@ -57,7 +57,7 @@ export const FriendsPanel = (props: { onlineUserIds: Set<string> }) => {
   return (
     <>
       {/* <div className='flex overflow-hidden w-full min-w-0 h-full min-h-0'> */}
-      <TestSidebar
+      <PanelSidebar
         title='Friends'
         currentUserId={user?.id}
         conversations={conversations}

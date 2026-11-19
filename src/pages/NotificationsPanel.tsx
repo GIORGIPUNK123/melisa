@@ -1,7 +1,7 @@
 import { useChatStore } from '../store/useChatStore';
 import { useNotificationStore } from '../store/useNotificationStore';
-import { TestSidebar } from './TestSidebar';
-import { NotificationsList } from './NotificationsList';
+import { PanelSidebar } from '../features/workspace/sidebar/PanelSidebar';
+import { NotificationsList } from '../features/notifications/components/NotificationsList';
 
 export const NotificationsPanel = (props: { onlineUserIds: Set<string> }) => {
   const isLoading = useNotificationStore((state) => state.isLoading);
@@ -10,7 +10,7 @@ export const NotificationsPanel = (props: { onlineUserIds: Set<string> }) => {
   );
 
   return (
-    <TestSidebar
+    <PanelSidebar
       isLoading={isLoading}
       currentUserId={undefined}
       showTabs={false}
@@ -19,6 +19,6 @@ export const NotificationsPanel = (props: { onlineUserIds: Set<string> }) => {
       className={activeConversationId ? 'hidden xl:flex' : 'flex'}
     >
       <NotificationsList />
-    </TestSidebar>
+    </PanelSidebar>
   );
 };

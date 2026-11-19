@@ -26,10 +26,10 @@ export const SettingsPage = () => {
   };
 
   return (
-    <div className='relative h-full w-full min-w-0 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-background'>
+    <div className='overflow-y-auto overflow-x-hidden overscroll-y-contain relative w-full min-w-0 h-full bg-background'>
       <SettingsHeader />
 
-      <div className='mx-auto flex w-full max-w-[1036px] flex-col gap-4 px-4 pb-8 pt-0 sm:px-6 lg:flex-row lg:justify-center lg:gap-8 lg:px-8 lg:py-8'>
+      <div className='flex flex-col gap-4 px-4 pt-0 pb-8 mx-auto w-full max-w-259 sm:px-6 lg:flex-row lg:justify-center lg:gap-8 lg:px-8 lg:py-8'>
         <SettingsSidebar activeTab={activeTab} onChange={setActiveTab} />
 
         <main className='mx-auto w-full min-w-0 max-w-180 lg:mx-0'>

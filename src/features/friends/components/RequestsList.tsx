@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Check, X } from 'lucide-react';
-import { useRequestStore, type PendingRequest } from '../store/useRequestStore';
-import { useFriendStore } from '../store/useFriendStore';
-import { fetchFriendsList } from '../features/friends/utils/friendsFunctions';
+import {
+  useRequestStore,
+  type PendingRequest,
+} from '../../../store/useRequestStore';
+import { useFriendStore } from '../../../store/useFriendStore';
+import { fetchFriendsList } from '../utils/friendsFunctions';
 
 const Avatar = ({ request }: { request: PendingRequest }) => {
   const initial = (request.nickname || request.username || '?')

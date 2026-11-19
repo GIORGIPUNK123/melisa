@@ -1,9 +1,9 @@
 import { Settings, UserPlus } from 'lucide-react';
-import { ListSkeleton } from '../components/layout/ListSkeleton';
-import { useChatStore } from '../store/useChatStore';
-import { ConversationT, FriendT } from '../types';
-import { SidebarChatBox } from './SidebarChatBox';
-import { SidebarFriendBox } from './SidebarFriendBox';
+import { ListSkeleton } from '../../../components/layout/ListSkeleton';
+import { useChatStore } from '../../../store/useChatStore';
+import { ConversationT, FriendT } from '../../../types';
+import { SidebarChatBox } from './chatSidebar/SidebarChatBox';
+import { SidebarFriendBox } from './chatSidebar/SidebarFriendBox';
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -115,7 +115,7 @@ const ListFriends = (props: {
   });
 };
 
-export const TestSidebar = ({
+export const PanelSidebar = ({
   conversations = [],
   isLoading,
   currentUserId,

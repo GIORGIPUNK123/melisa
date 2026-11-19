@@ -1,4 +1,4 @@
-import { FriendT } from '../types';
+import { FriendT } from '../../../../types';
 import { SidebarChatUserCircle } from './SidebarChatUserCircle';
 
 export const SidebarFriendBox = (props: {

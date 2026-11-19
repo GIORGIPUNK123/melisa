@@ -5,12 +5,12 @@ import {
   IconMessage,
   IconSettings,
   IconUsers,
-} from '../atoms/Icon';
-import { useAuth } from '../features/auth/hooks/useAuth';
-import { useNotificationStore } from '../store/useNotificationStore';
-import type { NotificationT } from '../types';
-import { NotificationDetailModal } from '../features/notifications/components/NotificationDetailModal';
-import { formatConversationTime } from '../shared/utils/dates';
+} from '../../../atoms/Icon';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { useNotificationStore } from '../../../store/useNotificationStore';
+import type { NotificationT } from '../../../types';
+import { NotificationDetailModal } from './NotificationDetailModal';
+import { formatConversationTime } from '../../../shared/utils/dates';
 
 const typeIcon = (type: string) => {
   switch (type) {

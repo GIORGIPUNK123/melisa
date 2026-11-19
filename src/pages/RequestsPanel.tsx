@@ -1,7 +1,7 @@
 import { useChatStore } from '../store/useChatStore';
 import { useRequestStore } from '../store/useRequestStore';
-import { TestSidebar } from './TestSidebar';
-import { RequestsList } from './RequestsList';
+import { PanelSidebar } from '../features/workspace/sidebar/PanelSidebar';
+import { RequestsList } from '../features/friends/components/RequestsList';
 
 export const RequestsPanel = (props: { onlineUserIds: Set<string> }) => {
   const isLoading = useRequestStore((state) => state.isLoading);
@@ -10,7 +10,7 @@ export const RequestsPanel = (props: { onlineUserIds: Set<string> }) => {
   );
 
   return (
-    <TestSidebar
+    <PanelSidebar
       isLoading={isLoading}
       currentUserId={undefined}
       showTabs={false}
@@ -19,6 +19,6 @@ export const RequestsPanel = (props: { onlineUserIds: Set<string> }) => {
       className={activeConversationId ? 'hidden xl:flex' : 'flex'}
     >
       <RequestsList />
-    </TestSidebar>
+    </PanelSidebar>
   );
 };

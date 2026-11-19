@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { useChatStore } from '../store/useChatStore';
-import { TestSidebar } from './TestSidebar';
+import { PanelSidebar } from '../features/workspace/sidebar/PanelSidebar';
 import { fetchConversations } from '../features/chat/utils/conversationFunctions';
 import { supabase } from '../db/supabase';
 
@@ -24,7 +24,7 @@ export const ChatsPanel = (props: { onlineUserIds: Set<string> }) => {
   );
 
   return (
-    <TestSidebar
+    <PanelSidebar
       currentUserId={user?.id}
       conversations={conversations}
       isLoading={isLoading}

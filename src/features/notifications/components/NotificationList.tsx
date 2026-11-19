@@ -29,13 +29,11 @@ export const NotificationList = (props: {
   const unreadCount = props.notifications.filter((n) => !n.is_read).length;
 
   return (
-    <div className='flex min-h-0 flex-1 flex-col'>
-      <div className='flex flex-shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-5'>
+    <div className='flex flex-col flex-1 min-h-0'>
+      <div className='flex gap-3 justify-between items-center px-4 py-3 border-b shrink-0 border-border sm:px-5'>
         <div className='min-w-0'>
           <p className='text-[12px] text-muted'>
-            {unreadCount > 0
-              ? `${unreadCount} unread`
-              : 'You are up to date'}
+            {unreadCount > 0 ? `${unreadCount} unread` : 'You are up to date'}
           </p>
         </div>
         {unreadCount > 0 && (
@@ -49,10 +47,10 @@ export const NotificationList = (props: {
         )}
       </div>
 
-      <div className='min-h-0 flex-1 overflow-y-auto'>
+      <div className='overflow-y-auto flex-1 min-h-0'>
         {props.notifications.length === 0 ? (
-          <div className='flex flex-col items-center justify-center px-6 py-16 text-center'>
-            <div className='mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-border-strong bg-panel text-primary'>
+          <div className='flex flex-col justify-center items-center px-6 py-16 text-center'>
+            <div className='flex justify-center items-center mb-3 w-12 h-12 rounded-full border border-border-strong bg-panel text-primary'>
               <IconInfo size={22} />
             </div>
             <p className='text-base font-medium text-foreground'>
@@ -63,7 +61,7 @@ export const NotificationList = (props: {
             </p>
           </div>
         ) : (
-          <ul className='space-y-2 p-3 sm:p-4'>
+          <ul className='p-3 space-y-2 sm:p-4'>
             {props.notifications.map((notification) => {
               const TypeIcon = typeIcon(notification.type);
               return (
@@ -75,9 +73,9 @@ export const NotificationList = (props: {
                       : 'border-border-strong bg-panel'
                   }`}
                 >
-                  <div className='flex items-start gap-3'>
+                  <div className='flex gap-3 items-start'>
                     <div
-                      className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
+                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
                         notification.is_read
                           ? 'bg-surface text-subtle'
                           : 'bg-primary-soft text-primary'
@@ -85,28 +83,27 @@ export const NotificationList = (props: {
                     >
                       <TypeIcon size={14} />
                     </div>
-                    <div className='min-w-0 flex-1'>
-                      <div className='flex items-start justify-between gap-3'>
+                    <div className='flex-1 min-w-0'>
+                      <div className='flex gap-3 justify-between items-start'>
                         <div className='min-w-0'>
-                          <div className='flex items-center gap-2'>
-                            {props.onNotificationClick &&
-                            notification.link ? (
+                          <div className='flex gap-2 items-center'>
+                            {props.onNotificationClick && notification.link ? (
                               <button
                                 type='button'
                                 onClick={() =>
                                   props.onNotificationClick?.(notification)
                                 }
-                                className='focus-ring truncate text-left text-sm font-medium text-foreground transition hover:text-primary'
+                                className='text-sm font-medium text-left truncate transition focus-ring text-foreground hover:text-primary'
                               >
                                 {notification.title}
                               </button>
                             ) : (
-                              <h3 className='truncate text-sm font-medium text-foreground'>
+                              <h3 className='text-sm font-medium truncate text-foreground'>
                                 {notification.title}
                               </h3>
                             )}
                             {!notification.is_read && (
-                              <span className='h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary' />
+                              <span className='h-1.5 w-1.5 shrink-0 rounded-full bg-primary' />
                             )}
                           </div>
                           {notification.message && (
@@ -115,18 +112,14 @@ export const NotificationList = (props: {
                             </p>
                           )}
                           <p className='mt-2 text-[11px] text-subtle'>
-                            {new Date(
-                              notification.created_at,
-                            ).toLocaleString()}
+                            {new Date(notification.created_at).toLocaleString()}
                           </p>
                         </div>
                         {!notification.is_read && (
                           <button
                             type='button'
-                            onClick={() =>
-                              props.onMarkAsRead(notification.id)
-                            }
-                            className='focus-ring flex flex-shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted transition hover:bg-surface-hover hover:text-primary'
+                            onClick={() => props.onMarkAsRead(notification.id)}
+                            className='flex gap-1 items-center px-2 py-1 text-xs font-medium rounded-md transition focus-ring shrink-0 text-muted hover:bg-surface-hover hover:text-primary'
                             title='Mark as read'
                           >
                             <IconCheck size={14} />

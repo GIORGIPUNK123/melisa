@@ -75,9 +75,9 @@ export const MessageList = (props: {
               } ${isSameSender ? 'mb-1' : 'mb-3'}`}
             >
               {!owner && (
-                <div className='flex-shrink-0 mr-2 w-8'>
+                <div className='mr-2 w-8 shrink-0'>
                   {!isSameSender ? (
-                    <div className='w-8 h-8 rounded-full bg-primary/25 flex items-center justify-center text-foreground'>
+                    <div className='flex justify-center items-center w-8 h-8 rounded-full bg-primary/25 text-foreground'>
                       {msg.sender.nickname.charAt(0).toLocaleUpperCase()}
                     </div>
                   ) : (
