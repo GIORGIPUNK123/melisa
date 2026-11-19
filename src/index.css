@@ -119,9 +119,18 @@ body,
   height: var(--app-height);
   min-height: var(--app-height);
   overflow: hidden;
-  background-color: #020617;
+  background-color: #080d14;
   color-scheme: dark;
+  box-sizing: border-box;
 }
+
+#root {
+  padding-top: env(safe-area-inset-top);
+  /* padding-bottom: env(safe-area-inset-bottom); */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
 body {
   box-sizing: border-box;
   overscroll-behavior: none;

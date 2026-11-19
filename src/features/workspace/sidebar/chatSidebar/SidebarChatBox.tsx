@@ -22,7 +22,7 @@ export const SidebarChatBox = (props: {
       <div className='flex gap-3 items-center'>
         <SidebarChatUserCircle
           firstLetter={name.charAt(0)}
-          avatarUrl={props.conversation.conversationMembers[0]?.avatarUrl}
+          avatarUrl={props.conversation.avatarUrl}
         />
 
         <div className='flex flex-col'>

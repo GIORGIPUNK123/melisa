@@ -11,6 +11,15 @@ import { useGlobalChatSync } from '../features/chat/hooks/useGlobalChatSync';
 import { ChatArea } from '../features/chat/components/ChatArea';
 import { supabase } from '../db/supabase';
 import { fetchConversations } from '../features/chat/utils/conversationFunctions';
+import { usePendingRequestsSync } from '../features/friends/hooks/usePendingRequests';
+import { useNotificationsSync } from '../features/notifications/hooks/useNotifications';
+import { NotificationToast } from '../features/notifications/components/NotificationToast';
+
+const LiveDataSync = ({ userId }: { userId: string }) => {
+  usePendingRequestsSync(userId);
+  useNotificationsSync(userId);
+  return null;
+};
 
 export const Main = (props: { onlineUserIds: Set<string> }) => {
   const navigate = useNavigate();
@@ -108,7 +117,11 @@ export const Main = (props: { onlineUserIds: Set<string> }) => {
   }
   return (
     <div className='flex-col-reverse xl:flex-row relative flex w-full h-full min-w-0 overflow-hidden bg-[#080D14]'>
-      <div className={`${activeConversationId ? 'hidden' : ''} xl:flex`}>
+      <LiveDataSync userId={user.id} />
+      <NotificationToast />
+      <div
+        className={`${activeConversationId || path === '/settings' ? 'hidden' : ''} xl:flex`}
+      >
         <AppSidebar />
       </div>
 
@@ -117,6 +130,7 @@ export const Main = (props: { onlineUserIds: Set<string> }) => {
 
         {path !== '/settings' &&
           path !== '/requests' &&
+          path !== '/friends/requests' &&
           path !== '/notifications' && (
             <ChatArea
               conversation={activeConversation}

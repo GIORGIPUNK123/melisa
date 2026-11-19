@@ -18,6 +18,7 @@ export const fetchConversations = async (
             id,
             type,
             name,
+            avatar_url,
             conversation_members (
                 public_profiles (
                 id,
@@ -46,6 +47,10 @@ export const fetchConversations = async (
           m.conversations.name ||
           otherUser?.public_profiles?.nickname ||
           'Unknown',
+        avatarUrl:
+          m.conversations.type === 'group'
+            ? m.conversations.avatar_url || undefined
+            : otherUser?.public_profiles?.avatar_url || undefined,
         conversationMembers: m.conversations.conversation_members.map(
           (m2: any) => {
             const profile = m2.public_profiles;

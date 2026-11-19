@@ -9,6 +9,8 @@ import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { ChatsPanel } from './pages/ChatsPanel';
 import { useInitAuth } from './features/auth/hooks/useAuthInit';
 import { FriendsPanel } from './pages/FriendsPanel';
+import { RequestsPanel } from './pages/RequestsPanel';
+import { NotificationsPanel } from './pages/NotificationsPanel';
 import { usePresenceStore } from './store/usePresenceStore';
 
 export const App = () => {
@@ -34,27 +36,9 @@ export const App = () => {
             path='friends'
             element={<FriendsPanel onlineUserIds={onlineUserIds} />}
           />
-          <Route
-            path='requests'
-            element={
-              <div className='p-4'>
-                <h1 className='text-2xl font-bold text-white'>
-                  Friend Requests
-                </h1>
-                <p className='text-[#8192A4]'>Will be added soon</p>
-              </div>
-            }
-          />
-
-          <Route
-            path='notifications'
-            element={
-              <div className='p-4'>
-                <h1 className='text-2xl font-bold text-white'>Notifications</h1>
-                <p className='text-[#8192A4]'>Will be added soon</p>
-              </div>
-            }
-          />
+          <Route path='requests' element={<RequestsPanel />} />
+          <Route path='friends/requests' element={<RequestsPanel />} />
+          <Route path='notifications' element={<NotificationsPanel />} />
           <Route path='settings' element={<SettingsPage />} />
         </Route>
         <Route path='/login' element={<Login />} />

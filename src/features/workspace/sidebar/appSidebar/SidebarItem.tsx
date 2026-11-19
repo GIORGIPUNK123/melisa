@@ -4,6 +4,7 @@ export const SidebarItem = (props: {
   active: boolean;
   icon: React.ReactNode;
   label?: string;
+  badge?: number;
   onClick: () => void;
 }) => {
   return (
@@ -22,6 +23,12 @@ export const SidebarItem = (props: {
       <div className={`${props.active && 'xl:text-white text-[#65E0C1]'}`}>
         {props.icon}
       </div>
+
+      {!!props.badge && props.badge > 0 && (
+        <span className='absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#65E0C1] px-1 text-[10px] font-bold text-[#07110F] xl:right-0 xl:top-0'>
+          {props.badge > 9 ? '9+' : props.badge}
+        </span>
+      )}
 
       <span
         className={`mt-1 text-xs font-medium xl:hidden ${

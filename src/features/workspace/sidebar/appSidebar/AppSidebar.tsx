@@ -5,9 +5,17 @@ import { UserCircle } from './UserCircle';
 import { useNavigate, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../../../store/useAuthStore';
+import { useRequestStore } from '../../../../store/useRequestStore';
+import { useNotificationStore } from '../../../../store/useNotificationStore';
 
 export const AppSidebar = () => {
   const avatarUrl = useAuthStore((state) => state.profile?.avatar_url);
+  const receivedRequestCount = useRequestStore(
+    (state) => state.receivedRequests.length,
+  );
+  const unreadNotificationCount = useNotificationStore(
+    (state) => state.notifications.filter((n) => !n.is_read).length,
+  );
   const [activeTab, setActiveTab] = useState<
     'chats' | 'friends' | 'requests' | 'notifications' | 'settings'
   >('chats');
@@ -15,8 +23,8 @@ export const AppSidebar = () => {
   const location = useLocation();
   // Keep active tab in sync with current route if needed
   useEffect(() => {
-    if (location.pathname.includes('/friends')) setActiveTab('friends');
-    else if (location.pathname.includes('/requests')) setActiveTab('requests');
+    if (location.pathname.includes('/requests')) setActiveTab('requests');
+    else if (location.pathname.includes('/friends')) setActiveTab('friends');
     else if (location.pathname.includes('/notifications'))
       setActiveTab('notifications');
     else if (location.pathname.includes('/chats')) setActiveTab('chats');
@@ -55,6 +63,7 @@ export const AppSidebar = () => {
             icon={<Mail size={20} />}
             active={activeTab === 'requests'}
             label='Requests'
+            badge={receivedRequestCount}
           />
           <SidebarItem
             onClick={() => {
@@ -64,6 +73,7 @@ export const AppSidebar = () => {
             icon={<Bell size={20} />}
             active={activeTab === 'notifications'}
             label='Notifications'
+            badge={unreadNotificationCount}
           />
         </div>
       </div>

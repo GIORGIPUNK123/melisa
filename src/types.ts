@@ -59,6 +59,7 @@ export interface ConversationT {
   lastMessageTime?: string;
   muted: boolean;
   conversationMembers: ConversationMemberT[];
+  avatarUrl?: string;
 }
 export interface SenderT {
   id: string;

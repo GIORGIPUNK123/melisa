@@ -1,84 +1,34 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { api } from '../../../api/instance';
 import { supabase } from '../../../db/supabase';
+import { useRequestStore, PendingRequest } from '../../../store/useRequestStore';
 
-export interface PendingRequest {
-  friendshipId: string;
-  username: string;
-  nickname: string;
-  avatarUrl?: string | null;
-  status?: string;
-  createdAt: string;
-}
-
-export const usePendingRequests = () => {
-  const [sentRequests, setSentRequests] = useState<PendingRequest[]>([]);
-  const [receivedRequests, setReceivedRequests] = useState<PendingRequest[]>(
-    [],
-  );
-  const [isLoading, setIsLoading] = useState(false);
-
+/**
+ * Loads pending friend requests once and keeps the request store in sync with
+ * Supabase Realtime. Mount this once from the authenticated app shell.
+ */
+export const usePendingRequestsSync = (userId?: string) => {
   const fetchRequests = useCallback(async (options?: { silent?: boolean }) => {
-    if (!options?.silent) setIsLoading(true);
+    if (!options?.silent) useRequestStore.getState().setLoading(true);
     try {
       const response = await api.get('/friends/pending');
-
-      setSentRequests(response.data.sent || []);
-      setReceivedRequests(response.data.received || []);
-    } catch (err) {
-      console.error('Failed to fetch pending requests:', err);
-    } finally {
-      if (!options?.silent) setIsLoading(false);
+      useRequestStore.getState().setRequests(
+        response.data.sent || [],
+        response.data.received || [],
+      );
+    } catch (error) {
+      console.error('Failed to fetch pending requests:', error);
+      if (!options?.silent) useRequestStore.getState().setLoading(false);
     }
   }, []);
 
-  const cancelRequest = async (friendshipId: string) => {
-    try {
-      await api.delete(`/friends/request/${friendshipId}`);
-
-      setSentRequests((prev) =>
-        prev.filter((r) => r.friendshipId !== friendshipId),
-      );
-      return true;
-    } catch (err) {
-      console.error('Failed to cancel request:', err);
-      return false;
-    }
-  };
-
-  const acceptRequest = async (friendshipId: string) => {
-    try {
-      await api.post(`/friends/request/${friendshipId}/accept`, {});
-
-      setReceivedRequests((prev) =>
-        prev.filter((r) => r.friendshipId !== friendshipId),
-      );
-      return true;
-    } catch (err) {
-      console.error('Failed to accept request:', err);
-      return false;
-    }
-  };
-
-  const rejectRequest = async (friendshipId: string) => {
-    try {
-      await api.delete(`/friends/request/${friendshipId}/reject`);
-
-      setReceivedRequests((prev) =>
-        prev.filter((r) => r.friendshipId !== friendshipId),
-      );
-      return true;
-    } catch (err) {
-      console.error('Failed to reject request:', err);
-      return false;
-    }
-  };
-
   useEffect(() => {
+    if (!userId) return;
+
     void fetchRequests();
 
     const channel = supabase
-      .channel('friend-requests')
+      .channel(`friend-requests:${userId}`)
       .on(
         'postgres_changes',
         {
@@ -94,16 +44,9 @@ export const usePendingRequests = () => {
 
     return () => {
       void supabase.removeChannel(channel);
+      useRequestStore.getState().setRequests([], []);
     };
-  }, [fetchRequests]);
-
-  return {
-    sentRequests,
-    receivedRequests,
-    isLoading,
-    fetchRequests,
-    cancelRequest,
-    acceptRequest,
-    rejectRequest,
-  };
+  }, [userId, fetchRequests]);
 };
+
+export type { PendingRequest };

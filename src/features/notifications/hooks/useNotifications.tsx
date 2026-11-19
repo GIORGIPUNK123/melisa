@@ -1,30 +1,35 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { supabase } from '../../../db/supabase';
 import { NotificationT } from '../../../types';
+import { useNotificationStore } from '../../../store/useNotificationStore';
 
-export const useNotifications = (userId: string | undefined) => {
-  const [notifications, setNotifications] = useState<NotificationT[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+/**
+ * Loads notifications once and keeps the notification store in sync with
+ * Supabase Realtime. Mount this once from the authenticated app shell.
+ */
+export const useNotificationsSync = (userId?: string) => {
+  const fetchNotifications = useCallback(async () => {
+    if (!userId) return;
+    useNotificationStore.getState().setLoading(true);
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error('Failed to fetch notifications:', error);
+      useNotificationStore.getState().setLoading(false);
+      return;
+    }
+    useNotificationStore.getState().setNotifications((data ?? []) as NotificationT[]);
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
 
-    const fetchNotifications = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (!error && data) {
-        setNotifications(data as NotificationT[]);
-      }
-      setIsLoading(false);
-    };
-
-    fetchNotifications();
+    void fetchNotifications();
 
     const channel = supabase
       .channel(`notifications:${userId}`)
@@ -37,67 +42,23 @@ export const useNotifications = (userId: string | undefined) => {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
+          const store = useNotificationStore.getState();
           if (payload.eventType === 'INSERT') {
-            setNotifications((prev) => [payload.new as NotificationT, ...prev]);
+            const notification = payload.new as NotificationT;
+            store.upsertNotification(notification);
+            store.showToast(notification);
           } else if (payload.eventType === 'UPDATE') {
-            setNotifications((prev) =>
-              prev.map((n) =>
-                n.id === (payload.new as NotificationT).id
-                  ? (payload.new as NotificationT)
-                  : n,
-              ),
-            );
+            store.upsertNotification(payload.new as NotificationT);
           } else if (payload.eventType === 'DELETE') {
-            setNotifications((prev) =>
-              prev.filter((n) => n.id !== (payload.old as NotificationT).id),
-            );
+            store.removeNotification((payload.old as NotificationT).id);
           }
         },
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
+      useNotificationStore.getState().setNotifications([]);
     };
-  }, [userId]);
-
-  const markNotificationAsRead = async (notificationId: string) => {
-    const { error } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('id', notificationId);
-
-    if (error) {
-      console.error('Failed to mark notification as read:', error);
-      return;
-    }
-
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n)),
-    );
-  };
-
-  const markAllNotificationsAsRead = async () => {
-    if (!userId) return;
-
-    const { error } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', userId)
-      .eq('is_read', false);
-
-    if (error) {
-      console.error('Failed to mark all notifications as read:', error);
-      return;
-    }
-
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-  };
-
-  return {
-    notifications,
-    isLoading,
-    markNotificationAsRead,
-    markAllNotificationsAsRead,
-  };
+  }, [userId, fetchNotifications]);
 };
