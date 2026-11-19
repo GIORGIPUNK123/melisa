@@ -46,23 +46,23 @@ export const ProfileSettingsTab = ({
           />
         }
       >
-        <div className='flex items-center gap-3 rounded-xl border border-solid border-[#162231] bg-[#0A1018]/60 p-3'>
+        <div className='flex items-center gap-3 rounded-xl border border-solid border-border bg-sidebar/60 p-3'>
           {form.values.avatarUrl ? (
             <div
-              className='h-14 w-14 shrink-0 rounded-2xl bg-[#162231] bg-cover bg-center'
+              className='h-14 w-14 shrink-0 rounded-card bg-surface bg-cover bg-center'
               style={{ backgroundImage: `url(${form.values.avatarUrl})` }}
               aria-hidden='true'
             />
           ) : (
-            <div className='flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#65E0C1] text-lg font-bold text-[#07110F]'>
+            <div className='flex h-14 w-14 shrink-0 items-center justify-center rounded-card bg-primary text-lg font-bold text-background'>
               {fallbackInitial}
             </div>
           )}
           <div className='min-w-0 flex-1'>
-            <p className='truncate text-[15px] font-semibold text-[#EEF3F8]'>
+            <p className='truncate text-[15px] font-semibold text-foreground'>
               {displayName}
             </p>
-            <p className='mt-0.5 truncate text-[12px] text-[#8192A4]'>
+            <p className='mt-0.5 truncate text-[12px] text-muted'>
               {displayUsername ? `@${displayUsername}` : 'Add a username'}
             </p>
           </div>

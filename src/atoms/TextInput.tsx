@@ -26,23 +26,23 @@ export const TextInput = (props: TextInputProps) => {
 
   const focusClasses =
     props.focusTone === 'teal'
-      ? 'focus:border-[#65E0C1]/70 focus:ring-2 focus:ring-[#65E0C1]/15'
-      : 'focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/25';
+      ? 'focus:border-primary/70 focus:ring-2 focus:ring-primary/15'
+      : 'focus:border-primary focus:ring-2 focus:ring-primary/20';
 
   const inputClasses = isPlain
-    ? 'py-2 px-3 w-full min-w-0 rounded-md border border-[#243648] bg-[#0A1018]/80 text-sm text-[#EEF3F8] placeholder:text-[#56687B] outline-none transition focus:border-[#65E0C1] focus:ring-2 focus:ring-[#65E0C1]/20 disabled:cursor-not-allowed disabled:opacity-50 md:text-[15px]'
-    : `h-11 w-full min-w-0 rounded-xl border bg-[#0A1018]/70 px-3.5 text-[16px] text-[#EEF3F8] placeholder:text-[#56687B] outline-none transition disabled:cursor-not-allowed disabled:opacity-50 md:text-[15px]`;
+    ? 'py-2 px-3 w-full min-w-0 rounded-md border border-border-strong bg-sidebar/80 text-sm text-foreground placeholder:text-subtle outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 md:text-[15px]'
+    : `h-11 w-full min-w-0 rounded-xl border bg-sidebar/70 px-3.5 text-[16px] text-foreground placeholder:text-subtle outline-none transition disabled:cursor-not-allowed disabled:opacity-50 md:text-[15px]`;
 
   const errorClasses = isPlain
-    ? 'border-rose-500/70 focus:border-rose-400 focus:ring-2 focus:ring-rose-500/25'
-    : 'border-rose-500/70 focus:border-rose-400 focus:ring-2 focus:ring-rose-500/20';
+    ? 'border-destructive/70 focus:border-destructive focus:ring-2 focus:ring-destructive/25'
+    : 'border-destructive/70 focus:border-destructive focus:ring-2 focus:ring-destructive/20';
 
   return (
     <div className={isPlain ? 'w-full' : 'w-full min-w-0'}>
       {props.label && (
         <label
           htmlFor={inputId}
-          className='mb-1.5 block text-[12px] font-medium text-[#8192A4]'
+          className='mb-1.5 block text-[12px] font-medium text-muted'
         >
           {props.label}
         </label>
@@ -63,7 +63,7 @@ export const TextInput = (props: TextInputProps) => {
             ? errorClasses
             : isPlain
               ? ''
-              : `border-[#243648] ${focusClasses}`
+              : `border-border-strong ${focusClasses}`
         }`}
         placeholder={props.placeholder}
         required={props.required ?? false}
@@ -73,14 +73,14 @@ export const TextInput = (props: TextInputProps) => {
           id={metaId}
           className={
             isPlain
-              ? 'mt-1.5 text-[12px] text-rose-300'
-              : 'mt-1.5 text-[12px] leading-4 text-rose-400'
+              ? 'mt-1.5 text-[12px] text-destructive'
+              : 'mt-1.5 text-[12px] leading-4 text-destructive'
           }
         >
           {props.error}
         </p>
       ) : props.hint ? (
-        <p id={metaId} className='mt-1.5 text-[11px] leading-4 text-[#8192A4]'>
+        <p id={metaId} className='mt-1.5 text-[11px] leading-4 text-muted'>
           {props.hint}
         </p>
       ) : null}

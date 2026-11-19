@@ -25,7 +25,7 @@ export const TestMain = (props: { onlineUserIds: Set<string> }) => {
     (conv) => conv.id === activeConversationId,
   );
   return (
-    <div className='flex-col-reverse xl:flex-row relative flex w-full h-full min-w-0 overflow-hidden bg-[#080D14]'>
+    <div className='flex-col-reverse xl:flex-row relative flex w-full h-full min-w-0 overflow-hidden bg-background'>
       <div className={`${activeConversationId && 'hidden'} xl:flex`}>
         <AppSidebar />
       </div>

@@ -1,5 +1,38 @@
 @import 'tailwindcss';
 
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: #080d14;
+  --color-sidebar: #0a1018;
+  --color-panel: #0e1621;
+  --color-panel-raised: #111c29;
+  --color-surface: #162231;
+  --color-surface-hover: #1a2939;
+  --color-border: rgba(160, 184, 204, 0.12);
+  --color-border-strong: rgba(160, 184, 204, 0.2);
+  --color-foreground: #f4f8fb;
+  --color-muted-foreground: #c8d4e0;
+  --color-muted: #8192a4;
+  --color-subtle: #56687b;
+  --color-primary: #65e0c1;
+  --color-primary-strong: #3bc9a8;
+  --color-primary-soft: rgba(101, 224, 193, 0.11);
+  --color-success: #4ade80;
+  --color-destructive: #ff7e86;
+
+  --radius-tight: 0.35rem;
+  --radius-card: 0.9rem;
+  --shadow-panel: 0 1.5rem 5rem rgb(0 0 0 / 0.38);
+}
+
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
 /* html,
 body,
 div,
@@ -119,7 +152,7 @@ body,
   height: var(--app-height);
   min-height: var(--app-height);
   overflow: hidden;
-  background-color: #080d14;
+  background-color: var(--color-background);
   color-scheme: dark;
   box-sizing: border-box;
 }
@@ -135,7 +168,7 @@ body {
   box-sizing: border-box;
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
-  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.45;
   letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
@@ -202,11 +235,11 @@ table {
 .skeleton {
   background-image: linear-gradient(
     100deg,
-    rgb(30 41 59) 20%,
-    rgb(51 65 85) 42%,
-    rgb(71 85 105 / 0.85) 50%,
-    rgb(51 65 85) 58%,
-    rgb(30 41 59) 80%
+    var(--color-surface) 20%,
+    color-mix(in srgb, var(--color-surface) 75%, var(--color-muted)) 42%,
+    color-mix(in srgb, var(--color-surface) 60%, var(--color-muted)) 50%,
+    color-mix(in srgb, var(--color-surface) 75%, var(--color-muted)) 58%,
+    var(--color-surface) 80%
   );
   background-size: 220% 100%;
   animation: skeleton-shimmer 1.35s ease-in-out infinite;

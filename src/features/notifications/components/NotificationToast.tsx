@@ -24,24 +24,24 @@ export const NotificationToast = () => {
   return (
     <div
       role='status'
-      className='fixed bottom-20 right-4 z-[70] w-[min(360px,calc(100vw-2rem))] rounded-2xl border border-[#65E0C1]/30 bg-[#0E1621] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.5)] xl:bottom-5'
+      className='fixed bottom-20 right-4 z-[70] w-[min(360px,calc(100vw-2rem))] rounded-card border border-primary/30 bg-panel p-4 shadow-[0_16px_40px_rgba(0,0,0,0.5)] xl:bottom-5'
     >
       <div className='flex items-start gap-3'>
-        <div className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#65E0C1]/15 text-[#65E0C1]'>
+        <div className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary'>
           <ToastIcon size={16} />
         </div>
         <button
           type='button'
-          className='min-w-0 flex-1 text-left'
+          className='focus-ring min-w-0 flex-1 text-left'
           onClick={() => {
             if (toast.link) navigate(toast.link);
             dismissToast();
           }}
         >
-          <p className='truncate text-sm font-semibold text-[#F4F8FB]'>
+          <p className='truncate text-sm font-semibold text-foreground'>
             {toast.title}
           </p>
-          <p className='mt-0.5 line-clamp-2 text-xs leading-5 text-[#8192A4]'>
+          <p className='mt-0.5 line-clamp-2 text-xs leading-5 text-muted'>
             {toast.message}
           </p>
         </button>
@@ -49,7 +49,7 @@ export const NotificationToast = () => {
           type='button'
           aria-label='Dismiss notification'
           onClick={dismissToast}
-          className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-[#56687B] transition hover:bg-[#162231] hover:text-[#EEF3F8]'
+          className='focus-ring flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-subtle transition hover:bg-surface-hover hover:text-foreground'
         >
           <IconX size={14} />
         </button>

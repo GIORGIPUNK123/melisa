@@ -77,12 +77,12 @@ export const CameraCapture = (props: {
   };
 
   return (
-    <div className='absolute inset-0 z-[80] flex flex-col bg-black'>
+    <div className='absolute inset-0 z-[80] flex flex-col bg-background'>
       <div className='flex items-center px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]'>
         <button
           type='button'
           onClick={props.onClose}
-          className='rounded-full bg-white/15 px-5 py-2.5 text-base font-medium text-white backdrop-blur-sm transition hover:bg-white/25 active:bg-white/30'
+          className='focus-ring rounded-full bg-foreground/15 px-5 py-2.5 text-base font-medium text-foreground backdrop-blur-sm transition hover:bg-foreground/25 active:bg-foreground/30'
         >
           Cancel
         </button>
@@ -97,7 +97,7 @@ export const CameraCapture = (props: {
           className={`h-full w-full object-cover ${facing === 'user' ? '-scale-x-100' : ''}`}
         />
         {error && (
-          <p className='absolute inset-x-6 top-6 text-center text-sm text-white'>
+          <p className='absolute inset-x-6 top-6 text-center text-sm text-foreground'>
             {error}
           </p>
         )}
@@ -111,7 +111,7 @@ export const CameraCapture = (props: {
             onClick={capture}
             disabled={!ready}
             aria-label='Take photo'
-            className='h-16 w-16 rounded-full border-4 border-white bg-white/20 disabled:opacity-40'
+            className='focus-ring h-16 w-16 rounded-full border-4 border-foreground bg-foreground/20 disabled:opacity-40'
           />
         </div>
         <div className='flex justify-end'>
@@ -123,7 +123,7 @@ export const CameraCapture = (props: {
               )
             }
             aria-label='Flip camera'
-            className='flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/25 active:bg-white/30'
+            className='focus-ring flex h-12 w-12 items-center justify-center rounded-full bg-foreground/15 text-foreground backdrop-blur-sm transition hover:bg-foreground/25 active:bg-foreground/30'
           >
             <IconCameraFlip size={22} />
           </button>

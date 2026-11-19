@@ -4,7 +4,7 @@ import { useChatStore } from '../store/useChatStore';
 import { ConversationT, FriendT } from '../types';
 import { SidebarChatBox } from './SidebarChatBox';
 import { SidebarFriendBox } from './SidebarFriendBox';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 
 const SidebarTab = (props: {
@@ -18,13 +18,13 @@ const SidebarTab = (props: {
       onClick={onClick}
       className={`cursor-pointer text-xs h-fit group text-center ${
         isActive
-          ? 'text-[#F4F8FB] px-3 font-semibold'
-          : 'text-[#8192A4] px-3 font-semibold'
+          ? 'text-foreground px-3 font-semibold'
+          : 'text-muted px-3 font-semibold'
       }`}
     >
       <span>{name}</span>
       <div
-        className={`mt-2 px-5 h-0.5 ${isActive ? 'scale-100' : 'scale-0'} duration-100 bg-[#65E0C1] group-hover:bg-[#65E0C1] group-hover:scale-100`}
+        className={`mt-2 px-5 h-0.5 ${isActive ? 'scale-100' : 'scale-0'} duration-100 bg-primary group-hover:bg-primary group-hover:scale-100`}
       />
     </div>
   );
@@ -35,7 +35,7 @@ const Tabs = (props: {
 }) => {
   const { activeConversationType, setActiveConversationType } = props;
   return (
-    <div className='flex items-center gap-2 mb-4 border-b border-[#162231] pb-2'>
+    <div className='flex items-center gap-2 mb-4 border-b border-border pb-2'>
       <SidebarTab
         name='All'
         isActive={activeConversationType === 'all'}
@@ -126,6 +126,7 @@ export const TestSidebar = ({
   handleFriendClick,
   onlineUserIds,
   onAddFriendClick,
+  children,
 }: {
   conversations?: ConversationT[];
   friends?: FriendT[];
@@ -138,6 +139,7 @@ export const TestSidebar = ({
   handleFriendClick?: (conversationId: number) => any;
   onlineUserIds: Set<string>;
   onAddFriendClick?: () => void;
+  children?: ReactNode;
 }) => {
   const navigate = useNavigate();
   const { activeConversationId, setActiveConversationId } = useChatStore();
@@ -151,18 +153,18 @@ export const TestSidebar = ({
 
   return (
     <div
-      className={`${className} h-full w-full shrink-0 bg-[#0E1621] text-white xl:flex xl:w-80 xl:flex-col border-r border-[#162231]`}
+      className={`${className} h-full w-full shrink-0 bg-panel text-foreground xl:flex xl:w-80 xl:flex-col border-r border-border`}
     >
       <div className='overflow-y-auto flex-1 px-2 mt-3 w-full'>
         <div className='flex justify-between items-center'>
-          <h2 className='text-[#F4F8FB] font-bold text-2xl ml-3 mb-4'>
+          <h2 className='text-foreground font-bold text-2xl ml-3 mb-4'>
             {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
           </h2>
           <div
             onClick={() => {
               navigate('/settings');
             }}
-            className='xl:hidden text-[#8192A4] bg-[#162231] w-[42px] h-[42px] flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-white duration-200'
+            className='xl:hidden text-muted bg-surface w-[42px] h-[42px] flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-foreground duration-200'
           >
             <Settings width={16} height={16} />
           </div>
@@ -177,19 +179,21 @@ export const TestSidebar = ({
 
         {isLoading ? (
           <ListSkeleton rows={Math.max(conversations.length, 5)} />
+        ) : children ? (
+          <div className='mt-2'>{children}</div>
         ) : (
           <div className='mt-2'>
             {activeTab === 'friends' && onAddFriendClick && (
               <button
                 type='button'
                 onClick={onAddFriendClick}
-                className='mb-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#65E0C1]/20 bg-[#65E0C1]/10 px-3 py-2 text-[13px] font-semibold text-[#65E0C1] transition hover:bg-[#65E0C1]/20'
+                className='focus-ring mb-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary-soft px-3 py-2 text-[13px] font-semibold text-primary transition hover:bg-primary-soft'
               >
                 <UserPlus size={16} />
                 Add friend
               </button>
             )}
-            <span className='text-[#56687B] font-bold text-xs ml-3'>
+            <span className='text-subtle font-bold text-xs ml-3'>
               {activeTab === 'friends' ? 'ALL FRIENDS' : 'RECENT CONVERSATIONS'}
             </span>
             {activeTab === 'friends' ? (

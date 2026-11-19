@@ -12,8 +12,8 @@ export const SettingsMessage = (props: {
       role={isError ? 'alert' : 'status'}
       className={`flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-[12px] leading-5 ${
         isError
-          ? 'border-rose-500/25 bg-rose-500/10 text-rose-200'
-          : 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200'
+          ? 'border-destructive/25 bg-destructive/10 text-destructive/90'
+          : 'border-success/25 bg-success/10 text-success'
       }`}
     >
       <span className='mt-px shrink-0'>

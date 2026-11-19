@@ -52,7 +52,7 @@ export const Message = (props: {
     >
       <div className={`flex flex-col gap-1 ${owner ? 'items-end' : ''}`}>
         {!isSameSender && (
-          <span className='px-1 text-xs text-gray-400'>
+          <span className='px-1 text-xs text-muted'>
             {owner ? 'You' : msg.sender.nickname}
           </span>
         )}
@@ -62,14 +62,14 @@ export const Message = (props: {
         >
           {/* Message Content Bubble */}
           <div
-            className={`break-words max-w-2xl shrink px-3 py-2 rounded-md flex justify-center text-xs text-[#E3F3EF] ${
-              owner ? 'bg-[#274D49]' : 'bg-[#162231]'
+            className={`break-words max-w-2xl shrink px-3 py-2 rounded-md flex justify-center text-xs text-foreground ${
+              owner ? 'bg-primary/25' : 'bg-surface'
             }`}
           >
             {viewableImage ? (
               <ChatAttachment payload={viewableImage} openFile={openFile} />
             ) : (
-              <span className='text-[#E3F3EF] text-sm whitespace-pre-wrap'>
+              <span className='text-foreground text-sm whitespace-pre-wrap'>
                 {msg.content}
               </span>
             )}
@@ -87,7 +87,7 @@ export const Message = (props: {
             <button
               type='button'
               aria-label='Reply to message'
-              className='p-2 rounded-md hover:bg-[#162231] cursor-pointer flex items-center justify-center focus:outline-none text-gray-300 hover:text-white transition-colors'
+              className='p-2 rounded-md hover:bg-surface-hover cursor-pointer flex items-center justify-center focus:outline-none text-muted-foreground hover:text-foreground transition-colors'
             >
               <Reply size={20} />
             </button>

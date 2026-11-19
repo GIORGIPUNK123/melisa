@@ -90,12 +90,12 @@ export const CreateGroupModal = (props: {
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm'
+      className='fixed inset-0 z-50 flex items-center justify-center bg-background/60 p-4 backdrop-blur-sm'
       onClick={(event) => handleBackdropClick(event, close)}
     >
-      <div className='relative flex max-h-[min(40rem,calc(100dvh-2rem))] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900 shadow-2xl'>
+      <div className='relative flex max-h-[min(40rem,calc(100dvh-2rem))] w-full max-w-md flex-col overflow-hidden rounded-card border border-border/70 bg-panel shadow-panel'>
         <div className='flex items-start gap-3 px-6 pb-2 pt-6 pr-14'>
-          <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300'>
+          <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-border bg-surface/80 text-muted-foreground'>
             <IconUsers size={18} />
           </div>
           <div>
@@ -114,7 +114,7 @@ export const CreateGroupModal = (props: {
           </button>
         </div>
 
-        <div className='space-y-3 px-6 py-4'>
+        <div className='focus-ring space-y-3 px-6 py-4'>
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
@@ -132,11 +132,11 @@ export const CreateGroupModal = (props: {
 
         <div className='min-h-0 flex-1 overflow-y-auto px-3 pb-2'>
           {props.friends.length === 0 ? (
-            <p className='px-3 py-6 text-center text-sm text-slate-400'>
+            <p className='px-3 py-6 text-center text-sm text-muted'>
               Add friends before creating a group.
             </p>
           ) : visibleFriends.length === 0 ? (
-            <p className='px-3 py-6 text-center text-sm text-slate-400'>
+            <p className='px-3 py-6 text-center text-sm text-muted'>
               No friends match that search.
             </p>
           ) : (
@@ -148,7 +148,7 @@ export const CreateGroupModal = (props: {
                   type='button'
                   onClick={() => toggleFriend(friend.userId)}
                   className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors ${
-                    selected ? 'bg-indigo-600/20' : 'hover:bg-slate-800/80'
+                    selected ? 'bg-primary-soft' : 'hover:bg-surface-hover/80'
                   }`}
                 >
                   {friend.avatarUrl ? (
@@ -169,8 +169,8 @@ export const CreateGroupModal = (props: {
                   <span
                     className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border ${
                       selected
-                        ? 'border-indigo-400 bg-indigo-500 text-white'
-                        : 'border-slate-600'
+                        ? 'border-primary bg-primary text-background'
+                        : 'border-border'
                     }`}
                     aria-hidden
                   >
@@ -183,10 +183,10 @@ export const CreateGroupModal = (props: {
         </div>
 
         {error && (
-          <p className='px-6 pb-2 text-sm text-rose-300'>{error}</p>
+          <p className='px-6 pb-2 text-sm text-destructive'>{error}</p>
         )}
 
-        <div className='border-t border-slate-800 p-4'>
+        <div className='border-t border-border p-4'>
           <button
             type='button'
             onClick={() => void handleCreate()}

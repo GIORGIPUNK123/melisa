@@ -15,7 +15,7 @@ export const ListSkeleton = (props: {
         </div>
       )}
       {props.withHeader && (
-        <div className='border-b border-slate-800 px-4 py-3'>
+        <div className='border-b border-border px-4 py-3'>
           <div className='skeleton h-3 w-24 rounded-full' />
         </div>
       )}

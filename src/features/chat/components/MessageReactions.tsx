@@ -50,10 +50,10 @@ export const ReactionPicker = (props: {
         aria-haspopup='menu'
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
-        className={`flex items-center justify-center rounded-lg p-2 transition-colors cursor-pointer hover:bg-[#162231] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E0C1]/30 ${
+        className={`flex items-center justify-center rounded-lg p-2 transition-colors cursor-pointer hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
           selectedReactionId
-            ? 'text-[#65E0C1]'
-            : 'text-[#8192A4] hover:text-[#EEF3F8]'
+            ? 'text-primary'
+            : 'text-muted hover:text-foreground'
         }`}
       >
         <FaceSlightlySmilingPlus size={20} />
@@ -63,7 +63,7 @@ export const ReactionPicker = (props: {
         <div
           role='menu'
           aria-label='Choose a reaction'
-          className='pr-px absolute bottom-full left-1/2 z-20 mb-2 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-xl border border-[#1B2A3A] bg-[#0E1621]/95 p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur'
+          className='pr-px absolute bottom-full left-1/2 z-20 mb-2 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-xl border border-border-strong bg-panel/95 p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur'
         >
           {catalog.map((reaction) => (
             <button
@@ -74,9 +74,9 @@ export const ReactionPicker = (props: {
               aria-label={`React with ${reaction.name}`}
               aria-pressed={selectedReactionId === reaction.uid}
               onClick={() => handleSelect(reaction.uid)}
-              className={`flex items-center justify-center rounded-full p-1.5 text-base transition-all duration-150 cursor-pointer hover:scale-110 hover:bg-[#162231] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E0C1]/40 ${
+              className={`flex items-center justify-center rounded-full p-1.5 text-base transition-all duration-150 cursor-pointer hover:scale-110 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
                 selectedReactionId === reaction.uid
-                  ? 'scale-110 bg-[#65E0C1]/15 ring-1 ring-[#65E0C1]/40'
+                  ? 'scale-110 bg-primary-soft ring-1 ring-primary/40'
                   : ''
               }`}
             >
@@ -106,15 +106,15 @@ export const ReactionBadges = (props: {
           onClick={() => onToggle(reaction.reactionId)}
           title={reaction.name}
           aria-pressed={reaction.hasReacted}
-          className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E0C1]/30 ${
+          className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
             reaction.hasReacted
-              ? 'border-[#65E0C1]/40 bg-[#65E0C1]/15 text-[#65E0C1]'
-              : 'border-[#1B2A3A] bg-[#162231]/80 text-[#8192A4] hover:bg-[#1B2A3A] hover:text-[#EEF3F8]'
+              ? 'border-primary/40 bg-primary-soft text-primary'
+              : 'border-border-strong bg-surface/80 text-muted hover:bg-surface-hover hover:text-foreground'
           }`}
         >
           <span>{reaction.emoji}</span>
           {reaction.count > 1 && (
-            <span className='text-[11px] font-semibold text-[#EEF3F8]'>
+            <span className='text-[11px] font-semibold text-foreground'>
               {reaction.count}
             </span>
           )}

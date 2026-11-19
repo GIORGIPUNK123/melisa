@@ -34,7 +34,7 @@ export const MessageInput = ({
   // };
 
   return (
-    <div className='shrink-0 border-t-[1px] border-solid border-[#3d464fc7] bg-[#080D14] px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-4 md:pt-4 md:pb-4'>
+    <div className='shrink-0 border-t-[1px] border-solid border-border-strong bg-background px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-4 md:pt-4 md:pb-4'>
       <form
         onSubmit={handleSubmit}
         className='flex min-w-0 items-center gap-1.5 sm:gap-2 md:gap-3'
@@ -44,7 +44,7 @@ export const MessageInput = ({
           disabled={disabled}
           onClick={() => fileRef.current?.click()}
           aria-label='Attach file'
-          className='flex justify-center items-center w-11 h-11 rounded-lg shrink-0 text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-50'
+          className='focus-ring flex justify-center items-center w-11 h-11 rounded-lg shrink-0 text-muted-foreground hover:bg-surface-hover hover:text-foreground disabled:opacity-50'
         >
           <Paperclip className='w-5 h-5' />
         </button>
@@ -55,7 +55,7 @@ export const MessageInput = ({
           onChange={(e) => setMessage(e.target.value)}
           placeholder='Type a message...'
           disabled={disabled}
-          className='min-w-0 flex-1 rounded-lg border border-[#a0b8cc2a] bg-[#111C29] px-3 py-2.5 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 sm:text-base md:px-4'
+          className='min-w-0 flex-1 rounded-lg border border-border bg-panel-raised px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 sm:text-base md:px-4'
           autoComplete='off'
           enterKeyHint='send'
         />
@@ -63,7 +63,7 @@ export const MessageInput = ({
           type='submit'
           disabled={disabled || !message.trim()}
           aria-label='Send message'
-          className='flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#162231] text-white transition-colors hover:bg-[#65e0c143] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-4'
+          className='focus-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-surface text-foreground transition-colors hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-4'
         >
           <Send className='w-5 h-5' />
         </button>

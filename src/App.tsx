@@ -26,7 +26,6 @@ export const App = () => {
       <BackendStatusBanner />
       <Routes>
         <Route path='/' element={<Main onlineUserIds={onlineUserIds} />}>
-          {/* ✅ Redirect root '/' to '/chats' so the Outlet actually renders something */}
           <Route index element={<Navigate to='chats' replace />} />
           <Route
             path='chats'
@@ -36,9 +35,14 @@ export const App = () => {
             path='friends'
             element={<FriendsPanel onlineUserIds={onlineUserIds} />}
           />
-          <Route path='requests' element={<RequestsPanel />} />
-          <Route path='friends/requests' element={<RequestsPanel />} />
-          <Route path='notifications' element={<NotificationsPanel />} />
+          <Route
+            path='requests'
+            element={<RequestsPanel onlineUserIds={onlineUserIds} />}
+          />
+          <Route
+            path='notifications'
+            element={<NotificationsPanel onlineUserIds={onlineUserIds} />}
+          />
           <Route path='settings' element={<SettingsPage />} />
         </Route>
         <Route path='/login' element={<Login />} />

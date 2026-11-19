@@ -116,7 +116,7 @@ export const Main = (props: { onlineUserIds: Set<string> }) => {
     }
   }
   return (
-    <div className='flex-col-reverse xl:flex-row relative flex w-full h-full min-w-0 overflow-hidden bg-[#080D14]'>
+    <div className='flex-col-reverse xl:flex-row relative flex w-full h-full min-w-0 overflow-hidden bg-background'>
       <LiveDataSync userId={user.id} />
       <NotificationToast />
       <div
@@ -128,23 +128,18 @@ export const Main = (props: { onlineUserIds: Set<string> }) => {
       <div className='flex overflow-hidden flex-1 w-full min-w-0 h-full min-h-0'>
         <Outlet />
 
-        {path !== '/settings' &&
-          path !== '/requests' &&
-          path !== '/friends/requests' &&
-          path !== '/notifications' && (
-            <ChatArea
-              conversation={activeConversation}
-              onBack={() =>
-                useChatStore.getState().setActiveConversationId(null)
-              }
-              className={
-                activeConversation
-                  ? 'flex flex-1 min-w-0'
-                  : 'hidden flex-1 min-w-0 xl:flex'
-              }
-              onlineUserIds={props.onlineUserIds}
-            />
-          )}
+        {path !== '/settings' && (
+          <ChatArea
+            conversation={activeConversation}
+            onBack={() => useChatStore.getState().setActiveConversationId(null)}
+            className={
+              activeConversation
+                ? 'flex flex-1 min-w-0'
+                : 'hidden flex-1 min-w-0 xl:flex'
+            }
+            onlineUserIds={props.onlineUserIds}
+          />
+        )}
       </div>
     </div>
   );

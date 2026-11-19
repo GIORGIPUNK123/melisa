@@ -70,12 +70,6 @@ export const FriendsPanel = (props: { onlineUserIds: Set<string> }) => {
         onlineUserIds={props.onlineUserIds}
         onAddFriendClick={() => setIsAddFriendOpen(true)}
       />
-      {/* <ChatArea
-        conversation={activeConversation}
-        onBack={() => useChatStore.getState().setActiveConversationId(null)}
-        className={activeConversation ? 'flex' : 'hidden xl:flex'}
-      /> */}
-      {/* </div> */}
       {user && (
         <AddFriendsModal
           isOpen={isAddFriendOpen}

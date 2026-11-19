@@ -67,10 +67,10 @@ const SettingsSidebarTab = (props: {
       type='button'
       aria-current={isActive ? 'page' : undefined}
       aria-label={tab.label}
-      className={`flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-2.5 text-[12px] font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 lg:h-10 lg:w-full lg:flex-none lg:justify-start lg:gap-2 lg:rounded-l-none lg:rounded-r-lg lg:border-l-2 lg:px-3 ${
+      className={`flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full px-2.5 text-[12px] font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 lg:h-10 lg:w-full lg:flex-none lg:justify-start lg:gap-2 lg:rounded-l-none lg:rounded-r-lg lg:border-l-2 lg:px-3 ${
         isActive
-          ? 'bg-[#65E0C1] text-[#07110F] lg:border-[#65E0C1] lg:bg-[#65E0C1]/10 lg:text-[#65E0C1]'
-          : 'bg-[#101B26] text-[#8192A4] hover:bg-[#162231] hover:text-[#C7D3DF] lg:border-transparent lg:bg-transparent lg:hover:bg-[#162231]/60 lg:hover:text-[#EEF3F8]'
+          ? 'bg-primary text-background lg:border-primary lg:bg-primary-soft lg:text-primary'
+          : 'bg-panel-raised text-muted hover:bg-surface-hover hover:text-muted-foreground lg:border-transparent lg:bg-transparent lg:hover:bg-surface-hover/60 lg:hover:text-foreground'
       }`}
       onClick={() => onClick(tab.id)}
     >
@@ -88,7 +88,7 @@ export const SettingsSidebar = (props: {
   return (
     <nav
       aria-label='Settings sections'
-      className='sticky top-0 z-20 w-full shrink-0 border-b border-solid border-[#162231] bg-[#080D14]/95 py-3 backdrop-blur-md lg:top-24 lg:w-[220px] lg:self-start lg:border-0 lg:bg-transparent lg:py-0 lg:backdrop-blur-none'
+      className='sticky top-0 z-20 w-full shrink-0 border-b border-solid border-border bg-background/95 py-3 backdrop-blur-md lg:top-24 lg:w-[220px] lg:self-start lg:border-0 lg:bg-transparent lg:py-0 lg:backdrop-blur-none'
     >
       {/* Mobile: Single horizontal row of pills */}
       <div className='flex w-full flex-row items-center gap-1.5 lg:hidden'>
@@ -106,7 +106,7 @@ export const SettingsSidebar = (props: {
       <div className='hidden lg:block'>
         {TAB_GROUPS.map((group, index) => (
           <div key={group.title} className={index > 0 ? 'mt-7' : ''}>
-            <h3 className='px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#56687B]'>
+            <h3 className='px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle'>
               {group.title}
             </h3>
             <div className='flex flex-col gap-1 mt-2'>

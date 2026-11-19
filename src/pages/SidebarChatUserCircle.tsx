@@ -5,17 +5,17 @@ export const SidebarChatUserCircle = (props: {
   const { avatarUrl, firstLetter } = props;
   if (props.avatarUrl) {
     return (
-      <div className='w-10 h-10 rounded-2xl flex items-center justify-center text-[#0A1018] font-bold text-lg  '>
+      <div className='w-10 h-10 rounded-card flex items-center justify-center text-sidebar font-bold text-lg  '>
         <img
           src={avatarUrl}
           alt='User Profile'
-          className='object-cover w-full h-full rounded-2xl'
+          className='object-cover w-full h-full rounded-card'
         />
       </div>
     );
   } else {
     return (
-      <div className='text-white w-10 h-10 rounded-2xl bg-[#080D14] flex items-center justify-center  font-bold text-lg   text-center'>
+      <div className='text-foreground w-10 h-10 rounded-card bg-background flex items-center justify-center  font-bold text-lg   text-center'>
         {firstLetter.toLocaleUpperCase()}
       </div>
     );

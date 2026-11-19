@@ -37,7 +37,7 @@ const markBox = (size: number) => ({
 function GroupMark(props: { name: string; src?: string; onError?: () => void }) {
   return (
     <div
-      className='mx-auto flex items-center justify-center overflow-hidden rounded-full bg-indigo-500 shadow-[0_0_0_1px_rgba(148,163,184,0.35)]'
+      className='mx-auto flex items-center justify-center overflow-hidden rounded-full bg-primary shadow-[0_0_0_1px_var(--color-border-strong)]'
       style={markBox(76)}
     >
       {props.src ? (
@@ -48,7 +48,7 @@ function GroupMark(props: { name: string; src?: string; onError?: () => void }) 
           className='h-full w-full object-cover'
         />
       ) : (
-        <span className='text-[26px] font-semibold leading-none text-white'>
+        <span className='text-[26px] font-semibold leading-none text-background'>
           {props.name.charAt(0).toUpperCase()}
         </span>
       )}
@@ -60,7 +60,7 @@ function PersonMark(props: { name: string; src?: string | null; size?: number })
   const size = props.size ?? 40;
   return (
     <div
-      className='flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-800 font-medium leading-none text-slate-100'
+      className='flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface font-medium leading-none text-foreground'
       style={{ ...markBox(size), fontSize: size < 32 ? 11 : 14 }}
     >
       {props.src ? (
@@ -84,7 +84,7 @@ function Chevron(props: { direction?: 'left' | 'right' }) {
       strokeWidth='1.75'
       strokeLinecap='round'
       strokeLinejoin='round'
-      className='shrink-0 text-slate-500'
+      className='shrink-0 text-subtle'
       aria-hidden
     >
       <path d={left ? 'm15 18-6-6 6-6' : 'm9 18 6-6-6-6'} />
@@ -96,12 +96,12 @@ function SwitchMark(props: { on: boolean }) {
   return (
     <span
       className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
-        props.on ? 'bg-indigo-500' : 'bg-slate-700'
+        props.on ? 'bg-primary' : 'bg-surface'
       }`}
       aria-hidden
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-foreground shadow-sm transition-transform ${
           props.on ? 'translate-x-5' : 'translate-x-0.5'
         }`}
       />
@@ -145,16 +145,16 @@ function ActionRow(props: {
       onClick={props.onClick}
       disabled={props.disabled}
       aria-pressed={props.pressed}
-      className={`flex w-full items-center gap-3 border-t border-slate-800 px-3.5 py-3 text-left transition-colors first:border-t-0 disabled:opacity-50 ${
+      className={`flex w-full items-center gap-3 border-t border-border px-3.5 py-3 text-left transition-colors first:border-t-0 disabled:opacity-50 ${
         props.danger
-          ? 'text-rose-400 hover:bg-rose-500/10'
-          : 'text-slate-100 hover:bg-slate-800/60'
+          ? 'text-destructive hover:bg-destructive/10'
+          : 'text-foreground hover:bg-surface-hover/60'
       }`}
     >
       {props.icon && (
         <span
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-            props.danger ? 'bg-rose-500/10 text-rose-300' : 'bg-slate-800 text-slate-300'
+            props.danger ? 'bg-destructive/10 text-destructive' : 'bg-surface text-muted-foreground'
           }`}
         >
           {props.icon}
@@ -165,7 +165,7 @@ function ActionRow(props: {
           {props.label}
         </span>
         {props.detail && (
-          <span className='mt-0.5 block truncate text-[12px] leading-4 text-slate-500'>
+          <span className='mt-0.5 block truncate text-[12px] leading-4 text-subtle'>
             {props.detail}
           </span>
         )}
@@ -187,21 +187,21 @@ function PersonRow(props: {
       <PersonMark name={props.member.nickname} src={props.member.avatar_url} />
       <span className='min-w-0 flex-1'>
         <span className='flex items-center gap-2'>
-          <span className='truncate text-[15px] font-medium leading-5 text-white'>
+          <span className='truncate text-[15px] font-medium leading-5 text-foreground'>
             {props.member.nickname}
           </span>
           {props.isYou && (
-            <span className='shrink-0 text-[12px] text-slate-500'>You</span>
+            <span className='shrink-0 text-[12px] text-subtle'>You</span>
           )}
         </span>
-        <span className='mt-0.5 block truncate text-[12px] leading-4 text-slate-500'>
+        <span className='mt-0.5 block truncate text-[12px] leading-4 text-subtle'>
           @{props.member.username}
         </span>
       </span>
       {props.role && (
         <span
           className={`shrink-0 text-[12px] font-medium ${
-            props.role === 'Creator' ? 'text-indigo-300' : 'text-slate-400'
+            props.role === 'Creator' ? 'text-primary' : 'text-muted'
           }`}
         >
           {props.role}
@@ -211,7 +211,7 @@ function PersonRow(props: {
     </>
   );
   const className =
-    'flex w-full items-center gap-3 border-t border-slate-800 px-3.5 py-3 text-left';
+    'flex w-full items-center gap-3 border-t border-border px-3.5 py-3 text-left';
 
   if (!props.interactive) {
     return <div className={className}>{body}</div>;
@@ -221,7 +221,7 @@ function PersonRow(props: {
     <button
       type='button'
       onClick={props.onClick}
-      className={`${className} transition-colors hover:bg-slate-800/60`}
+      className={`${className} transition-colors hover:bg-surface-hover/60`}
     >
       {body}
     </button>
@@ -403,35 +403,35 @@ export const GroupSettings = (props: {
   return (
     <>
       <div
-        className='absolute inset-0 z-30 bg-slate-950/60 backdrop-blur-[2px]'
+        className='absolute inset-0 z-30 bg-background/60 backdrop-blur-[2px]'
         onClick={props.onClose}
       />
-      <aside className='absolute inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-slate-800 bg-slate-900 shadow-2xl'>
-        <div className='flex shrink-0 items-center justify-between border-b border-slate-800 px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]'>
+      <aside className='absolute inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-border bg-panel shadow-panel'>
+        <div className='flex shrink-0 items-center justify-between border-b border-border px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]'>
           <div className='flex min-w-0 items-center gap-1'>
             {view === 'people' && (
               <button
                 type='button'
                 onClick={() => setView('home')}
-                className='inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-300 transition-colors hover:bg-slate-800 hover:text-white'
+                className='focus-ring inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground'
                 aria-label='Back to group settings'
               >
                 <Chevron direction='left' />
               </button>
             )}
             <div className={view === 'home' ? 'px-2' : 'min-w-0'}>
-              <h3 className='text-[15px] font-semibold tracking-tight text-white'>
+              <h3 className='text-[15px] font-semibold tracking-tight text-foreground'>
                 {view === 'people' ? 'People' : 'Group settings'}
               </h3>
               {view === 'people' && (
-                <p className='text-[12px] leading-4 text-slate-500'>{peopleLabel}</p>
+                <p className='text-[12px] leading-4 text-subtle'>{peopleLabel}</p>
               )}
             </div>
           </div>
           <button
             type='button'
             onClick={props.onClose}
-            className='inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
+            className='focus-ring inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-hover hover:text-foreground'
             aria-label='Close group settings'
           >
             <IconX size={18} />
@@ -439,16 +439,16 @@ export const GroupSettings = (props: {
         </div>
 
         {view === 'home' && (
-          <div className='shrink-0 border-b border-slate-800 px-5 pb-5 pt-6 text-center'>
+          <div className='shrink-0 border-b border-border px-5 pb-5 pt-6 text-center'>
             <GroupMark
               name={props.groupName}
               src={showPhoto ? previewUrl : ''}
               onError={() => setPhotoBroken(true)}
             />
-            <h4 className='mt-3 text-[17px] font-semibold tracking-tight text-white'>
+            <h4 className='mt-3 text-[17px] font-semibold tracking-tight text-foreground'>
               {props.groupName}
             </h4>
-            <p className='mt-0.5 text-[13px] text-slate-400'>{peopleLabel}</p>
+            <p className='mt-0.5 text-[13px] text-muted'>{peopleLabel}</p>
             {(canRename || canChangePhoto) && !editingName && !editingPhoto && (
               <div className='mt-3 flex items-center justify-center gap-4'>
                 {canRename && (
@@ -458,7 +458,7 @@ export const GroupSettings = (props: {
                       setNameDraft(props.groupName);
                       setEditingName(true);
                     }}
-                    className='text-[13px] font-medium text-indigo-300 transition-colors hover:text-indigo-200'
+                    className='focus-ring text-[13px] font-medium text-primary transition-colors hover:text-primary'
                   >
                     Change name
                   </button>
@@ -467,7 +467,7 @@ export const GroupSettings = (props: {
                   <button
                     type='button'
                     onClick={() => setEditingPhoto(true)}
-                    className='text-[13px] font-medium text-indigo-300 transition-colors hover:text-indigo-200'
+                    className='focus-ring text-[13px] font-medium text-primary transition-colors hover:text-primary'
                   >
                     Change photo
                   </button>
@@ -509,7 +509,7 @@ export const GroupSettings = (props: {
               </div>
             )}
             {canChangePhoto && editingPhoto && (
-              <div className='mx-auto mt-4 max-w-xs space-y-2 text-left'>
+              <div className='focus-ring mx-auto mt-4 max-w-xs space-y-2 text-left'>
                 <label className={ui.label} htmlFor='group-photo-url'>
                   Photo link
                 </label>
@@ -549,10 +549,10 @@ export const GroupSettings = (props: {
           </div>
         )}
 
-        <div className='min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]'>
+        <div className='focus-ring min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]'>
           {view === 'home' ? (
             <div className='space-y-3'>
-              <div className='overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/40'>
+              <div className='overflow-hidden rounded-card border border-border bg-background/40'>
                 <ActionRow
                   icon={
                     props.muted ? (
@@ -581,7 +581,7 @@ export const GroupSettings = (props: {
                         {orderedMembers.slice(0, 3).map((member) => (
                           <span
                             key={member.id}
-                            className='rounded-full ring-2 ring-slate-950'
+                            className='rounded-full ring-2 ring-background'
                           >
                             <PersonMark
                               name={member.nickname}
@@ -625,7 +625,7 @@ export const GroupSettings = (props: {
                 )}
               </div>
 
-              <div className='overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/40'>
+              <div className='overflow-hidden rounded-card border border-border bg-background/40'>
                 {canDelete && (
                   <ActionRow
                     danger
@@ -650,13 +650,13 @@ export const GroupSettings = (props: {
               </div>
 
               {(actionError || props.muteError) && (
-                <p className='px-1 text-[13px] leading-5 text-rose-400'>
+                <p className='px-1 text-[13px] leading-5 text-destructive'>
                   {actionError || props.muteError}
                 </p>
               )}
             </div>
           ) : (
-            <div className='overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/40'>
+            <div className='overflow-hidden rounded-card border border-border bg-background/40'>
               <ActionRow
                 icon={<IconUserPlus size={18} />}
                 label='Add someone'
@@ -688,7 +688,7 @@ export const GroupSettings = (props: {
                 );
               })}
               {(actionError || props.muteError) && (
-                <p className='px-4 py-3 text-[13px] leading-5 text-rose-400'>
+                <p className='px-4 py-3 text-[13px] leading-5 text-destructive'>
                   {actionError || props.muteError}
                 </p>
               )}
@@ -738,8 +738,8 @@ export const GroupSettings = (props: {
       )}
 
       {leaveOpen && (
-        <div className='fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center'>
-          <div className='flex max-h-[min(32rem,calc(100dvh-2rem))] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl'>
+        <div className='fixed inset-0 z-50 flex items-end justify-center bg-background/60 p-4 sm:items-center'>
+          <div className='flex max-h-[min(32rem,calc(100dvh-2rem))] w-full max-w-md flex-col overflow-hidden rounded-card border border-border bg-panel shadow-panel'>
             <div className='px-5 py-4'>
               <h3 className={ui.title}>Choose the next admin</h3>
               <p className={`mt-1 ${ui.subtitle}`}>
@@ -756,7 +756,7 @@ export const GroupSettings = (props: {
                     key={member.id}
                     type='button'
                     onClick={() => void leaveNow({ successorId: member.id })}
-                    className='flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-slate-800'
+                    className='focus-ring flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left hover:bg-surface-hover'
                   >
                     <PersonMark
                       name={member.nickname}
@@ -776,7 +776,7 @@ export const GroupSettings = (props: {
                   </button>
                 ))}
             </div>
-            <div className='space-y-2 border-t border-slate-800 p-4'>
+            <div className='space-y-2 border-t border-border p-4'>
               <button
                 type='button'
                 onClick={() => void leaveNow({ random: true })}
@@ -866,22 +866,22 @@ const MemberOptions = (props: {
   };
 
   return (
-    <div className='fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center'>
-      <div className='flex max-h-[min(36rem,calc(100dvh-2rem))] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl'>
-        <div className='flex items-center gap-3 border-b border-slate-800 px-4 py-4'>
+    <div className='fixed inset-0 z-50 flex items-end justify-center bg-background/60 p-4 sm:items-center'>
+      <div className='flex max-h-[min(36rem,calc(100dvh-2rem))] w-full max-w-md flex-col overflow-hidden rounded-card border border-border bg-panel shadow-panel'>
+        <div className='flex items-center gap-3 border-b border-border px-4 py-4'>
           <PersonMark name={props.member.nickname} src={props.member.avatar_url} />
           <div className='min-w-0 flex-1'>
-            <h3 className='truncate text-[16px] font-semibold text-white'>
+            <h3 className='truncate text-[16px] font-semibold text-foreground'>
               {props.member.nickname}
             </h3>
-            <p className='truncate text-[13px] text-slate-400'>
+            <p className='truncate text-[13px] text-muted'>
               @{props.member.username}
             </p>
           </div>
           <button
             type='button'
             onClick={props.onClose}
-            className='inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-800 hover:text-white'
+            className='focus-ring inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-hover hover:text-foreground'
             aria-label='Close'
           >
             <IconX size={18} />
@@ -907,16 +907,16 @@ const MemberOptions = (props: {
                   }}
                   className={`w-full rounded-xl border px-3 py-2.5 text-left ${
                     role === value
-                      ? 'border-indigo-500 bg-indigo-600/15'
-                      : 'border-slate-800 hover:bg-slate-800'
+                      ? 'border-primary bg-primary-soft'
+                      : 'border-border hover:bg-surface-hover'
                   }`}
                 >
-                  <div className='text-sm text-white'>{title}</div>
-                  <div className='text-xs text-slate-400'>{detail}</div>
+                  <div className='focus-ring text-sm text-foreground'>{title}</div>
+                  <div className='text-xs text-muted'>{detail}</div>
                 </button>
               ))}
               {role === 'moderator' && (
-                <div className='space-y-3 rounded-xl border border-slate-800 px-3 py-3'>
+                <div className='space-y-3 rounded-xl border border-border px-3 py-3'>
                   <Toggle
                     label='Kick members'
                     checked={canKick}
@@ -950,11 +950,11 @@ const MemberOptions = (props: {
             </div>
           )}
 
-          <div className='mt-3 overflow-hidden rounded-2xl border border-slate-800'>
+          <div className='focus-ring mt-3 overflow-hidden rounded-card border border-border'>
             <button
               type='button'
               onClick={props.onViewProfile}
-              className='w-full px-3.5 py-3 text-left text-[15px] font-medium text-slate-100 transition-colors hover:bg-slate-800/60'
+              className='focus-ring w-full px-3.5 py-3 text-left text-[15px] font-medium text-foreground transition-colors hover:bg-surface-hover/60'
             >
               View profile
             </button>
@@ -970,14 +970,14 @@ const MemberOptions = (props: {
                     props.onError(kickError);
                   });
                 }}
-                className='w-full border-t border-slate-800 px-3.5 py-3 text-left text-[15px] font-medium text-rose-400 transition-colors hover:bg-rose-500/10'
+                className='focus-ring w-full border-t border-border px-3.5 py-3 text-left text-[15px] font-medium text-destructive transition-colors hover:bg-destructive/10'
               >
                 Remove from group
               </button>
             )}
           </div>
           {error && (
-            <p className='mt-3 text-[13px] leading-5 text-rose-400'>{error}</p>
+            <p className='mt-3 text-[13px] leading-5 text-destructive'>{error}</p>
           )}
         </div>
       </div>
@@ -993,16 +993,16 @@ const Toggle = (props: {
   <button
     type='button'
     onClick={() => props.onChange(!props.checked)}
-    className='flex w-full items-center justify-between text-left text-sm text-slate-200'
+    className='focus-ring flex w-full items-center justify-between text-left text-sm text-muted-foreground'
   >
     <span>{props.label}</span>
     <span
       className={`h-5 w-9 rounded-full p-0.5 ${
-        props.checked ? 'bg-indigo-500' : 'bg-slate-700'
+        props.checked ? 'bg-primary' : 'bg-surface'
       }`}
     >
       <span
-        className={`block h-4 w-4 rounded-full bg-white transition ${
+        className={`block h-4 w-4 rounded-full bg-foreground transition ${
           props.checked ? 'translate-x-4' : ''
         }`}
       />

@@ -12,7 +12,7 @@ import { BrandMark } from '../atoms/BrandMark';
 import { ui } from '../shared/ui';
 
 const authPrimaryButton =
-  'inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#65E0C1] px-4 text-[15px] font-semibold text-[#07110F] transition hover:bg-[#7BE9CE] disabled:cursor-not-allowed disabled:opacity-50';
+  'focus-ring inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary px-4 text-[15px] font-semibold text-background transition hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-50';
 
 const EmailVerificationModal = (props: {
   isOpen: boolean;
@@ -23,7 +23,7 @@ const EmailVerificationModal = (props: {
     <div
       className={`${
         !props.isOpen ? 'hidden' : ''
-      } fixed inset-0 flex justify-center items-center z-50 bg-black/60 backdrop-blur-sm p-4`}
+      } fixed inset-0 flex justify-center items-center z-50 bg-background/60 backdrop-blur-sm p-4`}
       onClick={(event) =>
         handleBackdropClick(event, () => {
           props.setIsOpen(false);
@@ -31,14 +31,14 @@ const EmailVerificationModal = (props: {
         })
       }
     >
-      <div className='relative w-full max-w-md bg-linear-to-br from-[#0E1621] to-[#0A1018] rounded-2xl shadow-2xl border border-[#1B2A3A] overflow-hidden'>
-        <div className='absolute left-0 right-0 top-0 h-1 bg-[#65E0C1]'></div>
+      <div className='relative w-full max-w-md bg-linear-to-br from-panel to-sidebar rounded-card shadow-panel border border-border-strong overflow-hidden'>
+        <div className='absolute left-0 right-0 top-0 h-1 bg-primary'></div>
 
         <div className='p-6 sm:p-8'>
           <div className='flex flex-col items-center space-y-4 text-center'>
-            <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-[#65E0C1] shadow-lg'>
+            <div className='flex h-14 w-14 items-center justify-center rounded-card bg-primary shadow-lg'>
               <svg
-                className='w-8 h-8 text-[#07110F]'
+                className='w-8 h-8 text-background'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -52,8 +52,8 @@ const EmailVerificationModal = (props: {
               </svg>
             </div>
 
-            <h2 className={`${ui.title} text-[#EEF3F8]`}>Check your email</h2>
-            <p className={`${ui.subtitle} text-[#8192A4]`}>
+            <h2 className={`${ui.title} text-foreground`}>Check your email</h2>
+            <p className={`${ui.subtitle} text-muted`}>
               We've sent you a verification link. Please check your inbox and
               click the link to activate your account.
             </p>
@@ -149,14 +149,14 @@ export const Register = () => {
   if (!user) {
     return (
       // Scroll inside #root (which is overflow:hidden globally for chat mobile).
-      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-[#080D14] via-[#0B131D] to-[#080D14] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'>
+      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-background via-sidebar to-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'>
         <EmailVerificationModal
           isOpen={isOpen}
           setIsOpen={setIsOpen}
           navigate={navigate}
         />
         <div className='flex justify-center items-center px-4 py-8 min-h-full sm:py-12'>
-          <div className='w-full max-w-xl rounded-2xl border border-[#1B2A3A] bg-[#0E1621]/90 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-9'>
+          <div className='w-full max-w-xl rounded-card border border-border-strong bg-panel/90 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-9'>
             <BrandMark size='sm' subtitle='Create your account' />
 
             <div className='grid grid-cols-1 gap-3 mt-7 md:grid-cols-2'>
@@ -213,17 +213,17 @@ export const Register = () => {
             </button>
 
             {authError ? (
-              <p className='mt-4 text-sm text-center text-rose-400'>
+              <p className='focus-ring mt-4 text-sm text-center text-destructive'>
                 {authError}
               </p>
             ) : null}
 
             <div className='mt-5 text-center sm:mt-6'>
-              <p className='text-[13px] text-[#8192A4]'>
+              <p className='text-[13px] text-muted'>
                 Already have an account?{' '}
                 <button
                   onClick={() => navigate('/login')}
-                  className='cursor-pointer font-medium text-[#65E0C1] hover:text-[#7BE9CE]'
+                  className='focus-ring cursor-pointer font-medium text-primary hover:text-primary-strong'
                 >
                   Sign in
                 </button>

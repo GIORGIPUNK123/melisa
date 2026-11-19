@@ -61,12 +61,12 @@ export const BackendStatusBanner = () => {
   }
 
   return (
-    <div className='fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 text-white'>
-      <div className='mx-4 w-full max-w-md rounded-lg border border-red-500/60 bg-slate-900 p-6 text-center shadow-2xl'>
-        <h2 className='text-xl font-semibold text-red-300'>
+    <div className='fixed inset-0 z-[100] flex items-center justify-center bg-background/90 text-foreground'>
+      <div className='mx-4 w-full max-w-md rounded-lg border border-destructive/60 bg-panel p-6 text-center shadow-panel'>
+        <h2 className='text-xl font-semibold text-destructive'>
           {APP_NAME} is unavailable
         </h2>
-        <p className='mt-3 text-sm text-slate-200'>{userFriendlyMessage}</p>
+        <p className='mt-3 text-sm text-muted-foreground'>{userFriendlyMessage}</p>
       </div>
     </div>
   );

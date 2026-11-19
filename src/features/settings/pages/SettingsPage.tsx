@@ -26,7 +26,7 @@ export const SettingsPage = () => {
   };
 
   return (
-    <div className='relative h-full w-full min-w-0 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-[#080D14]'>
+    <div className='relative h-full w-full min-w-0 overflow-x-hidden overflow-y-auto overscroll-y-contain bg-background'>
       <SettingsHeader />
 
       <div className='mx-auto flex w-full max-w-[1036px] flex-col gap-4 px-4 pb-8 pt-0 sm:px-6 lg:flex-row lg:justify-center lg:gap-8 lg:px-8 lg:py-8'>

@@ -72,7 +72,7 @@ export const ChatAttachment = (props: {
             setConfirmDownload(true);
           }}
           onDoubleClick={(event) => event.stopPropagation()}
-          className='block max-w-full truncate text-left text-sm underline'
+          className='focus-ring block max-w-full truncate text-left text-sm underline'
         >
           {failed ? 'Could not open file' : props.payload.name || 'File'}
         </button>
@@ -108,7 +108,7 @@ export const ChatAttachment = (props: {
           setLightboxOpen(true);
         }}
         onDoubleClick={(event) => event.stopPropagation()}
-        className='block w-full max-w-full cursor-pointer p-0'
+        className='focus-ring block w-full max-w-full cursor-pointer p-0'
       >
         <img
           src={url}
@@ -119,7 +119,7 @@ export const ChatAttachment = (props: {
 
       {lightboxOpen && (
         <div
-          className='absolute inset-0 z-[80] flex items-center justify-center bg-black/90 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]'
+          className='absolute inset-0 z-[80] flex items-center justify-center bg-background/90 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]'
           onClick={(event) => {
             event.stopPropagation();
             setLightboxOpen(false);
@@ -131,7 +131,7 @@ export const ChatAttachment = (props: {
         >
           <button
             type='button'
-            className='absolute right-4 top-[max(1rem,env(safe-area-inset-top))] rounded-lg px-3 py-1.5 text-sm text-white/90 hover:bg-white/10'
+            className='focus-ring absolute right-4 top-[max(1rem,env(safe-area-inset-top))] rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-foreground/10'
             onClick={(event) => {
               event.stopPropagation();
               setLightboxOpen(false);

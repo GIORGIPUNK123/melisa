@@ -37,7 +37,7 @@ export const ChatArea = (props: {
 
   return (
     <div
-      className={`${className} relative flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-[#080D14]`}
+      className={`${className} relative flex h-full min-h-0 w-full min-w-0 overflow-hidden bg-background`}
     >
       <div className='flex flex-col w-full min-w-0 h-full min-h-0'>
         <ChatHeader

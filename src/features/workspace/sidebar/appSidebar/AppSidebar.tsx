@@ -31,7 +31,7 @@ export const AppSidebar = () => {
   }, [location.pathname]);
 
   return (
-    <div className='shrink-0 bg-[#0A1018] py-2 xl:py-5 flex xl:flex-col items-center justify-between w-full xl:w-18 border-t xl:border-t-0 border-[#162231]'>
+    <div className='shrink-0 bg-sidebar py-2 xl:py-5 flex xl:flex-col items-center justify-between w-full xl:w-18 border-t xl:border-t-0 border-border'>
       <div className='flex justify-between items-center w-full xl:w-auto xl:flex-col xl:justify-start'>
         <div onClick={() => navigate('/')} className='hidden mb-5 xl:block'>
           <Logo />

@@ -29,7 +29,7 @@ export const RefreshSpinner = (props: {
         cy={size / 2}
         r={radius}
         fill='none'
-        stroke='rgb(148 163 184 / 0.28)'
+        stroke='var(--color-border-strong)'
         strokeWidth={stroke}
       />
       <circle
@@ -37,7 +37,7 @@ export const RefreshSpinner = (props: {
         cy={size / 2}
         r={radius}
         fill='none'
-        stroke='#a5b4fc'
+        stroke='var(--color-primary)'
         strokeWidth={stroke}
         strokeLinecap='round'
         strokeDasharray={`${dash} ${circumference}`}

@@ -11,18 +11,18 @@ const Users = (props: {
       {conversationMembers.map((member) => (
         <div
           key={member.id}
-          className='flex items-center justify-between w-full gap-2 px-2 py-2 hover:bg-[#162231] rounded-md cursor-pointer'
+          className='flex items-center justify-between w-full gap-2 px-2 py-2 hover:bg-surface-hover rounded-md cursor-pointer'
         >
           <img
             src={member.avatarUrl}
             alt={member.nickname.charAt(0).toLocaleUpperCase()}
-            className='w-8 h-8 rounded-full flex items-center justify-center bg-[#274D49]'
+            className='w-8 h-8 rounded-full flex items-center justify-center bg-primary/25'
           />
-          <span className='text-[#F4F8FB]'>{member.nickname}</span>
+          <span className='text-foreground'>{member.nickname}</span>
 
           <div className='flex justify-center items-center w-8 h-8'>
             <div
-              className={`${onlineUserIds.has(member.id) ? 'bg-[#65E0C1]' : 'bg-[#8192A4]'} rounded-full w-4 h-4`}
+              className={`${onlineUserIds.has(member.id) ? 'bg-primary' : 'bg-muted'} rounded-full w-4 h-4`}
             ></div>
           </div>
         </div>
@@ -54,7 +54,7 @@ export const ChatInfo = (props: {
       <div
         aria-hidden='true'
         onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-30 bg-black/40 backdrop-blur-xs transition-opacity duration-300 xl:hidden ${
+        className={`fixed inset-0 z-30 bg-background/40 backdrop-blur-xs transition-opacity duration-300 xl:hidden ${
           isOpen
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
@@ -63,7 +63,7 @@ export const ChatInfo = (props: {
 
       {/* Main Drawer Container */}
       <div
-        className={`z-40 flex flex-col items-center bg-[#0E1621] shadow-2xl transition-all duration-300 ease-in-out shrink-0
+        className={`z-40 flex flex-col items-center bg-panel shadow-panel transition-all duration-300 ease-in-out shrink-0
           /* Mobile Drawer Positioning */
           fixed inset-y-0 right-0 w-[min(86vw,18rem)] ${isOpen ? 'translate-x-0' : 'translate-x-full'}
           /* Desktop Collapsible Sidebar (toggles width smooth) */
@@ -76,26 +76,26 @@ export const ChatInfo = (props: {
           <div className='flex justify-end items-end pb-2 mr-8 w-full h-14 xl:hidden'>
             <div
               onClick={() => setOpen(false)}
-              className='p-1 cursor-pointer text-[#8192A4] hover:text-[#65E0C1] transition-colors duration-200'
+              className='p-1 cursor-pointer text-muted hover:text-primary transition-colors duration-200'
             >
               <X color='' />
             </div>
           </div>
-          <div className='relative font-semibold text-xl flex items-center justify-center bg-[#274d49] w-20 h-20 mt-4 rounded-full shrink-0'>
+          <div className='relative font-semibold text-xl flex items-center justify-center bg-primary/25 w-20 h-20 mt-4 rounded-full shrink-0'>
             {conversation.name.charAt(0).toLocaleUpperCase()}
             <div
               className={`absolute -right-0 -bottom-0 w-2.5 h-2.5 ${
                 onlineUserIds.has(otherConversationMembers[0]?.id)
-                  ? 'bg-[#65E0C1]'
-                  : 'bg-[#8192A4]'
+                  ? 'bg-primary'
+                  : 'bg-muted'
               } rounded-full`}
             ></div>
           </div>
-          <span className='mt-4 text-lg text-[#F4F8FB] font-semibold'>
+          <span className='mt-4 text-lg text-foreground font-semibold'>
             {conversation.name}
           </span>
           <span
-            className={`text-[#8192A4] text-sm text-center items-center ${
+            className={`text-muted text-sm text-center items-center ${
               conversation.type === 'direct' ? 'flex' : 'hidden'
             }`}
           >
@@ -103,9 +103,9 @@ export const ChatInfo = (props: {
           </span>
           <button
             onClick={() => toggleMute()}
-            className='flex text-[#8192A4] items-center justify-between w-full px-4 mt-8 text-sm cursor-pointer'
+            className='focus-ring flex text-muted items-center justify-between w-full px-4 mt-8 text-sm cursor-pointer'
           >
-            <div className='relative py-2 w-full flex items-center gap-2 hover:bg-[#162231] px-2 rounded-md transition-colors duration-200'>
+            <div className='relative py-2 w-full flex items-center gap-2 hover:bg-surface-hover px-2 rounded-md transition-colors duration-200'>
               <Bell className={`${conversation.muted ? 'hidden' : ''}`} />
               <BellOff className={`${conversation.muted ? '' : 'hidden'}`} />
               <span>
@@ -125,7 +125,7 @@ export const ChatInfo = (props: {
                   }
                   className='absolute inset-0 z-10 w-full h-full rounded-full appearance-none cursor-pointer peer'
                 />
-                <span className='pointer-events-none absolute inset-0 rounded-full bg-gray-500 transition-colors duration-200 peer-checked:bg-[#65E0C1] after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-200 peer-checked:after:translate-x-5'></span>
+                <span className='pointer-events-none absolute inset-0 rounded-full bg-surface transition-colors duration-200 peer-checked:bg-primary after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-foreground after:shadow-sm after:transition-transform after:duration-200 peer-checked:after:translate-x-5'></span>
               </div>
             </div>
           </button>

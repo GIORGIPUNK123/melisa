@@ -17,7 +17,7 @@ export const SidebarChatBox = (props: {
   return (
     <div
       onClick={props.onClick}
-      className={`flex items-center justify-between h-16 gap-3 px-3 duration-100 ease-in-out ${props.active ? 'bg-[#65E0C11C]' : 'hover:bg-[#0A1018]'} rounded-[3.5px] cursor-pointer`}
+      className={`flex items-center justify-between h-16 gap-3 px-3 duration-100 ease-in-out ${props.active ? 'bg-primary-soft' : 'hover:bg-sidebar'} rounded-tight cursor-pointer`}
     >
       <div className='flex gap-3 items-center'>
         <SidebarChatUserCircle
@@ -26,8 +26,8 @@ export const SidebarChatBox = (props: {
         />
 
         <div className='flex flex-col'>
-          <span className='text-sm font-semibold text-white'>{name}</span>
-          <span className='text-xs text-[#56687B]'>
+          <span className='text-sm font-semibold text-foreground'>{name}</span>
+          <span className='text-xs text-subtle'>
             {props.conversation.lastMessageTime
               ? formatConversationTime(props.conversation.lastMessageTime)
               : 'No messages'}
@@ -35,7 +35,7 @@ export const SidebarChatBox = (props: {
         </div>
       </div>
       {unread > 0 && (
-        <div className='text-sm font-bold flex justify-center items-center rounded-full bg-[#65E0C1] w-5 h-5 text-[#07110F]'>
+        <div className='text-sm font-bold flex justify-center items-center rounded-full bg-primary w-5 h-5 text-background'>
           {unread}
         </div>
       )}

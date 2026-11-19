@@ -37,7 +37,7 @@ export const BrandMark = ({
     >
       {showMark ? (
         <div
-          className={`flex items-center justify-center bg-[#65E0C1] font-bold text-white shadow-sm shadow-indigo-950/40 ${markSize[size]} ${
+          className={`flex items-center justify-center bg-primary font-bold text-background shadow-sm shadow-primary/20 ${markSize[size]} ${
             stacked ? 'mb-3' : ''
           }`}
         >
@@ -45,10 +45,10 @@ export const BrandMark = ({
         </div>
       ) : null}
       <div className={stacked ? '' : 'min-w-0'}>
-        <p className={`${titleSize[size]} text-slate-100`}>{APP_NAME}</p>
+        <p className={`${titleSize[size]} text-foreground`}>{APP_NAME}</p>
         {subtitle ? (
           <p
-            className={`text-slate-400 ${
+            className={`text-muted ${
               size === 'xs' ? 'text-[12px]' : 'mt-1 text-[13px]'
             }`}
           >

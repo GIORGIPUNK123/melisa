@@ -85,10 +85,10 @@ export const InviteGroupMembersModal = (props: {
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm'
+      className='fixed inset-0 z-50 flex items-center justify-center bg-background/60 p-4 backdrop-blur-sm'
       onClick={(event) => handleBackdropClick(event, close)}
     >
-      <div className='relative flex max-h-[min(36rem,calc(100dvh-2rem))] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900 shadow-2xl'>
+      <div className='relative flex max-h-[min(36rem,calc(100dvh-2rem))] w-full max-w-md flex-col overflow-hidden rounded-card border border-border/70 bg-panel shadow-panel'>
         <div className='px-6 pb-2 pt-6 pr-14'>
           <h2 className={ui.title}>Add people</h2>
           <p className={`mt-1 ${ui.subtitle}`}>
@@ -104,7 +104,7 @@ export const InviteGroupMembersModal = (props: {
           </button>
         </div>
 
-        <div className='px-6 py-3'>
+        <div className='focus-ring px-6 py-3'>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -115,11 +115,11 @@ export const InviteGroupMembersModal = (props: {
 
         <div className='min-h-0 flex-1 overflow-y-auto px-3 pb-2'>
           {slotsLeft === 0 ? (
-            <p className='px-3 py-6 text-center text-sm text-slate-400'>
+            <p className='px-3 py-6 text-center text-sm text-muted'>
               This group is full.
             </p>
           ) : visibleFriends.length === 0 ? (
-            <p className='px-3 py-6 text-center text-sm text-slate-400'>
+            <p className='px-3 py-6 text-center text-sm text-muted'>
               No friends left to add.
             </p>
           ) : (
@@ -131,18 +131,18 @@ export const InviteGroupMembersModal = (props: {
                   type='button'
                   onClick={() => toggleFriend(friend.userId)}
                   className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors ${
-                    selected ? 'bg-indigo-600/20' : 'hover:bg-slate-800/80'
+                    selected ? 'bg-primary-soft' : 'hover:bg-surface-hover/80'
                   }`}
                 >
-                  <div className='min-w-0 flex-1'>
+                  <div className='focus-ring min-w-0 flex-1'>
                     <div className={ui.name}>{friend.nickname}</div>
                     <div className={ui.meta}>@{friend.username}</div>
                   </div>
                   <span
                     className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border text-xs ${
                       selected
-                        ? 'border-indigo-400 bg-indigo-500 text-white'
-                        : 'border-slate-600'
+                        ? 'border-primary bg-primary text-background'
+                        : 'border-border'
                     }`}
                   >
                     {selected ? '✓' : ''}
@@ -153,9 +153,9 @@ export const InviteGroupMembersModal = (props: {
           )}
         </div>
 
-        {error && <p className='px-6 pb-2 text-sm text-rose-300'>{error}</p>}
+        {error && <p className='px-6 pb-2 text-sm text-destructive'>{error}</p>}
 
-        <div className='border-t border-slate-800 p-4'>
+        <div className='border-t border-border p-4'>
           <button
             type='button'
             onClick={() => void handleInvite()}
