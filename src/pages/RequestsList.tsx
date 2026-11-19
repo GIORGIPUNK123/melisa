@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { Check, X } from 'lucide-react';
-import {
-  useRequestStore,
-  type PendingRequest,
-} from '../store/useRequestStore';
+import { useRequestStore, type PendingRequest } from '../store/useRequestStore';
 import { useFriendStore } from '../store/useFriendStore';
 import { fetchFriendsList } from '../features/friends/utils/friendsFunctions';
 
@@ -16,23 +13,17 @@ const Avatar = ({ request }: { request: PendingRequest }) => {
     <img
       src={request.avatarUrl}
       alt=''
-      className='h-10 w-10 flex-shrink-0 rounded-card object-cover'
+      className='object-cover w-10 h-10 shrink-0 rounded-card'
     />
   ) : (
-    <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-card bg-surface text-sm font-bold text-muted-foreground'>
+    <div className='flex justify-center items-center w-10 h-10 text-sm font-bold shrink-0 rounded-card bg-surface text-muted-foreground'>
       {initial}
     </div>
   );
 };
 
-const SectionLabel = ({
-  label,
-  count,
-}: {
-  label: string;
-  count: number;
-}) => (
-  <div className='mb-2 flex items-center justify-between px-1'>
+const SectionLabel = ({ label, count }: { label: string; count: number }) => (
+  <div className='flex justify-between items-center px-1 mb-2'>
     <span className='text-xs font-bold text-subtle'>{label}</span>
     <span className='rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-semibold text-muted'>
       {count}
@@ -41,7 +32,7 @@ const SectionLabel = ({
 );
 
 const EmptyHint = ({ text }: { text: string }) => (
-  <div className='rounded-xl border border-dashed border-border-strong bg-panel/40 px-4 py-6 text-center'>
+  <div className='px-4 py-6 text-center rounded-xl border border-dashed border-border-strong bg-panel/40'>
     <p className='text-xs text-subtle'>{text}</p>
   </div>
 );
@@ -57,21 +48,21 @@ const RequestCard = (props: {
   const { request, variant, busy } = props;
 
   return (
-    <li className='rounded-xl border border-border-strong bg-panel p-3 transition-colors hover:border-border-strong'>
-      <div className='flex items-start gap-3'>
+    <li className='p-3 rounded-xl border transition-colors border-border-strong bg-panel hover:border-border-strong'>
+      <div className='flex gap-3 items-start'>
         <Avatar request={request} />
-        <div className='min-w-0 flex-1'>
-          <div className='flex min-w-0 items-center gap-2'>
-            <p className='truncate text-sm font-semibold text-foreground'>
+        <div className='flex-1 min-w-0'>
+          <div className='flex gap-2 items-center min-w-0'>
+            <p className='text-sm font-semibold truncate text-foreground'>
               {request.nickname || request.username}
             </p>
           </div>
-          <p className='truncate text-xs text-muted'>@{request.username}</p>
+          <p className='text-xs truncate text-muted'>@{request.username}</p>
           <p className='mt-1 text-[11px] text-subtle'>
             {new Date(request.createdAt).toLocaleString()}
           </p>
 
-          <div className='mt-3 flex items-center gap-2'>
+          <div className='flex gap-2 items-center mt-3'>
             {variant === 'received' ? (
               <>
                 <button
@@ -149,9 +140,9 @@ export const RequestsList = () => {
   };
 
   return (
-    <div className='space-y-5 px-1'>
+    <div className='px-1 space-y-5'>
       {error && (
-        <div className='rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive'>
+        <div className='px-3 py-2 text-xs rounded-xl border border-destructive/30 bg-destructive/10 text-destructive'>
           {error}
         </div>
       )}

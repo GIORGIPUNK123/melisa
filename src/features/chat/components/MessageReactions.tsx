@@ -16,9 +16,11 @@ export const ReactionPicker = (props: {
   catalog: ReactionTypeT[];
   selectedReactionId?: string;
   onSelect: (reactionId: string) => void;
+  up?: boolean;
 }) => {
-  const { catalog, selectedReactionId, onSelect } = props;
+  const { catalog, selectedReactionId, onSelect, up } = props;
   const [isOpen, setIsOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(true);
   const pickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,10 +36,34 @@ export const ReactionPicker = (props: {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
+  const handleToggle = () => {
+    if (!isOpen && pickerRef.current) {
+      const rect = pickerRef.current.getBoundingClientRect();
+
+      // Finds the scrollable MessageList parent, or falls back to the viewport top (0)
+      const scrollContainer = pickerRef.current.closest(
+        '.overflow-y-auto, .overflow-auto, .overflow-y-scroll',
+      );
+      const containerTop = scrollContainer
+        ? scrollContainer.getBoundingClientRect().top
+        : 0;
+
+      const spaceAbove = rect.top - containerTop;
+
+      // Your menu has p-1.5 + p-1.5 + text-base (~44px) + mb-2 (8px) = ~56px
+      setOpenUp(spaceAbove >= 60);
+    }
+
+    setIsOpen((open) => !open);
+  };
+
   const handleSelect = (reactionId: string) => {
     onSelect(reactionId);
     setIsOpen(false);
   };
+
+  // Use manual `up` prop if explicitly passed, otherwise use auto-calculated `openUp`
+  const shouldOpenUp = up ?? openUp;
 
   return (
     <div
@@ -49,7 +75,7 @@ export const ReactionPicker = (props: {
         aria-label='Add reaction'
         aria-haspopup='menu'
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={handleToggle}
         className={`flex items-center justify-center rounded-lg p-2 transition-colors cursor-pointer hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
           selectedReactionId
             ? 'text-primary'
@@ -63,7 +89,7 @@ export const ReactionPicker = (props: {
         <div
           role='menu'
           aria-label='Choose a reaction'
-          className='pr-px absolute bottom-full left-1/2 z-20 mb-2 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-xl border border-border-strong bg-panel/95 p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur'
+          className={`pr-px absolute ${shouldOpenUp ? 'bottom-full mb-2' : 'top-full mt-2'} left-1/2 z-20 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-xl border border-border-strong bg-panel/95 p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.45)] backdrop-blur`}
         >
           {catalog.map((reaction) => (
             <button

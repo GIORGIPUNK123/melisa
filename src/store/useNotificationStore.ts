@@ -40,7 +40,10 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
       notifications: state.notifications.filter((n) => n.id !== id),
     })),
 
-  showToast: (notification) => set({ toast: notification }),
+  showToast: (notification) =>
+    set((state) =>
+      state.toast?.id === notification.id ? state : { toast: notification },
+    ),
   dismissToast: () => set({ toast: null }),
 
   markAsRead: async (id) => {

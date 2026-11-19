@@ -69,7 +69,7 @@ export const Message = (props: {
             {viewableImage ? (
               <ChatAttachment payload={viewableImage} openFile={openFile} />
             ) : (
-              <span className='text-foreground text-sm whitespace-pre-wrap'>
+              <span className='text-sm whitespace-pre-wrap text-foreground'>
                 {msg.content}
               </span>
             )}
@@ -87,7 +87,7 @@ export const Message = (props: {
             <button
               type='button'
               aria-label='Reply to message'
-              className='p-2 rounded-md hover:bg-surface-hover cursor-pointer flex items-center justify-center focus:outline-none text-muted-foreground hover:text-foreground transition-colors'
+              className='flex justify-center items-center p-2 rounded-md transition-colors cursor-pointer hover:bg-surface-hover focus:outline-none text-muted-foreground hover:text-foreground'
             >
               <Reply size={20} />
             </button>

@@ -18,8 +18,8 @@ const SidebarTab = (props: {
       onClick={onClick}
       className={`cursor-pointer text-xs h-fit group text-center ${
         isActive
-          ? 'text-foreground px-3 font-semibold'
-          : 'text-muted px-3 font-semibold'
+          ? 'px-3 font-semibold text-foreground'
+          : 'px-3 font-semibold text-muted'
       }`}
     >
       <span>{name}</span>
@@ -35,7 +35,7 @@ const Tabs = (props: {
 }) => {
   const { activeConversationType, setActiveConversationType } = props;
   return (
-    <div className='flex items-center gap-2 mb-4 border-b border-border pb-2'>
+    <div className='flex gap-2 items-center pb-2 mb-4 border-b border-border'>
       <SidebarTab
         name='All'
         isActive={activeConversationType === 'all'}
@@ -153,18 +153,18 @@ export const TestSidebar = ({
 
   return (
     <div
-      className={`${className} h-full w-full shrink-0 bg-panel text-foreground xl:flex xl:w-80 xl:flex-col border-r border-border`}
+      className={`w-full h-full border-r ${className} shrink-0 bg-panel text-foreground xl:flex xl:w-80 xl:flex-col border-border`}
     >
       <div className='overflow-y-auto flex-1 px-2 mt-3 w-full'>
         <div className='flex justify-between items-center'>
-          <h2 className='text-foreground font-bold text-2xl ml-3 mb-4'>
+          <h2 className='mb-4 ml-3 text-2xl font-bold text-foreground'>
             {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
           </h2>
           <div
             onClick={() => {
               navigate('/settings');
             }}
-            className='xl:hidden text-muted bg-surface w-[42px] h-[42px] flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-foreground duration-200'
+            className='xl:hidden text-muted bg-surface w-10.5 h-10.5 flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-foreground duration-200'
           >
             <Settings width={16} height={16} />
           </div>
@@ -193,7 +193,7 @@ export const TestSidebar = ({
                 Add friend
               </button>
             )}
-            <span className='text-subtle font-bold text-xs ml-3'>
+            <span className='ml-3 text-xs font-bold text-subtle'>
               {activeTab === 'friends' ? 'ALL FRIENDS' : 'RECENT CONVERSATIONS'}
             </span>
             {activeTab === 'friends' ? (

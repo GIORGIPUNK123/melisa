@@ -52,10 +52,10 @@ export const NotificationDetailModal = (props: {
       onClick={(event) => handleBackdropClick(event, onClose)}
     >
       <div className='w-full max-w-md overflow-hidden rounded-t-card border border-border-strong bg-panel shadow-[0_16px_48px_rgba(0,0,0,0.5)] sm:rounded-card'>
-        <div className='flex items-center justify-between gap-3 border-b border-border px-4 py-3'>
+        <div className='flex gap-3 justify-between items-center px-4 py-3 border-b border-border'>
           <div className='flex gap-3 items-center min-w-0'>
             <div
-              className={` flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${
+              className={` flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
                 notification.is_read
                   ? 'bg-surface text-subtle'
                   : 'bg-primary-soft text-primary'
@@ -71,14 +71,14 @@ export const NotificationDetailModal = (props: {
             type='button'
             onClick={onClose}
             aria-label='Close'
-            className='focus-ring cursor-pointer flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-surface-hover hover:text-foreground'
+            className='flex justify-center items-center w-8 h-8 rounded-lg transition cursor-pointer shrink-0 focus-ring text-muted hover:bg-surface-hover hover:text-foreground'
           >
             <IconX size={18} />
           </button>
         </div>
 
         <div className='px-4 py-4'>
-          <p className='whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground'>
+          <p className='text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground'>
             {notification.message || 'No additional details.'}
           </p>
           <div className='flex gap-3 justify-between items-center mt-4'>
@@ -94,12 +94,12 @@ export const NotificationDetailModal = (props: {
         </div>
 
         {(notification.link || !notification.is_read) && (
-          <div className='flex items-center justify-end gap-2 border-t border-border px-4 py-3'>
+          <div className='flex gap-2 justify-end items-center px-4 py-3 border-t border-border'>
             {!notification.is_read && (
               <button
                 type='button'
                 onClick={() => onMarkAsRead(notification.id)}
-                className='focus-ring cursor-pointer rounded-xl border border-border-strong px-3 py-2 text-xs font-medium text-muted-foreground transition hover:bg-surface-hover hover:text-foreground'
+                className='px-3 py-2 text-xs font-medium rounded-xl border transition cursor-pointer focus-ring border-border-strong text-muted-foreground hover:bg-surface-hover hover:text-foreground'
               >
                 Mark as read
               </button>

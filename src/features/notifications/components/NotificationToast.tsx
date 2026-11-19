@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { useNotificationStore } from '../../../store/useNotificationStore';
 import { useAudioNotification } from '../hooks/useAudioNotification';
@@ -10,12 +10,28 @@ export const NotificationToast = () => {
   const { playSound } = useAudioNotification('notification/notification');
   const navigate = useNavigate();
 
+  const toastId = toast?.id;
+  const playSoundRef = useRef(playSound);
+  playSoundRef.current = playSound;
+  const dismissToastRef = useRef(dismissToast);
+  dismissToastRef.current = dismissToast;
+  const lastPlayedIdRef = useRef<string | null>(null);
+
+  // Only a new notification should trigger sound and restart the dismiss
+  // timer. Re-renders caused by the sound library's own state changes must not
+  // replay the sound or keep the toast alive forever.
   useEffect(() => {
-    if (!toast) return;
-    void playSound();
-    const timer = window.setTimeout(dismissToast, 4500);
+    if (!toastId) {
+      lastPlayedIdRef.current = null;
+      return;
+    }
+    if (lastPlayedIdRef.current !== toastId) {
+      lastPlayedIdRef.current = toastId;
+      void playSoundRef.current();
+    }
+    const timer = window.setTimeout(() => dismissToastRef.current(), 4500);
     return () => window.clearTimeout(timer);
-  }, [toast?.id, playSound, dismissToast]);
+  }, [toastId]);
 
   if (!toast) return null;
 
