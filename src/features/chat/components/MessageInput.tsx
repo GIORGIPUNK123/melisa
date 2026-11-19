@@ -1,5 +1,4 @@
 import { FormEvent, useRef, useState } from 'react';
-import { CameraCapture } from './CameraCapture';
 import { Send, Paperclip } from 'lucide-react';
 
 interface MessageInputProps {
@@ -14,11 +13,8 @@ export const MessageInput = ({
   disabled,
 }: MessageInputProps) => {
   const [message, setMessage] = useState('');
-  const [cameraOpen, setCameraOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const cameraAvailable =
-    typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();

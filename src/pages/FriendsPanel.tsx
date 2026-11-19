@@ -6,7 +6,7 @@ import { fetchConversations } from '../features/chat/utils/conversationFunctions
 import { supabase } from '../db/supabase';
 import { TestSidebar } from './TestSidebar';
 import { useFriendStore } from '../store/useFriendStore';
-import { getOrCreateConversationApi } from '../features/friends/utils/friendsFunctions';
+// import { getOrCreateConversationApi } from '../features/friends/utils/friendsFunctions';
 import { AddFriendsModal } from '../features/friends/modals/AddFriendsModal';
 
 export const FriendsPanel = (props: { onlineUserIds: Set<string> }) => {
@@ -16,7 +16,7 @@ export const FriendsPanel = (props: { onlineUserIds: Set<string> }) => {
 
   const {
     conversations,
-    isLoading: isLoadingChats,
+    // isLoading: isLoadingChats,
     setConversations,
     activeConversationId,
   } = useChatStore();

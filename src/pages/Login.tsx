@@ -24,7 +24,7 @@ export const Login = () => {
   );
 
   useEffect(() => {
-    if (user && user !== 'loading' && !isResolvingPrivateKey) {
+    if (user && !isResolvingPrivateKey) {
       navigate('/');
     }
   }, [user, isResolvingPrivateKey, navigate]);
@@ -42,14 +42,14 @@ export const Login = () => {
     }
   };
 
-  if (user === 'loading' || isResolvingPrivateKey || isLoading) {
+  if (isResolvingPrivateKey || isLoading) {
     return <Loading />;
   }
 
   if (user === null) {
     return (
       // Scroll inside #root (which is overflow:hidden globally for chat mobile).
-      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-[#080D14] via-[#0B131D] to-[#080D14] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'>
+      <div className='h-full overflow-y-auto overscroll-contain bg-linear-to-br from-[#080D14] via-[#0B131D] to-[#080D14] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'>
         <div className='flex justify-center items-center px-4 py-8 min-h-full sm:py-12'>
           <div className='px-5 py-7 w-full max-w-md rounded-2xl border shadow-xl backdrop-blur border-[#1B2A3A] bg-[#0E1621]/90 sm:px-8 sm:py-9'>
             <BrandMark size='sm' subtitle='Private messaging' />
@@ -75,7 +75,7 @@ export const Login = () => {
                 disabled={
                   isLoading || !emailInput.value || !passwordInput.value
                 }
-                className={`${authPrimaryButton} mt-2`}
+                className={`mt-2 ${authPrimaryButton}`}
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </button>

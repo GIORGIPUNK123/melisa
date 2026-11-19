@@ -151,7 +151,7 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-*/ @keyframes reaction-picker-in-left {
+@keyframes reaction-picker-in-left {
   from {
     opacity: 0;
     transform: translateY(8px) scale(0.92);

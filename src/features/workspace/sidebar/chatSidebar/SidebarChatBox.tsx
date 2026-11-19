@@ -11,7 +11,7 @@ export const SidebarChatBox = (props: {
   const unread = props.unreadCount ?? 0;
   const name =
     props.conversation.name ||
-    props.conversation.otherUserNickname ||
+    props.conversation.conversationMembers[0]?.nickname ||
     'Unknown';
 
   return (
@@ -19,13 +19,13 @@ export const SidebarChatBox = (props: {
       onClick={props.onClick}
       className={`flex items-center justify-between h-16 gap-3 px-3 duration-100 ease-in-out ${props.active ? 'bg-[#65E0C11C]' : 'hover:bg-[#0A1018]'} rounded-[3.5px] cursor-pointer`}
     >
-      <div className='flex items-center gap-3'>
+      <div className='flex gap-3 items-center'>
         <SidebarChatUserCircle
           firstLetter={name.charAt(0)}
-          avatarUrl={props.conversation.otherUserAvatar}
+          avatarUrl={props.conversation.conversationMembers[0]?.avatarUrl}
         />
 
-        <div className='flex flex-col '>
+        <div className='flex flex-col'>
           <span className='text-sm font-semibold text-white'>{name}</span>
           <span className='text-xs text-[#56687B]'>
             {props.conversation.lastMessageTime
