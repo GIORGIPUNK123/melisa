@@ -1,6 +1,8 @@
-export const EmptyChatState = () => {
+export const EmptyChatState = (props: { className?: string }) => {
   return (
-    <div className='flex flex-col h-full w-full bg-[#080D14]'>
+    <div
+      className={`${props.className ?? ''} flex flex-col h-full w-full min-w-0 bg-[#080D14]`}
+    >
       <div className='flex items-center justify-between h-[60px] px-4 border-b-[1px] border-solid border-[#3d464fc7]'>
         <span className='font-semibold text-white'>No Conversation</span>
       </div>

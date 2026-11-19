@@ -1,6 +1,6 @@
 import { SVGProps } from 'react';
 
-type IconProps = SVGProps<SVGSVGElement> & {
+export type IconProps = SVGProps<SVGSVGElement> & {
   size?: number | string;
 };
 
@@ -119,6 +119,12 @@ export const IconUser = (props: IconProps) => (
   <svg {...base(props)}>
     <path d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2' />
     <circle cx='12' cy='7' r='4' />
+  </svg>
+);
+
+export const IconMoon = (props: IconProps) => (
+  <svg {...base(props)}>
+    <path d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z' />
   </svg>
 );
 

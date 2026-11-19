@@ -7,7 +7,6 @@ import { ChatHeader } from './ChatHeader';
 import { MessageInput } from './MessageInput';
 import { ChatInfo } from './ChatInfo';
 import { useState } from 'react';
-import { usePresenceStore } from '../../../store/usePresenceStore';
 import { useMessageReactions } from '../hooks/useMessageReactions';
 
 export const ChatArea = (props: {
@@ -29,7 +28,7 @@ export const ChatArea = (props: {
     user?.id ?? '',
   );
   if (!conversation) {
-    return <EmptyChatState />;
+    return <EmptyChatState className={className} />;
   }
 
   const otherConversationMembers = conversation.conversationMembers.filter(
@@ -58,7 +57,9 @@ export const ChatArea = (props: {
           reactions={reactions}
           onToggleReaction={toggleReaction}
         />
+        {conversation.type === 'group' && 'GROUPS ARENT SUPPORTED YET'}
         <MessageInput
+          disabled={conversation.type === 'group'}
           onSubmit={(message) => {
             sendMessage(message);
           }}

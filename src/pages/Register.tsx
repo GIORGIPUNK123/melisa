@@ -11,6 +11,9 @@ import { handleBackdropClick } from '../shared/utils/modal';
 import { BrandMark } from '../atoms/BrandMark';
 import { ui } from '../shared/ui';
 
+const authPrimaryButton =
+  'inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#65E0C1] px-4 text-[15px] font-semibold text-[#07110F] transition hover:bg-[#7BE9CE] disabled:cursor-not-allowed disabled:opacity-50';
+
 const EmailVerificationModal = (props: {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
@@ -28,14 +31,14 @@ const EmailVerificationModal = (props: {
         })
       }
     >
-      <div className='relative w-full max-w-md bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl border border-slate-700/50 overflow-hidden'>
-        <div className='absolute left-0 right-0 top-0 h-1 bg-indigo-500'></div>
+      <div className='relative w-full max-w-md bg-linear-to-br from-[#0E1621] to-[#0A1018] rounded-2xl shadow-2xl border border-[#1B2A3A] overflow-hidden'>
+        <div className='absolute left-0 right-0 top-0 h-1 bg-[#65E0C1]'></div>
 
         <div className='p-6 sm:p-8'>
           <div className='flex flex-col items-center space-y-4 text-center'>
-            <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg'>
+            <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-[#65E0C1] shadow-lg'>
               <svg
-                className='w-8 h-8 text-white'
+                className='w-8 h-8 text-[#07110F]'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -49,8 +52,8 @@ const EmailVerificationModal = (props: {
               </svg>
             </div>
 
-            <h2 className={ui.title}>Check your email</h2>
-            <p className={ui.subtitle}>
+            <h2 className={`${ui.title} text-[#EEF3F8]`}>Check your email</h2>
+            <p className={`${ui.subtitle} text-[#8192A4]`}>
               We've sent you a verification link. Please check your inbox and
               click the link to activate your account.
             </p>
@@ -60,7 +63,7 @@ const EmailVerificationModal = (props: {
                 props.setIsOpen(false);
                 props.navigate('/login');
               }}
-              className={`${ui.btnPrimary} mt-2`}
+              className={`mt-2 ${authPrimaryButton}`}
             >
               Go to Login
             </button>
@@ -82,7 +85,7 @@ export const Register = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
-    if (user && user !== 'loading') {
+    if (user) {
       navigate('/');
     }
   }, [user, navigate]);
@@ -143,30 +146,27 @@ export const Register = () => {
       setIsOpen(true);
     }
   };
-
-  if (user === 'loading') {
-    return <Loading />;
-  }
-  if (user === null) {
+  if (!user) {
     return (
       // Scroll inside #root (which is overflow:hidden globally for chat mobile).
-      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'>
+      <div className='h-full overflow-y-auto overscroll-contain bg-gradient-to-br from-[#080D14] via-[#0B131D] to-[#080D14] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'>
         <EmailVerificationModal
           isOpen={isOpen}
           setIsOpen={setIsOpen}
           navigate={navigate}
         />
-        <div className='flex min-h-full items-center justify-center px-4 py-8 sm:py-12'>
-          <div className='w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/80 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-9'>
+        <div className='flex justify-center items-center px-4 py-8 min-h-full sm:py-12'>
+          <div className='w-full max-w-xl rounded-2xl border border-[#1B2A3A] bg-[#0E1621]/90 px-5 py-7 shadow-xl backdrop-blur sm:px-8 sm:py-9'>
             <BrandMark size='sm' subtitle='Create your account' />
 
-            <div className='mt-7 grid grid-cols-1 gap-3 md:grid-cols-2'>
+            <div className='grid grid-cols-1 gap-3 mt-7 md:grid-cols-2'>
               <TextInput
                 {...usernameInput}
                 placeholder='Username'
                 type='text'
                 required={true}
                 error={errors.username}
+                variant='plain'
               />
               <TextInput
                 {...nicknameInput}
@@ -174,6 +174,7 @@ export const Register = () => {
                 type='text'
                 required={true}
                 error={errors.nickname}
+                variant='plain'
               />
               <div className='md:col-span-2'>
                 <TextInput
@@ -182,6 +183,7 @@ export const Register = () => {
                   type='email'
                   required={true}
                   error={errors.email}
+                  variant='plain'
                 />
               </div>
               <TextInput
@@ -190,6 +192,7 @@ export const Register = () => {
                 type='password'
                 required={true}
                 error={errors.password}
+                variant='plain'
               />
               <TextInput
                 {...repeatPasswordInput}
@@ -197,29 +200,30 @@ export const Register = () => {
                 type='password'
                 required={true}
                 error={errors.repeatPassword}
+                variant='plain'
               />
             </div>
 
             <button
               onClick={handleSubmit}
-              className={`${ui.btnPrimary} mt-5`}
+              className={`mt-5 cursor-pointer ${authPrimaryButton}`}
               disabled={passwordInput.value !== repeatPasswordInput.value}
             >
               Create account
             </button>
 
             {authError ? (
-              <p className='mt-4 text-center text-sm text-rose-400'>
+              <p className='mt-4 text-sm text-center text-rose-400'>
                 {authError}
               </p>
             ) : null}
 
             <div className='mt-5 text-center sm:mt-6'>
-              <p className='text-[13px] text-slate-400'>
+              <p className='text-[13px] text-[#8192A4]'>
                 Already have an account?{' '}
                 <button
                   onClick={() => navigate('/login')}
-                  className='font-medium text-indigo-400 hover:text-indigo-300'
+                  className='cursor-pointer font-medium text-[#65E0C1] hover:text-[#7BE9CE]'
                 >
                   Sign in
                 </button>

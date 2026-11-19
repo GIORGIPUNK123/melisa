@@ -1,10 +1,11 @@
-import { Settings } from 'lucide-react';
+import { Settings, UserPlus } from 'lucide-react';
 import { ListSkeleton } from '../components/layout/ListSkeleton';
 import { useChatStore } from '../store/useChatStore';
 import { ConversationT, FriendT } from '../types';
 import { SidebarChatBox } from './SidebarChatBox';
 import { SidebarFriendBox } from './SidebarFriendBox';
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 
 const SidebarTab = (props: {
   name: string;
@@ -124,6 +125,7 @@ export const TestSidebar = ({
   friends,
   handleFriendClick,
   onlineUserIds,
+  onAddFriendClick,
 }: {
   conversations?: ConversationT[];
   friends?: FriendT[];
@@ -135,7 +137,9 @@ export const TestSidebar = ({
   activeTab: 'messages' | 'friends' | 'requests' | 'notifications';
   handleFriendClick?: (conversationId: number) => any;
   onlineUserIds: Set<string>;
+  onAddFriendClick?: () => void;
 }) => {
+  const navigate = useNavigate();
   const { activeConversationId, setActiveConversationId } = useChatStore();
   const [activeConversationType, setActiveConversationType] = useState<
     'all' | 'direct' | 'group'
@@ -154,7 +158,12 @@ export const TestSidebar = ({
           <h2 className='text-[#F4F8FB] font-bold text-2xl ml-3 mb-4'>
             {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
           </h2>
-          <div className='xl:hidden text-[#8192A4] bg-[#162231] w-[42px] h-[42px] flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-white duration-200'>
+          <div
+            onClick={() => {
+              navigate('/settings');
+            }}
+            className='xl:hidden text-[#8192A4] bg-[#162231] w-[42px] h-[42px] flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-white duration-200'
+          >
             <Settings width={16} height={16} />
           </div>
         </div>
@@ -170,6 +179,16 @@ export const TestSidebar = ({
           <ListSkeleton rows={Math.max(conversations.length, 5)} />
         ) : (
           <div className='mt-2'>
+            {activeTab === 'friends' && onAddFriendClick && (
+              <button
+                type='button'
+                onClick={onAddFriendClick}
+                className='mb-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#65E0C1]/20 bg-[#65E0C1]/10 px-3 py-2 text-[13px] font-semibold text-[#65E0C1] transition hover:bg-[#65E0C1]/20'
+              >
+                <UserPlus size={16} />
+                Add friend
+              </button>
+            )}
             <span className='text-[#56687B] font-bold text-xs ml-3'>
               {activeTab === 'friends' ? 'ALL FRIENDS' : 'RECENT CONVERSATIONS'}
             </span>

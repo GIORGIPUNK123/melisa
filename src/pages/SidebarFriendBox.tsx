@@ -21,7 +21,7 @@ export const SidebarFriendBox = (props: {
 
         <div className='flex flex-col'>
           <span className={`text-sm font-semibold text-white`}>
-            {friend.username}
+            {friend.nickname}
           </span>
           <span className={`text-xs  font-medium text-[#56687B]`}>
             {friend.username}

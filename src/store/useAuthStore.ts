@@ -40,7 +40,12 @@ interface AuthState {
   changeEncryptionPassword: (
     currentPassword: string,
     newPassword: string,
-  ) => Promise<{ ok: boolean; error?: string }>;
+  ) => Promise<{
+    ok: boolean;
+    error?: string;
+    field?: string;
+    code?: string;
+  }>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -195,11 +200,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ privateKey: plaintextKey });
       return { ok: true };
     } catch (err: any) {
+      const responseData = err?.response?.data as
+        | { error?: string; field?: string; code?: string }
+        | undefined;
       const message =
-        err?.response?.data?.error ||
+        responseData?.error ||
         err?.message ||
         'Failed to update password';
-      return { ok: false, error: message };
+      return {
+        ok: false,
+        error: message,
+        field: responseData?.field,
+        code: responseData?.code,
+      };
     }
   },
 

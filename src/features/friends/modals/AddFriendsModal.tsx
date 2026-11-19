@@ -36,7 +36,7 @@ export const AddFriendsModal = (props: {
       } fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm`}
       onClick={(event) => handleBackdropClick(event, handleClose)}
     >
-      <div className='relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900 shadow-2xl'>
+      <div className='overflow-hidden relative w-full max-w-md rounded-2xl border shadow-2xl border-slate-700/70 bg-slate-900'>
         <button
           onClick={handleClose}
           className={`${ui.iconBtn} absolute right-3 top-3`}
@@ -47,8 +47,8 @@ export const AddFriendsModal = (props: {
 
         <div className='p-6 sm:p-7'>
           <div className='flex flex-col space-y-5'>
-            <div className='flex items-start gap-3 pr-8'>
-              <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/80 text-slate-300'>
+            <div className='flex gap-3 items-start pr-8'>
+              <div className='flex justify-center items-center w-10 h-10 rounded-lg border shrink-0 border-slate-700 bg-slate-800/80 text-slate-300'>
                 <IconUserPlus size={18} />
               </div>
               <div>
@@ -72,8 +72,8 @@ export const AddFriendsModal = (props: {
               <div
                 className={`w-full rounded-lg border px-3 py-2 text-center text-sm font-medium ${
                   isSuccess
-                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                    : 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+                    ? 'text-emerald-300 border-emerald-500/30 bg-emerald-500/10'
+                    : 'text-rose-300 border-rose-500/30 bg-rose-500/10'
                 }`}
               >
                 {messageResponse}
@@ -83,7 +83,7 @@ export const AddFriendsModal = (props: {
             <button
               onClick={handleAddFriend}
               disabled={!userNameInput.value || isLoading}
-              className={ui.btnPrimary}
+              className={`${ui.btnPrimary} cursor-pointer`}
             >
               {isLoading ? 'Sending...' : 'Send request'}
             </button>

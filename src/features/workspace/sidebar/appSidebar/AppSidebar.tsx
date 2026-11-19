@@ -2,17 +2,17 @@ import { Bell, Mail, MessageSquare, UsersRound } from 'lucide-react';
 import { SidebarItem } from './SidebarItem';
 import { Logo } from '../../../../atoms/Logo';
 import { UserCircle } from './UserCircle';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
+import { useAuthStore } from '../../../../store/useAuthStore';
 
-export const AppSidebar = (props: { avatarUrl?: string }) => {
-  const avatarUrl = props.avatarUrl;
+export const AppSidebar = () => {
+  const avatarUrl = useAuthStore((state) => state.profile?.avatar_url);
   const [activeTab, setActiveTab] = useState<
-    'chats' | 'friends' | 'requests' | 'notifications'
+    'chats' | 'friends' | 'requests' | 'notifications' | 'settings'
   >('chats');
   const navigate = useNavigate();
   const location = useLocation();
-
   // Keep active tab in sync with current route if needed
   useEffect(() => {
     if (location.pathname.includes('/friends')) setActiveTab('friends');
@@ -23,9 +23,9 @@ export const AppSidebar = (props: { avatarUrl?: string }) => {
   }, [location.pathname]);
 
   return (
-    <div className='shrink-0 bg-[#080D14] py-2 xl:py-5 flex xl:flex-col items-center justify-between w-full xl:w-[72px] border-t xl:border-t-0 border-[#162231]'>
+    <div className='shrink-0 bg-[#0A1018] py-2 xl:py-5 flex xl:flex-col items-center justify-between w-full xl:w-18 border-t xl:border-t-0 border-[#162231]'>
       <div className='flex justify-between items-center w-full xl:w-auto xl:flex-col xl:justify-start'>
-        <div className='hidden mb-5 xl:block'>
+        <div onClick={() => navigate('/')} className='hidden mb-5 xl:block'>
           <Logo />
         </div>
         <div className='flex justify-around items-center px-3 w-full xl:w-auto xl:justify-normal xl:gap-5 xl:px-0 xl:flex-col'>
@@ -68,8 +68,11 @@ export const AppSidebar = (props: { avatarUrl?: string }) => {
         </div>
       </div>
       <div
-        className='hidden cursor-pointer xl:block'
-        onClick={() => navigate('/settings')}
+        className={`hidden cursor-pointer xl:block ${activeTab === 'settings' ? 'scale-115' : ''}`}
+        onClick={() => {
+          setActiveTab('settings');
+          navigate('/settings');
+        }}
       >
         <UserCircle firstLetter='U' avatarUrl={avatarUrl} />
       </div>

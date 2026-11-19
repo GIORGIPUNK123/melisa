@@ -60,3 +60,11 @@ export const register = async (
 export const logout = async () => {
   await supabase.auth.signOut();
 };
+
+export const usernameExists = async (username: string): Promise<boolean> => {
+  const response = await api.get<{ exists: boolean }>('/auth/check-username', {
+    params: { username },
+  });
+
+  return Boolean(response.data.exists);
+};

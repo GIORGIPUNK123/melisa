@@ -1,17 +1,9 @@
 import * as yup from 'yup';
-import { checkUsername } from '../../friends/utils/friendsFunctions';
 import { passwordError, passwordRuleMessage } from '../passwordPolicy';
+import { usernameField } from './usernameField';
 
 export const registerSchema = yup.object().shape({
-  username: yup
-    .string()
-    .required('Username is required')
-    .min(3, 'Username must be at least 3 characters')
-    .test('username-available', 'Username is already taken', async (value) => {
-      if (!value) return true;
-      const exists = await checkUsername(value);
-      return !exists;
-    }),
+  username: usernameField(),
   nickname: yup
     .string()
     .required('Nickname is required')

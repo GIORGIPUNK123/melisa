@@ -1,4 +1,6 @@
-html,
+@import 'tailwindcss';
+
+/* html,
 body,
 div,
 span,
@@ -149,12 +151,7 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@keyframes reaction-picker-in-left {
+*/ @keyframes reaction-picker-in-left {
   from {
     opacity: 0;
     transform: translateY(8px) scale(0.92);

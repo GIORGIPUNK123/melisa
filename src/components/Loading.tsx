@@ -1,9 +1,9 @@
-import { BrandMark } from '../atoms/BrandMark';
+import { Logo } from '../atoms/Logo';
 
 export const Loading = () => {
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
-      <BrandMark size='sm' subtitle='Loading...' />
+    <div className='flex justify-center items-center w-full min-h-screen bg-[#0A1018]'>
+      <Logo />
     </div>
   );
 };

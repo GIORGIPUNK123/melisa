@@ -1,14 +1,9 @@
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { BackendStatusBanner } from './components/BackendStatusBanner';
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from 'react-router-dom';
 import { APP_NAME } from './shared/constants';
-import { useEffect } from 'react';
 import { Main } from './pages/Main';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { ChatsPanel } from './pages/ChatsPanel';
@@ -23,30 +18,48 @@ export const App = () => {
   }, []);
 
   const onlineUserIds = usePresenceStore((state) => state.onlineUserIds);
+
   return (
-    <>
+    <BrowserRouter>
       <BackendStatusBanner />
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-          <Route path='/' element={<Main onlineUserIds={onlineUserIds} />}>
-            <Route
-              path='chats'
-              element={<ChatsPanel onlineUserIds={onlineUserIds} />}
-            />
-            <Route
-              path='friends'
-              element={<FriendsPanel onlineUserIds={onlineUserIds} />}
-            />
-            {/* <Route path='notifications' element={<NotificationsPanel />} /> */}
-            {/* Optional: default redirect when hitting root */}
-            <Route index element={<Navigate to='chats' replace />} />
-            <Route path='/settings' element={<SettingsPage />} />
-          </Route>
-          <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} />
-          <Route path='/settings' element={<SettingsPage />} />
-        </Routes>
-      </Router>
-    </>
+      <Routes>
+        <Route path='/' element={<Main onlineUserIds={onlineUserIds} />}>
+          {/* ✅ Redirect root '/' to '/chats' so the Outlet actually renders something */}
+          <Route index element={<Navigate to='chats' replace />} />
+          <Route
+            path='chats'
+            element={<ChatsPanel onlineUserIds={onlineUserIds} />}
+          />
+          <Route
+            path='friends'
+            element={<FriendsPanel onlineUserIds={onlineUserIds} />}
+          />
+          <Route
+            path='requests'
+            element={
+              <div className='p-4'>
+                <h1 className='text-2xl font-bold text-white'>
+                  Friend Requests
+                </h1>
+                <p className='text-[#8192A4]'>Will be added soon</p>
+              </div>
+            }
+          />
+
+          <Route
+            path='notifications'
+            element={
+              <div className='p-4'>
+                <h1 className='text-2xl font-bold text-white'>Notifications</h1>
+                <p className='text-[#8192A4]'>Will be added soon</p>
+              </div>
+            }
+          />
+          <Route path='settings' element={<SettingsPage />} />
+        </Route>
+        <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
+      </Routes>
+    </BrowserRouter>
   );
 };

@@ -37,7 +37,7 @@ export const BrandMark = ({
     >
       {showMark ? (
         <div
-          className={`flex items-center justify-center bg-indigo-600 font-bold text-white shadow-sm shadow-indigo-950/40 ${markSize[size]} ${
+          className={`flex items-center justify-center bg-[#65E0C1] font-bold text-white shadow-sm shadow-indigo-950/40 ${markSize[size]} ${
             stacked ? 'mb-3' : ''
           }`}
         >

@@ -1,14 +1,19 @@
-import { useNavigate } from 'react-router';
 import { useEffect, useState } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router';
 import { Loading } from '../components/Loading';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { UnlockWithPassword } from '../features/auth/components/UnlockWithPassword';
 import { useAudioNotification } from '../features/notifications/hooks/useAudioNotification';
-import { TestMain } from './TestMain';
+import { AppSidebar } from '../features/workspace/sidebar/appSidebar/AppSidebar';
+import { useChatStore } from '../store/useChatStore';
 import { usePresence } from '../shared/hooks/usePresence';
 import { useGlobalChatSync } from '../features/chat/hooks/useGlobalChatSync';
+import { ChatArea } from '../features/chat/components/ChatArea';
+import { supabase } from '../db/supabase';
+import { fetchConversations } from '../features/chat/utils/conversationFunctions';
 
 export const Main = (props: { onlineUserIds: Set<string> }) => {
+  const navigate = useNavigate();
   const {
     user,
     authUnlock,
@@ -17,11 +22,17 @@ export const Main = (props: { onlineUserIds: Set<string> }) => {
     isResolvingPrivateKey,
     isLoadingSession,
   } = useAuth();
-  const navigate = useNavigate();
+
+  const path = useLocation().pathname;
+
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  const { conversations, setConversations, activeConversationId } =
+    useChatStore();
+
   const { ensureEnabled: ensureMessageSoundEnabled } =
     useAudioNotification('ui/success_bling');
   const { ensureEnabled: ensureNotificationSound } = useAudioNotification(
@@ -34,36 +45,23 @@ export const Main = (props: { onlineUserIds: Set<string> }) => {
       ? user.id
       : undefined;
   usePresence(activeUserId);
+
   useEffect(() => {
     if (user === null) navigate('/login');
-  }, [user, navigate]);
+  }, [user]);
 
-  const handleUnlock = async () => {
-    if (unlocking || loggingOut || !unlockPassword) return;
-    setUnlocking(true);
-    setUnlockError(null);
-    const ok = await authUnlock(unlockPassword);
-    setUnlocking(false);
-    if (!ok) {
-      setUnlockError('Wrong password.');
-    } else {
-      setUnlockPassword('');
-      void ensureMessageSoundEnabled();
-      void ensureNotificationSound();
-    }
-  };
+  useEffect(() => {
+    const loadConversations = async () => {
+      if (!user?.id) return;
+      const data = await fetchConversations(supabase, user.id);
+      setConversations(data);
+    };
+    loadConversations();
+  }, [user]);
 
-  const handleUnlockLogout = async () => {
-    if (loggingOut || unlocking) return;
-    setLoggingOut(true);
-    setUnlockError(null);
-    try {
-      await authLogout();
-      navigate('/login');
-    } finally {
-      setLoggingOut(false);
-    }
-  };
+  const activeConversation = conversations.find(
+    (conv) => conv.id === activeConversationId,
+  );
 
   if (isLoadingSession || isResolvingPrivateKey) return <Loading />;
   if (user === null) return <Loading />;
@@ -82,5 +80,58 @@ export const Main = (props: { onlineUserIds: Set<string> }) => {
     );
   }
 
-  return <TestMain onlineUserIds={props.onlineUserIds} />;
+  async function handleUnlock() {
+    if (unlocking || loggingOut || !unlockPassword) return;
+    setUnlocking(true);
+    setUnlockError(null);
+    const ok = await authUnlock(unlockPassword);
+    setUnlocking(false);
+    if (!ok) {
+      setUnlockError('Wrong password.');
+    } else {
+      setUnlockPassword('');
+      void ensureMessageSoundEnabled();
+      void ensureNotificationSound();
+    }
+  }
+
+  async function handleUnlockLogout() {
+    if (loggingOut || unlocking) return;
+    setLoggingOut(true);
+    setUnlockError(null);
+    try {
+      await authLogout();
+      navigate('/login');
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+  return (
+    <div className='flex-col-reverse xl:flex-row relative flex w-full h-full min-w-0 overflow-hidden bg-[#080D14]'>
+      <div className={`${activeConversationId ? 'hidden' : ''} xl:flex`}>
+        <AppSidebar />
+      </div>
+
+      <div className='flex overflow-hidden flex-1 w-full min-w-0 h-full min-h-0'>
+        <Outlet />
+
+        {path !== '/settings' &&
+          path !== '/requests' &&
+          path !== '/notifications' && (
+            <ChatArea
+              conversation={activeConversation}
+              onBack={() =>
+                useChatStore.getState().setActiveConversationId(null)
+              }
+              className={
+                activeConversation
+                  ? 'flex flex-1 min-w-0'
+                  : 'hidden flex-1 min-w-0 xl:flex'
+              }
+              onlineUserIds={props.onlineUserIds}
+            />
+          )}
+      </div>
+    </div>
+  );
 };

@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
 import { AppSidebar } from '../features/workspace/sidebar/appSidebar/AppSidebar';
 import { useChatStore } from '../store/useChatStore';
 import { supabase } from '../db/supabase';
@@ -9,6 +9,7 @@ import { ChatArea } from '../features/chat/components/ChatArea';
 
 export const TestMain = (props: { onlineUserIds: Set<string> }) => {
   const { user } = useAuth();
+  const path = useLocation().pathname;
   const { conversations, setConversations, activeConversationId } =
     useChatStore();
 
@@ -20,7 +21,6 @@ export const TestMain = (props: { onlineUserIds: Set<string> }) => {
 
     loadConversations();
   }, [user]);
-
   const activeConversation = conversations.find(
     (conv) => conv.id === activeConversationId,
   );
@@ -33,12 +33,14 @@ export const TestMain = (props: { onlineUserIds: Set<string> }) => {
       {/* <main className='flex overflow-hidden flex-1 min-w-0 min-h-0'> */}
       <div className='flex overflow-hidden w-full min-w-0 h-full min-h-0'>
         <Outlet />
-        <ChatArea
-          conversation={activeConversation}
-          onBack={() => useChatStore.getState().setActiveConversationId(null)}
-          className={activeConversation ? 'flex' : 'hidden xl:flex'}
-          onlineUserIds={props.onlineUserIds}
-        />
+        {path !== '/settings' && (
+          <ChatArea
+            conversation={activeConversation}
+            onBack={() => useChatStore.getState().setActiveConversationId(null)}
+            className={activeConversation ? 'flex' : 'hidden xl:flex'}
+            onlineUserIds={props.onlineUserIds}
+          />
+        )}
       </div>
       {/* </main> */}
     </div>

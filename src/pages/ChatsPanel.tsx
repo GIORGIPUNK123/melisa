@@ -24,7 +24,6 @@ export const ChatsPanel = (props: { onlineUserIds: Set<string> }) => {
   );
 
   return (
-    // <div className='flex overflow-hidden w-full min-w-0 h-full min-h-0'>
     <TestSidebar
       currentUserId={user?.id}
       conversations={conversations}
@@ -34,11 +33,5 @@ export const ChatsPanel = (props: { onlineUserIds: Set<string> }) => {
       activeTab='messages'
       onlineUserIds={props.onlineUserIds}
     />
-    // {/* <ChatArea
-    //   conversation={activeConversation}
-    //   onBack={() => useChatStore.getState().setActiveConversationId(null)}
-    //   className={activeConversation ? 'flex' : 'hidden xl:flex'}
-    // /> */}
-    // </div>
   );
 };
