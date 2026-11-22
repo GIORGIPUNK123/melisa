@@ -155,6 +155,8 @@ body,
   background-color: var(--color-background);
   color-scheme: dark;
   box-sizing: border-box;
+  /* Let the in-app pull-to-refresh own the gesture on touch devices. */
+  overscroll-behavior-y: none;
 }
 
 #root {

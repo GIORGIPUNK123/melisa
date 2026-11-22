@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { useFriendsList } from '../features/friends/hooks/useFriendsList';
 import { useChatStore } from '../store/useChatStore';
@@ -12,7 +12,11 @@ import { AddFriendsModal } from '../features/friends/modals/AddFriendsModal';
 export const FriendsPanel = (props: { onlineUserIds: Set<string> }) => {
   const { user } = useAuth();
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
-  const { isLoading: isLoadingFriends } = useFriendsList(user?.id);
+  const { isLoading: isLoadingFriends, fetchFriends } = useFriendsList(user?.id);
+  const refreshFriends = useCallback(
+    async () => fetchFriends({ silent: true }),
+    [fetchFriends],
+  );
 
   const {
     conversations,
@@ -69,6 +73,7 @@ export const FriendsPanel = (props: { onlineUserIds: Set<string> }) => {
         handleFriendClick={handleFriendClick}
         onlineUserIds={props.onlineUserIds}
         onAddFriendClick={() => setIsAddFriendOpen(true)}
+        onRefresh={refreshFriends}
       />
       {user && (
         <AddFriendsModal

@@ -4,23 +4,31 @@ import { supabase } from '../../../db/supabase';
 import { useRequestStore, PendingRequest } from '../../../store/useRequestStore';
 
 /**
+ * Standalone fetch so a panel can refresh the list without mounting a second
+ * realtime subscription.
+ */
+export const fetchPendingRequests = async (options?: { silent?: boolean }) => {
+  if (!options?.silent) useRequestStore.getState().setLoading(true);
+  try {
+    const response = await api.get('/friends/pending');
+    useRequestStore
+      .getState()
+      .setRequests(response.data.sent || [], response.data.received || []);
+  } catch (error) {
+    console.error('Failed to fetch pending requests:', error);
+    if (!options?.silent) useRequestStore.getState().setLoading(false);
+  }
+};
+
+/**
  * Loads pending friend requests once and keeps the request store in sync with
  * Supabase Realtime. Mount this once from the authenticated app shell.
  */
 export const usePendingRequestsSync = (userId?: string) => {
-  const fetchRequests = useCallback(async (options?: { silent?: boolean }) => {
-    if (!options?.silent) useRequestStore.getState().setLoading(true);
-    try {
-      const response = await api.get('/friends/pending');
-      useRequestStore.getState().setRequests(
-        response.data.sent || [],
-        response.data.received || [],
-      );
-    } catch (error) {
-      console.error('Failed to fetch pending requests:', error);
-      if (!options?.silent) useRequestStore.getState().setLoading(false);
-    }
-  }, []);
+  const fetchRequests = useCallback(
+    (options?: { silent?: boolean }) => fetchPendingRequests(options),
+    [],
+  );
 
   useEffect(() => {
     if (!userId) return;
@@ -47,6 +55,8 @@ export const usePendingRequestsSync = (userId?: string) => {
       useRequestStore.getState().setRequests([], []);
     };
   }, [userId, fetchRequests]);
+
+  return { fetchRequests };
 };
 
 export type { PendingRequest };

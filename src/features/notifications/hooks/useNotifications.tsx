@@ -4,27 +4,43 @@ import { NotificationT } from '../../../types';
 import { useNotificationStore } from '../../../store/useNotificationStore';
 
 /**
+ * Standalone fetch so a panel can refresh the list without mounting a second
+ * realtime subscription.
+ */
+export const fetchNotificationsForUser = async (
+  userId: string,
+  options?: { silent?: boolean },
+) => {
+  if (!options?.silent) useNotificationStore.getState().setLoading(true);
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if (error) {
+    console.error('Failed to fetch notifications:', error);
+    useNotificationStore.getState().setLoading(false);
+    return;
+  }
+  useNotificationStore
+    .getState()
+    .setNotifications((data ?? []) as NotificationT[]);
+};
+
+/**
  * Loads notifications once and keeps the notification store in sync with
  * Supabase Realtime. Mount this once from the authenticated app shell.
  */
 export const useNotificationsSync = (userId?: string) => {
-  const fetchNotifications = useCallback(async () => {
-    if (!userId) return;
-    useNotificationStore.getState().setLoading(true);
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    if (error) {
-      console.error('Failed to fetch notifications:', error);
-      useNotificationStore.getState().setLoading(false);
-      return;
-    }
-    useNotificationStore.getState().setNotifications((data ?? []) as NotificationT[]);
-  }, [userId]);
+  const fetchNotifications = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!userId) return;
+      await fetchNotificationsForUser(userId, options);
+    },
+    [userId],
+  );
 
   useEffect(() => {
     if (!userId) return;
@@ -61,4 +77,6 @@ export const useNotificationsSync = (userId?: string) => {
       useNotificationStore.getState().setNotifications([]);
     };
   }, [userId, fetchNotifications]);
+
+  return { fetchNotifications };
 };

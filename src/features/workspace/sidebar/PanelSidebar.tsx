@@ -1,12 +1,17 @@
-import { Settings, UserPlus } from 'lucide-react';
+import { RefreshCw, Settings, UserPlus } from 'lucide-react';
 import { ListSkeleton } from '../../../components/layout/ListSkeleton';
 import { useChatStore } from '../../../store/useChatStore';
 import { ConversationT, FriendT } from '../../../types';
 import { SidebarChatBox } from './chatSidebar/SidebarChatBox';
 import { SidebarFriendBox } from './chatSidebar/SidebarFriendBox';
-import { useState, type ReactNode } from 'react';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { isConversationUnread } from '../../../shared/utils/unread';
+import {
+  PullToRefresh,
+  type PullToRefreshHandle,
+} from './PullToRefresh';
+import { useRefreshConversations } from '../../chat/hooks/useRefreshConversations';
 
 const SidebarTab = (props: {
   name: string;
@@ -127,6 +132,7 @@ export const PanelSidebar = ({
   handleFriendClick,
   onlineUserIds,
   onAddFriendClick,
+  onRefresh,
   children,
 }: {
   conversations?: ConversationT[];
@@ -140,6 +146,7 @@ export const PanelSidebar = ({
   handleFriendClick?: (conversationId: number) => any;
   onlineUserIds: Set<string>;
   onAddFriendClick?: () => void;
+  onRefresh?: () => Promise<void>;
   children?: ReactNode;
 }) => {
   const navigate = useNavigate();
@@ -147,6 +154,22 @@ export const PanelSidebar = ({
   const [activeConversationType, setActiveConversationType] = useState<
     'all' | 'direct' | 'group'
   >('all');
+  const pullRef = useRef<PullToRefreshHandle>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const refreshConversations = useRefreshConversations();
+
+  const refreshAll = useCallback(async () => {
+    await Promise.all([
+      refreshConversations(),
+      onRefresh ? onRefresh() : Promise.resolve(),
+    ]);
+  }, [refreshConversations, onRefresh]);
+
+  const handleRefresh = useCallback(async () => {
+    if (pullRef.current) await pullRef.current.refresh();
+    else await refreshAll();
+  }, [refreshAll]);
+
   const filteredConversations = conversations.filter((conv) => {
     if (activeConversationType === 'all') return true;
     return conv.type === activeConversationType;
@@ -156,20 +179,46 @@ export const PanelSidebar = ({
     <div
       className={`w-full h-full border-r ${className} shrink-0 bg-panel text-foreground xl:flex xl:w-80 xl:flex-col border-border`}
     >
-      <div className='overflow-y-auto flex-1 px-2 mt-3 w-full'>
-        <div className='flex justify-between items-center'>
-          <h2 className='mb-4 ml-3 text-2xl font-bold text-foreground'>
-            {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-          </h2>
-          <div
-            onClick={() => {
-              navigate('/settings');
-            }}
-            className='xl:hidden text-muted bg-surface w-10.5 h-10.5 flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-foreground duration-200'
-          >
-            <Settings width={16} height={16} />
+      <PullToRefresh
+        ref={pullRef}
+        onRefresh={refreshAll}
+        onRefreshingChange={setIsRefreshing}
+        className='flex-1 w-full'
+      >
+        <div className='px-2 pt-3'>
+          <div className='flex justify-between items-center gap-2'>
+            <h2 className='mb-4 ml-3 text-2xl font-bold text-foreground'>
+              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+            </h2>
+            <div className='flex items-center gap-2'>
+              <button
+                type='button'
+                onClick={() => void handleRefresh()}
+                disabled={isRefreshing}
+                title='Refresh'
+                aria-label='Refresh'
+                className='group hidden h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-solid border-border-strong bg-transparent text-subtle transition-all duration-200 hover:border-primary/40 hover:bg-primary-soft hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-50 xl:flex'
+              >
+                <RefreshCw
+                  width={15}
+                  height={15}
+                  className={
+                    isRefreshing
+                      ? 'refresh-spin'
+                      : 'transition-transform duration-300 group-hover:-rotate-45'
+                  }
+                />
+              </button>
+              <div
+                onClick={() => {
+                  navigate('/settings');
+                }}
+                className='xl:hidden text-muted bg-surface w-10.5 h-10.5 flex items-center justify-center rounded-lg p-1 cursor-pointer hover:scale-110 hover:text-foreground duration-200'
+              >
+                <Settings width={16} height={16} />
+              </div>
+            </div>
           </div>
-        </div>
 
         {showTabs && (
           <Tabs
@@ -218,7 +267,8 @@ export const PanelSidebar = ({
             )}
           </div>
         )}
-      </div>
+        </div>
+      </PullToRefresh>
     </div>
   );
 };
