@@ -344,3 +344,14 @@ html:is([data-text-size='small'], [data-text-size='large']) .text-xl {
 html:is([data-text-size='small'], [data-text-size='large']) .text-2xl {
   font-size: calc(1.5rem * var(--text-scale));
 }
+
+/* iOS Safari zooms the viewport when a text control under 16px is focused,
+   and can stay zoomed after blur. Keep every text control at 16px on touch
+   devices; desktop sizing is untouched. */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

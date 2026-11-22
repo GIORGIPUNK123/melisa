@@ -55,7 +55,7 @@ export const MessageInput = ({
           onChange={(e) => setMessage(e.target.value)}
           placeholder='Type a message...'
           disabled={disabled}
-          className='min-w-0 flex-1 rounded-lg border border-border bg-panel-raised px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 sm:text-base md:px-4'
+          className='min-w-0 flex-1 rounded-lg border border-border bg-panel-raised px-3 py-2.5 text-base text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 md:px-4'
           autoComplete='off'
           enterKeyHint='send'
         />
