@@ -100,7 +100,7 @@ export const changePrivateKeyPassword = async (
     iv,
   );
 
-  await api.put('/friends/settings', {
+  await api.put('/settings', {
     password: newPassword,
     encrypted_private_key: encryptedPrivateKey,
     iv: encodeBase64(iv),

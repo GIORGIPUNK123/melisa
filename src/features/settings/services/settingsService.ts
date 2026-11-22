@@ -32,7 +32,7 @@ export const updateSettings = async (
   payload: UpdateSettingsPayload,
 ): Promise<SettingsUser | null> => {
   const response = await api.put<{ user?: SettingsUser }>(
-    '/friends/settings',
+    '/settings',
     payload,
   );
 
