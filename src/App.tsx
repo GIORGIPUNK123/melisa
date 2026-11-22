@@ -13,10 +13,14 @@ import { RequestsPanel } from './pages/RequestsPanel';
 import { NotificationsPanel } from './pages/NotificationsPanel';
 import { usePresenceStore } from './store/usePresenceStore';
 import { usePreferencesStore } from './store/usePreferencesStore';
+import { useAuthStore } from './store/useAuthStore';
 import { applyAppearance } from './shared/utils/appearance';
+import { usePreferencesSync } from './features/settings/hooks/usePreferencesSync';
 
 export const App = () => {
   useInitAuth();
+  const userId = useAuthStore((state) => state.user?.id);
+  usePreferencesSync(userId);
   useEffect(() => {
     document.title = APP_NAME;
   }, []);
