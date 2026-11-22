@@ -27,6 +27,9 @@ interface AuthState {
   // Actions
   initializeAuth: () => Promise<void>;
   fetchUserProfile: (userId: string) => Promise<PublicProfileT | null>;
+  setProfile: (
+    updater: (current: PublicProfileT | null) => PublicProfileT | null,
+  ) => void;
   fetchPrivateKey: (userId: string, password: string) => Promise<string | null>;
   authLogin: (email: string, password: string) => Promise<boolean>;
   authRegister: (
@@ -72,6 +75,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ profile: null });
       return null;
     }
+  },
+
+  setProfile: (updater) => {
+    set((state) => ({ profile: updater(state.profile) }));
   },
 
   fetchPrivateKey: async (userId: string, password: string) => {

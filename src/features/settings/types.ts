@@ -4,7 +4,7 @@ export type ProfileFormValues = {
   username: string;
   nickname: string;
   email: string;
-  avatarUrl: string;
+  avatarPath: string;
 };
 
 export type PasswordFormValues = {

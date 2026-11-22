@@ -1,5 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from '../../../shared/hooks/useForm';
+import {
+  clearAvatarUrlCache,
+  deleteAvatarObject,
+  uploadAvatar,
+  validateAvatarFile,
+} from '../../../shared/utils/avatars';
 import type { UserT } from '../../../types';
 import { createProfileSettingsSchema } from '../schemas/profileSettingsSchema';
 import {
@@ -21,7 +27,7 @@ const toFormValues = (
   username: profile.username ?? '',
   nickname: profile.nickname ?? '',
   email: profile.email || fallbackEmail || '',
-  avatarUrl: profile.avatar_url || '',
+  avatarPath: profile.avatar_url || '',
 });
 
 const buildPayload = (
@@ -32,20 +38,23 @@ const buildPayload = (
   const username = values.username.trim();
   const nickname = values.nickname.trim();
   const email = values.email.trim();
-  const avatarUrl = values.avatarUrl.trim();
   const currentUsername = baseline.username.trim();
   const currentNickname = baseline.nickname.trim();
   const currentEmail = baseline.email.trim();
-  const currentAvatarUrl = baseline.avatarUrl.trim();
 
   if (username !== currentUsername) payload.username = username;
   if (nickname !== currentNickname) payload.nickname = nickname;
   if (EMAIL_UPDATES_ENABLED && email !== currentEmail) payload.email = email;
-  if (avatarUrl !== currentAvatarUrl) {
-    payload.avatarUrl = avatarUrl || null;
-  }
 
   return payload;
+};
+
+const errorMessage = (error: unknown): string => {
+  const data = getApiErrorData(error);
+  return (
+    data?.error ||
+    (error instanceof Error ? error.message : 'Failed to update profile photo')
+  );
 };
 
 type Params = {
@@ -60,6 +69,25 @@ export const useProfileSettingsForm = ({
   onSaved,
 }: Params) => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [removeRequested, setRemoveRequested] = useState(false);
+
+  const hasAvatarChange = Boolean(selectedFile || removeRequested);
+
+  useEffect(
+    () => () => {
+      if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
+    },
+    [avatarPreviewUrl],
+  );
+
+  const clearStagedAvatar = () => {
+    setSelectedFile(null);
+    setAvatarPreviewUrl(null);
+    setRemoveRequested(false);
+  };
 
   const form = useForm<ProfileFormValues>({
     initialValues: toFormValues(profile, fallbackEmail),
@@ -69,38 +97,149 @@ export const useProfileSettingsForm = ({
       { baseline, setFieldError, setFormError, reset },
     ) => {
       setSuccessMessage(null);
+      setAvatarError(null);
 
       const payload = buildPayload(values, baseline);
+      const currentAvatarPath = values.avatarPath.trim();
+      const shouldUpload = Boolean(selectedFile);
+      const shouldRemove = removeRequested && !selectedFile;
 
-      if (Object.keys(payload).length === 0) {
+      if (
+        Object.keys(payload).length === 0 &&
+        !shouldUpload &&
+        !shouldRemove
+      ) {
         reset(toFormValues(profile, fallbackEmail));
+        clearStagedAvatar();
         return;
       }
 
-      try {
-        const updated = await updateSettings(payload);
+      let uploadedPath: string | null = null;
 
-        if (updated) {
-          const nextProfile = { ...profile, ...updated };
-          reset(toFormValues(nextProfile, fallbackEmail));
-          onSaved?.(updated);
-        } else {
-          reset(toFormValues(profile, fallbackEmail));
+      try {
+        if (selectedFile) {
+          uploadedPath = await uploadAvatar(profile.id, selectedFile);
         }
 
-        setSuccessMessage('Profile updated successfully');
-      } catch (error) {
-        const data = getApiErrorData(error);
-        const field = data?.field as keyof ProfileFormValues | undefined;
+        const avatarUpdate = shouldUpload
+          ? { avatarUrl: uploadedPath }
+          : shouldRemove
+            ? { avatarUrl: null }
+            : {};
 
-        if (field && field in values) {
-          setFieldError(field, data?.error ?? 'Invalid value');
+        const updated = await updateSettings({ ...payload, ...avatarUpdate });
+
+        if (shouldUpload && uploadedPath) {
+          clearAvatarUrlCache(uploadedPath);
+        }
+        if (shouldRemove && currentAvatarPath) {
+          clearAvatarUrlCache(currentAvatarPath);
+        }
+
+        const nextAvatarPath = shouldRemove
+          ? ''
+          : (updated?.avatar_url ?? uploadedPath ?? currentAvatarPath);
+        const nextProfile: UserT = {
+          ...profile,
+          ...(updated ?? {}),
+          avatar_url: nextAvatarPath,
+        };
+
+        reset(toFormValues(nextProfile, fallbackEmail));
+        clearStagedAvatar();
+
+        if (updated) onSaved?.(updated);
+
+        setSuccessMessage(
+          shouldUpload
+            ? 'Profile photo updated'
+            : shouldRemove
+              ? 'Profile photo removed'
+              : 'Profile updated successfully',
+        );
+
+        if (shouldRemove && currentAvatarPath) {
+          void deleteAvatarObject(currentAvatarPath, profile.id).catch(
+            (error) => {
+              console.warn('Could not delete previous avatar:', error);
+            },
+          );
+        }
+      } catch (error) {
+        // Only remove the object when there was no existing avatar. If the user
+        // had one, the failed save still left the newest image at the shared path.
+        if (uploadedPath && !currentAvatarPath) {
+          void deleteAvatarObject(uploadedPath, profile.id).catch(
+            (cleanupError) => {
+              console.warn('Could not delete unused avatar:', cleanupError);
+            },
+          );
+        }
+
+        const data = getApiErrorData(error);
+        const field = data?.field;
+
+        if (field === 'avatarUrl' || field === 'avatarPath') {
+          setAvatarError(data?.error ?? errorMessage(error));
+        } else if (field && field in values) {
+          setFieldError(
+            field as keyof ProfileFormValues,
+            data?.error ?? 'Invalid value',
+          );
         } else {
-          setFormError(data?.error ?? 'Failed to update profile');
+          setFormError(errorMessage(error));
         }
       }
     },
   });
 
-  return { ...form, successMessage };
+  const selectAvatarFile = (file: File) => {
+    setAvatarError(null);
+    setSuccessMessage(null);
+
+    try {
+      validateAvatarFile(file);
+    } catch (error) {
+      setAvatarError(errorMessage(error));
+      return;
+    }
+
+    setRemoveRequested(false);
+    setSelectedFile(file);
+    setAvatarPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const requestAvatarRemoval = () => {
+    setAvatarError(null);
+    setSuccessMessage(null);
+    setSelectedFile(null);
+    setAvatarPreviewUrl(null);
+    setRemoveRequested(true);
+  };
+
+  const cancelAvatarChange = () => {
+    setAvatarError(null);
+    clearStagedAvatar();
+  };
+
+  const resetForm = (nextValues?: ProfileFormValues) => {
+    form.reset(nextValues);
+    setAvatarError(null);
+    setSuccessMessage(null);
+    clearStagedAvatar();
+  };
+
+  return {
+    ...form,
+    reset: resetForm,
+    isDirty: form.isDirty || hasAvatarChange,
+    successMessage,
+    avatarError,
+    avatarPreviewUrl,
+    hasAvatarChange,
+    removeRequested,
+    selectAvatarFile,
+    requestAvatarRemoval,
+    cancelAvatarChange,
+  };
 };

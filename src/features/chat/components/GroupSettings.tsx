@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { FriendT, PublicProfileT } from '../../../types';
 import { ui } from '../../../shared/ui';
+import { useAvatarUrl } from '../../../shared/hooks/useAvatarUrl';
 import { IconUserPlus, IconUsers, IconVolume, IconVolumeOff, IconX } from '../../../atoms';
 import { GroupMemberAccess } from '../hooks/useChatState';
 import {
@@ -35,14 +36,15 @@ const markBox = (size: number) => ({
 });
 
 function GroupMark(props: { name: string; src?: string; onError?: () => void }) {
+  const src = useAvatarUrl(props.src);
   return (
     <div
       className='mx-auto flex items-center justify-center overflow-hidden rounded-full bg-primary shadow-[0_0_0_1px_var(--color-border-strong)]'
       style={markBox(76)}
     >
-      {props.src ? (
+      {src ? (
         <img
-          src={props.src}
+          src={src}
           alt=''
           onError={props.onError}
           className='h-full w-full object-cover'
@@ -58,13 +60,14 @@ function GroupMark(props: { name: string; src?: string; onError?: () => void }) 
 
 function PersonMark(props: { name: string; src?: string | null; size?: number }) {
   const size = props.size ?? 40;
+  const src = useAvatarUrl(props.src);
   return (
     <div
       className='flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface font-medium leading-none text-foreground'
       style={{ ...markBox(size), fontSize: size < 32 ? 11 : 14 }}
     >
-      {props.src ? (
-        <img src={props.src} alt='' className='h-full w-full object-cover' />
+      {src ? (
+        <img src={src} alt='' className='h-full w-full object-cover' />
       ) : (
         props.name.charAt(0).toUpperCase()
       )}

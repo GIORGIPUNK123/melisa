@@ -85,6 +85,26 @@ export const useForm = <T extends object>({
     [baseline],
   );
 
+  // Used when a field is saved independently of the form's main submit
+  // (for example, an avatar upload). Only that field becomes the new baseline,
+  // so other unsaved edits stay dirty.
+  const acceptFieldValue = useCallback(
+    <K extends keyof T>(field: K, value: T[K]) => {
+      const next = { ...valuesRef.current, [field]: value };
+      valuesRef.current = next;
+      setValues(next);
+      setBaseline((current) => ({ ...current, [field]: value }));
+      setErrors((current) => {
+        if (!current[field]) return current;
+        const nextErrors = { ...current };
+        delete nextErrors[field];
+        return nextErrors;
+      });
+      setFormError(null);
+    },
+    [],
+  );
+
   const validateField = useCallback(
     async (field: keyof T) => {
       if (!schema) return true;
@@ -206,6 +226,7 @@ export const useForm = <T extends object>({
     setFormError,
     validateField,
     reset,
+    acceptFieldValue,
     handleSubmit,
   };
 };

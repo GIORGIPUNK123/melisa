@@ -5,16 +5,18 @@ import {
   type PendingRequest,
 } from '../../../store/useRequestStore';
 import { useFriendStore } from '../../../store/useFriendStore';
+import { useAvatarUrl } from '../../../shared/hooks/useAvatarUrl';
 import { fetchFriendsList } from '../utils/friendsFunctions';
 
 const Avatar = ({ request }: { request: PendingRequest }) => {
+  const avatarUrl = useAvatarUrl(request.avatarUrl);
   const initial = (request.nickname || request.username || '?')
     .charAt(0)
     .toUpperCase();
 
-  return request.avatarUrl ? (
+  return avatarUrl ? (
     <img
-      src={request.avatarUrl}
+      src={avatarUrl}
       alt=''
       className='object-cover w-10 h-10 shrink-0 rounded-card'
     />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router';
 import { Loading } from '../../../components/Loading';
+import { useAuthStore } from '../../../store/useAuthStore';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useCurrentUserProfile } from '../../friends/hooks/useCurrentUserProfile';
 import { SettingsHeader } from '../components/SettingsHeader';
@@ -16,6 +17,7 @@ export const SettingsPage = () => {
   const { user } = useAuth();
   const userId = user?.id;
   const { profile, setProfile } = useCurrentUserProfile(userId);
+  const setAuthProfile = useAuthStore((state) => state.setProfile);
   const [activeTab, setActiveTab] = useState<SettingsTabT>('profile');
 
   if (!user) return <Navigate to='/login' replace />;
@@ -23,6 +25,7 @@ export const SettingsPage = () => {
 
   const handleSaved = (updated: SettingsUser) => {
     setProfile((prev) => (prev ? { ...prev, ...updated } : prev));
+    setAuthProfile((prev) => (prev ? { ...prev, ...updated } : prev));
   };
 
   return (

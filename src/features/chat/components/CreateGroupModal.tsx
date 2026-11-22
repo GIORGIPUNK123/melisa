@@ -4,6 +4,12 @@ import { handleBackdropClick } from '../../../shared/utils/modal';
 import { ui } from '../../../shared/ui';
 import { IconUsers, IconX } from '../../../atoms';
 import { createGroupChat } from '../api/createGroupChat';
+import { useAvatarUrl } from '../../../shared/hooks/useAvatarUrl';
+
+const FriendAvatar = (props: { src?: string | null; name: string }) => {
+  const src = useAvatarUrl(props.src);
+  return <img src={src ?? undefined} alt={props.name} className={ui.avatar} />;
+};
 
 export const CreateGroupModal = (props: {
   isOpen: boolean;
@@ -152,11 +158,7 @@ export const CreateGroupModal = (props: {
                   }`}
                 >
                   {friend.avatarUrl ? (
-                    <img
-                      src={friend.avatarUrl}
-                      alt={friend.nickname}
-                      className={ui.avatar}
-                    />
+                    <FriendAvatar src={friend.avatarUrl} name={friend.nickname} />
                   ) : (
                     <div className={ui.avatarFallback}>
                       {friend.nickname.charAt(0).toUpperCase()}

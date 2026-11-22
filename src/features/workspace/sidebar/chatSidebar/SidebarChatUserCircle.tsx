@@ -1,9 +1,12 @@
+import { useAvatarUrl } from '../../../../shared/hooks/useAvatarUrl';
+
 export const SidebarChatUserCircle = (props: {
   avatarUrl?: string;
   firstLetter: string;
   online?: boolean;
 }) => {
-  const { avatarUrl, firstLetter, online } = props;
+  const avatarUrl = useAvatarUrl(props.avatarUrl);
+  const { firstLetter, online } = props;
   return (
     <div className='relative w-10 h-10 shrink-0'>
       {avatarUrl ? (

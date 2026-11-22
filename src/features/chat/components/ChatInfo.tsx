@@ -1,5 +1,17 @@
 import { Bell, BellOff, X } from 'lucide-react';
+import { useAvatarUrl } from '../../../shared/hooks/useAvatarUrl';
 import { ConversationT } from '../../../types';
+
+const MemberAvatar = (props: { src?: string | null; name: string }) => {
+  const src = useAvatarUrl(props.src);
+  return (
+    <img
+      src={src ?? undefined}
+      alt={props.name.charAt(0).toLocaleUpperCase()}
+      className='flex justify-center items-center w-8 h-8 rounded-full bg-primary/25'
+    />
+  );
+};
 
 const Users = (props: {
   onlineUserIds: Set<string>;
@@ -13,11 +25,7 @@ const Users = (props: {
           key={member.id}
           className='flex gap-2 justify-between items-center px-2 py-2 w-full rounded-md cursor-pointer hover:bg-surface-hover'
         >
-          <img
-            src={member.avatarUrl}
-            alt={member.nickname.charAt(0).toLocaleUpperCase()}
-            className='flex justify-center items-center w-8 h-8 rounded-full bg-primary/25'
-          />
+          <MemberAvatar src={member.avatarUrl} name={member.nickname} />
           <span className='text-foreground'>{member.nickname}</span>
 
           <div className='flex justify-center items-center w-8 h-8'>
