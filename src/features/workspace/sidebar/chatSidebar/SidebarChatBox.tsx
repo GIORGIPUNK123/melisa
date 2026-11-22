@@ -7,6 +7,7 @@ export const SidebarChatBox = (props: {
   onClick: () => void;
   conversation: ConversationT;
   hasUnread: boolean;
+  unreadCount: number;
   online: boolean;
 }) => {
   return (
@@ -18,6 +19,7 @@ export const SidebarChatBox = (props: {
         <SidebarChatUserCircle
           firstLetter={props.conversation.name!.charAt(0)}
           avatarUrl={props.conversation.avatarUrl}
+          online={props.online}
         />
 
         <div className='flex flex-col'>
@@ -29,16 +31,17 @@ export const SidebarChatBox = (props: {
           <span
             className={`text-xs ${props.hasUnread ? 'text-primary font-medium' : 'text-subtle'}`}
           >
-            {props.conversation.lastMessageTime
-              ? formatConversationTime(props.conversation.lastMessageTime)
+            {props.conversation.lastMessageAt
+              ? formatConversationTime(props.conversation.lastMessageAt)
               : 'No messages'}
           </span>
         </div>
       </div>
 
-      {/* 🟢 Render online dot badge only if the user is online */}
-      {props.online && (
-        <div className='flex justify-center items-center rounded-full bg-primary w-2.5 h-2.5' />
+      {props.unreadCount > 0 && (
+        <span className='flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-background'>
+          {props.unreadCount > 99 ? '99+' : props.unreadCount}
+        </span>
       )}
     </div>
   );

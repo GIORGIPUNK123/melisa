@@ -10,28 +10,33 @@ export const fetchConversations = async (
       .from('conversation_members')
       .select(
         `
-          muted,
-          last_read_at,
-          last_message_at,
-          joined_at,
-            conversations (
-            id,
-            type,
-            name,
-            avatar_url,
-            conversation_members (
-                public_profiles (
-                id,
-                nickname,
-                username,
-                avatar_url,
-                public_key
-                )
+        last_read_at,
+        last_message_at,
+        joined_at,
+        conversations (
+          id,
+          type,
+          name,
+          avatar_url,
+          conversation_mutes (user_id, conversation_id),
+          conversation_members (
+            last_read_at,
+            joined_at,
+            last_read_message_id,
+            unread_count,
+            public_profiles (
+              id,
+              nickname,
+              username,
+              avatar_url,
+              public_key
             )
-            )
-        `,
+          )
+        )
+    `,
       )
       .eq('user_id', userId)
+      .eq('conversations.conversation_mutes.user_id', userId)
       .order('last_message_at', { ascending: false });
 
     if (error) throw error;
@@ -60,14 +65,17 @@ export const fetchConversations = async (
               username: profile.username,
               avatarUrl: profile.avatar_url,
               publicKey: profile.public_key,
-              lastReadAt: m2.last_read_at || m.last_read_at,
-              lastMessageAt: m2.last_message_at || m.last_message_at,
-              joinedAt: m2.joined_at || m.joined_at,
+              lastReadAt: m2.last_read_at ?? '',
+              joinedAt: m2.joined_at ?? '',
+              lastReadMessageId: m2.last_read_message_id ?? 0,
+              unreadCount: m2.unread_count ?? 0,
             };
           },
         ),
-        muted: m.muted,
-        lastMessageTime: m.last_message_at,
+        muted: m.conversations.conversation_mutes.some(
+          (mute: any) => mute.user_id === userId,
+        ),
+        lastMessageAt: m.last_message_at,
       };
     });
 

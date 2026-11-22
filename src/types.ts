@@ -56,7 +56,7 @@ export interface ConversationT {
   id: number;
   type: 'direct' | 'group';
   name: string;
-  lastMessageTime?: string;
+  lastMessageAt?: string;
   muted: boolean;
   conversationMembers: ConversationMemberT[];
   avatarUrl?: string;
@@ -71,9 +71,9 @@ export interface SenderT {
 
 export interface ConversationMemberT extends SenderT {
   lastReadAt: string;
-  lastMessageAt: string;
   joinedAt: string;
-  muted?: boolean;
+  lastReadMessageId: number;
+  unreadCount: number;
 }
 
 // Message types (with lightweight sender info)

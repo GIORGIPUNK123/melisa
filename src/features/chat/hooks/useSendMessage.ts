@@ -70,50 +70,38 @@ export const useSendMessage = (params: {
     ]);
 
     try {
-      const [messageResult, memberResult] = await Promise.all([
-        supabase
-          .from('messages')
-          .insert({
-            conversation_id: conversationId,
-            sender_id: user.id,
-            content: encryptedContent,
-            message_type: 'text',
-          })
-          .select()
-          .single(),
-        supabase
-          .from('conversation_members')
-          .update({ last_message_at: now, last_read_at: now })
-          .eq('conversation_id', conversationId)
-          .eq('user_id', user.id),
-      ]);
+      const { data: savedMessage, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: user.id,
+          content: encryptedContent,
+          message_type: 'text',
+        })
+        .select()
+        .single();
 
-      if (messageResult.error) throw messageResult.error;
-      if (memberResult.error) {
-        console.error('Failed to update last_message_at:', memberResult.error);
-      }
+      if (error) throw error;
+      if (!savedMessage) return;
 
-      if (messageResult.data) {
-        const savedMessage = messageResult.data;
-        setMessages((previous) =>
-          previous.map((message) =>
-            message.id === tempId
-              ? {
-                  ...message,
-                  id: savedMessage.id,
-                  createdAt: savedMessage.created_at,
-                  updatedAt: savedMessage.updated_at,
-                }
-              : message,
-          ),
-        );
+      setMessages((previous) =>
+        previous.map((message) =>
+          message.id === tempId
+            ? {
+                ...message,
+                id: savedMessage.id,
+                createdAt: savedMessage.created_at,
+                updatedAt: savedMessage.updated_at,
+              }
+            : message,
+        ),
+      );
 
-        await roomChannelRef.current?.send({
-          type: 'broadcast',
-          event: 'message',
-          payload: { message: savedMessage },
-        });
-      }
+      await roomChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'message',
+        payload: { message: savedMessage },
+      });
     } catch (error) {
       console.error('Failed to send message:', error);
       setMessages((previous) =>

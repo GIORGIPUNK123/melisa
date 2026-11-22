@@ -7,9 +7,9 @@ export const mapMembers = (membersData: ConversationMemberRow[]) => {
   return membersData.map(
     ({
       last_read_at,
-      last_message_at,
+      last_read_message_id,
+      unread_count,
       joined_at,
-      muted,
       public_profiles: profile,
     }) => ({
       id: profile?.id,
@@ -18,9 +18,9 @@ export const mapMembers = (membersData: ConversationMemberRow[]) => {
       avatarUrl: profile?.avatar_url,
       publicKey: profile?.public_key,
       lastReadAt: last_read_at,
-      lastMessageAt: last_message_at,
+      lastReadMessageId: last_read_message_id ?? 0,
+      unreadCount: unread_count ?? 0,
       joinedAt: joined_at,
-      muted,
     }),
   ) as ConversationMemberT[];
 };

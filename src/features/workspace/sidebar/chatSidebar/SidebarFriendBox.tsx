@@ -17,6 +17,7 @@ export const SidebarFriendBox = (props: {
         <SidebarChatUserCircle
           firstLetter={friend.username.charAt(0)}
           avatarUrl={friend.avatarUrl}
+          online={props.online}
         />
 
         <div className='flex flex-col'>
@@ -28,10 +29,6 @@ export const SidebarFriendBox = (props: {
           </span>
         </div>
       </div>
-
-      {props.online && (
-        <div className='flex justify-center items-center rounded-full bg-primary w-2.5 h-2.5' />
-      )}
     </div>
   );
 };

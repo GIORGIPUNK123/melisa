@@ -11,12 +11,12 @@ const Users = (props: {
       {conversationMembers.map((member) => (
         <div
           key={member.id}
-          className='flex items-center justify-between w-full gap-2 px-2 py-2 hover:bg-surface-hover rounded-md cursor-pointer'
+          className='flex gap-2 justify-between items-center px-2 py-2 w-full rounded-md cursor-pointer hover:bg-surface-hover'
         >
           <img
             src={member.avatarUrl}
             alt={member.nickname.charAt(0).toLocaleUpperCase()}
-            className='w-8 h-8 rounded-full flex items-center justify-center bg-primary/25'
+            className='flex justify-center items-center w-8 h-8 rounded-full bg-primary/25'
           />
           <span className='text-foreground'>{member.nickname}</span>
 
@@ -76,22 +76,22 @@ export const ChatInfo = (props: {
           <div className='flex justify-end items-end pb-2 mr-8 w-full h-14 xl:hidden'>
             <div
               onClick={() => setOpen(false)}
-              className='p-1 cursor-pointer text-muted hover:text-primary transition-colors duration-200'
+              className='p-1 transition-colors duration-200 cursor-pointer text-muted hover:text-primary'
             >
               <X color='' />
             </div>
           </div>
-          <div className='relative font-semibold text-xl flex items-center justify-center bg-primary/25 w-20 h-20 mt-4 rounded-full shrink-0'>
+          <div className='flex relative justify-center items-center mt-4 w-20 h-20 text-xl font-semibold rounded-full bg-primary/25 shrink-0'>
             {conversation.name.charAt(0).toLocaleUpperCase()}
             <div
-              className={`absolute -right-0 -bottom-0 w-2.5 h-2.5 ${
+              className={`absolute right-0 bottom-0 w-2.5 h-2.5 ${
                 onlineUserIds.has(otherConversationMembers[0]?.id)
                   ? 'bg-primary'
                   : 'bg-muted'
               } rounded-full`}
             ></div>
           </div>
-          <span className='mt-4 text-lg text-foreground font-semibold'>
+          <span className='mt-4 text-lg font-semibold text-foreground'>
             {conversation.name}
           </span>
           <span
@@ -103,9 +103,9 @@ export const ChatInfo = (props: {
           </span>
           <button
             onClick={() => toggleMute()}
-            className='focus-ring flex text-muted items-center justify-between w-full px-4 mt-8 text-sm cursor-pointer'
+            className='flex justify-between items-center px-4 mt-8 w-full text-sm cursor-pointer focus-ring text-muted'
           >
-            <div className='relative py-2 w-full flex items-center gap-2 hover:bg-surface-hover px-2 rounded-md transition-colors duration-200'>
+            <div className='flex relative gap-2 items-center px-2 py-2 w-full rounded-md transition-colors duration-200 hover:bg-surface-hover'>
               <Bell className={`${conversation.muted ? 'hidden' : ''}`} />
               <BellOff className={`${conversation.muted ? '' : 'hidden'}`} />
               <span>
@@ -125,7 +125,7 @@ export const ChatInfo = (props: {
                   }
                   className='absolute inset-0 z-10 w-full h-full rounded-full appearance-none cursor-pointer peer'
                 />
-                <span className='pointer-events-none absolute inset-0 rounded-full bg-surface transition-colors duration-200 peer-checked:bg-primary after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-foreground after:shadow-sm after:transition-transform after:duration-200 peer-checked:after:translate-x-5'></span>
+                <span className='absolute inset-0 rounded-full transition-colors duration-200 pointer-events-none bg-surface peer-checked:bg-primary after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-foreground after:shadow-sm after:transition-transform after:duration-200 peer-checked:after:translate-x-5'></span>
               </div>
             </div>
           </button>

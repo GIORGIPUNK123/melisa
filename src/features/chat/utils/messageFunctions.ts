@@ -1,13 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const MEMBER_COLUMNS =
-  'last_read_at, last_message_at, joined_at, muted, public_profiles(id, nickname, username, avatar_url, public_key)';
+  'last_read_at, last_read_message_id, unread_count, joined_at, public_profiles(id, nickname, username, avatar_url, public_key)';
 
 export type ConversationMemberRow = {
   last_read_at: string;
-  last_message_at: string;
+  last_read_message_id: number | string | null;
+  unread_count: number | null;
   joined_at: string;
-  muted: boolean;
   public_profiles: {
     id: string;
     nickname: string;

@@ -1,7 +1,20 @@
 import { create } from 'zustand';
+import { sameId } from '../shared/utils/ids';
 import { ConversationMemberT, ConversationT } from '../types';
 
-interface ChatStore {
+const timestampValue = (value?: string) => {
+  if (!value) return 0;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const sortByLatestMessage = (conversations: ConversationT[]) =>
+  [...conversations].sort(
+    (a, b) =>
+      timestampValue(b.lastMessageAt) - timestampValue(a.lastMessageAt),
+  );
+
+export interface ChatStore {
   conversations: ConversationT[];
   activeConversationId?: number | null;
   setActiveConversationId: (id: number | null) => void;
@@ -13,7 +26,20 @@ interface ChatStore {
     conversationId: string | number,
     updates: Partial<ConversationMemberT>,
   ) => void;
+  setConversationLastMessageAt: (
+    conversationId: string | number,
+    timestamp: string,
+  ) => void;
+  setConversationMuted: (
+    conversationId: string | number,
+    muted: boolean,
+  ) => void;
 }
+
+export const selectIsConversationMuted =
+  (conversationId: string | number) => (state: ChatStore) =>
+    state.conversations.find((conv) => sameId(conv.id, conversationId))?.muted ??
+    false;
 
 export const useChatStore = create<ChatStore>((set) => ({
   conversations: [],
@@ -24,25 +50,15 @@ export const useChatStore = create<ChatStore>((set) => ({
   setConversations: (conversations) => set({ conversations }),
 
   handleIncomingMessage: (msg) => {
-    set((state) => {
-      const updated = state.conversations.map((conv) => {
-        if (conv.id.toString() === msg.conversation_id.toString()) {
-          return {
-            ...conv,
-            lastMessageTime: msg.created_at,
-          };
-        }
-        return conv;
-      });
-
-      return {
-        conversations: updated.sort(
-          (a, b) =>
-            new Date(b.lastMessageTime || 0).getTime() -
-            new Date(a.lastMessageTime || 0).getTime(),
+    set((state) => ({
+      conversations: sortByLatestMessage(
+        state.conversations.map((conv) =>
+          sameId(conv.id, msg.conversation_id)
+            ? { ...conv, lastMessageAt: msg.created_at }
+            : conv,
         ),
-      };
-    });
+      ),
+    }));
   },
 
   updateConversationMember: (
@@ -50,18 +66,36 @@ export const useChatStore = create<ChatStore>((set) => ({
     updates: Partial<ConversationMemberT>,
   ) => {
     set((state) => ({
-      conversations: state.conversations.map((conv) => {
-        if (conv.id.toString() === conversationId.toString()) {
-          return {
-            ...conv,
-            muted: updates.muted !== undefined ? updates.muted : conv.muted,
-            conversationMembers: conv.conversationMembers.map((m) =>
-              m.id === updates.id ? { ...m, ...updates } : m,
-            ),
-          };
-        }
-        return conv;
-      }),
+      conversations: state.conversations.map((conv) =>
+        sameId(conv.id, conversationId)
+          ? {
+              ...conv,
+              conversationMembers: conv.conversationMembers.map((m) =>
+                sameId(m.id, updates.id) ? { ...m, ...updates } : m,
+              ),
+            }
+          : conv,
+      ),
+    }));
+  },
+
+  setConversationLastMessageAt: (conversationId, timestamp) => {
+    set((state) => ({
+      conversations: sortByLatestMessage(
+        state.conversations.map((conv) =>
+          sameId(conv.id, conversationId)
+            ? { ...conv, lastMessageAt: timestamp }
+            : conv,
+        ),
+      ),
+    }));
+  },
+
+  setConversationMuted: (conversationId, muted) => {
+    set((state) => ({
+      conversations: state.conversations.map((conv) =>
+        sameId(conv.id, conversationId) ? { ...conv, muted } : conv,
+      ),
     }));
   },
 }));

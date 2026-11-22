@@ -8,7 +8,6 @@ import {
   fetchConversationMessages,
 } from '../utils/messageFunctions';
 import { sameId } from '../../../shared/utils/ids';
-import { useAudioNotification } from '../../notifications/hooks/useAudioNotification';
 import {
   decryptAndMapMessages,
   mapMembers,
@@ -22,7 +21,6 @@ export const useConversationMessages = (
   privateKey: string | null,
   isAuthenticated: boolean,
 ) => {
-  const { playSound } = useAudioNotification('notification/notification');
   const [messages, setMessages] = useState<MessageT[]>([]);
   const [conversationMembers, setConversationMembers] = useState<
     ConversationMemberT[]
@@ -67,11 +65,18 @@ export const useConversationMessages = (
   const handleMemberUpdate = (updated: any) => {
     setConversationMembers((previous) =>
       previous.map((member) =>
-        member.id === updated.user_id
+        sameId(member.id, updated.user_id)
           ? {
               ...member,
-              lastReadAt: updated.last_read_at,
-              lastMessageAt: updated.last_message_at,
+              ...(updated.last_read_at
+                ? { lastReadAt: updated.last_read_at }
+                : {}),
+              ...(updated.last_read_message_id != null
+                ? { lastReadMessageId: updated.last_read_message_id }
+                : {}),
+              ...(updated.unread_count != null
+                ? { unreadCount: updated.unread_count }
+                : {}),
             }
           : member,
       ),
@@ -83,12 +88,6 @@ export const useConversationMessages = (
     userId: user?.id,
     enabled: isAuthenticated,
     onMessage: handleIncomingMessage,
-    onBroadcastMessage: () => {
-      const currentMember = membersRef.current.find((member) =>
-        sameId(member.id, user?.id),
-      );
-      if (!currentMember?.muted) playSound();
-    },
     onMemberUpdate: handleMemberUpdate,
   });
 

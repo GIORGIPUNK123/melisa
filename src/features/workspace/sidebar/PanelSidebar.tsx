@@ -6,6 +6,7 @@ import { SidebarChatBox } from './chatSidebar/SidebarChatBox';
 import { SidebarFriendBox } from './chatSidebar/SidebarFriendBox';
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
+import { isConversationUnread } from '../../../shared/utils/unread';
 
 const SidebarTab = (props: {
   name: string;
@@ -71,15 +72,11 @@ const ListConversations = (props: {
     onlineUserIds,
   } = props;
   return convos.map((conversation) => {
-    const currentMember = conversation.conversationMembers?.find(
-      (m) => m.id === currentUserId,
-    );
-    const hasUnread = Boolean(
-      conversation.lastMessageTime &&
-      currentMember?.lastReadAt &&
-      conversation.lastMessageTime > currentMember.lastReadAt,
-    );
-
+    const hasUnread = isConversationUnread(conversation, currentUserId);
+    const unreadCount =
+      conversation.conversationMembers.find(
+        (member) => member.id === currentUserId,
+      )?.unreadCount ?? 0;
     return (
       <SidebarChatBox
         active={activeConversationId === conversation.id}
@@ -87,9 +84,13 @@ const ListConversations = (props: {
         key={conversation.id}
         conversation={conversation}
         hasUnread={hasUnread}
-        online={conversation.conversationMembers.some((m) =>
-          onlineUserIds.has(m.id !== currentUserId ? m.id : ''),
-        )}
+        unreadCount={unreadCount}
+        online={
+          conversation.type === 'direct' &&
+          conversation.conversationMembers.some((m) =>
+            onlineUserIds.has(m.id !== currentUserId ? m.id : ''),
+          )
+        }
       />
     );
   });

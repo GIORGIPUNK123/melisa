@@ -1,4 +1,10 @@
-import { useEffect, type Dispatch, type SetStateAction } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../../../db/supabase';
 import { sameId } from '../../../shared/utils/ids';
@@ -9,69 +15,78 @@ export const useConversationReadReceipt = (params: {
   isAuthenticated: boolean;
   user: User | null;
   messages: MessageT[];
-  membersRef: { current: ConversationMemberT[] };
   setConversationMembers: Dispatch<SetStateAction<ConversationMemberT[]>>;
+  markAsRead: (updates: Partial<ConversationMemberT>) => void;
 }) => {
   const {
     conversationId,
     isAuthenticated,
     user,
     messages,
-    membersRef,
     setConversationMembers,
+    markAsRead,
   } = params;
 
+  const lastMarkedRef = useRef<string | null>(null);
+  const [visibilityTick, setVisibilityTick] = useState(0);
+
+  // Re-check when the tab becomes visible again, even if no new message arrived.
   useEffect(() => {
-    if (!isAuthenticated || !conversationId || !user || messages.length === 0) {
-      return;
-    }
-
-    const latestMessage = messages[messages.length - 1];
-    if (latestMessage.sender.id === user.id) return;
-
-    const currentMember = membersRef.current.find((member) =>
-      sameId(member.id, user.id),
-    );
-    if (
-      !currentMember ||
-      (currentMember.lastReadAt &&
-        currentMember.lastReadAt >= latestMessage.createdAt)
-    ) {
-      return;
-    }
-
-    const now = new Date().toISOString();
-    setConversationMembers((previous) => {
-      const currentMember = previous.find((member) =>
-        sameId(member.id, user.id),
-      );
-      if (
-        !currentMember ||
-        (currentMember.lastReadAt &&
-          currentMember.lastReadAt >= latestMessage.createdAt)
-      ) {
-        return previous;
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setVisibilityTick((tick) => tick + 1);
       }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
 
-      return previous.map((member) =>
-        member.id === user.id ? { ...member, lastReadAt: now } : member,
-      );
-    });
+  useEffect(() => {
+    if (!isAuthenticated || !conversationId || !user) return;
+    if (document.visibilityState !== 'visible') return;
 
-    supabase
-      .from('conversation_members')
-      .update({ last_read_at: now })
-      .eq('conversation_id', conversationId)
-      .eq('user_id', user.id)
+    // Optimistic messages use the client clock; only act on persisted ones.
+    const latestMessage = [...messages]
+      .reverse()
+      .find((message) => !String(message.id).startsWith('temp-'));
+    if (!latestMessage) return;
+
+    const key = `${conversationId}:${latestMessage.id}:${visibilityTick}`;
+    if (lastMarkedRef.current === key) return;
+    lastMarkedRef.current = key;
+
+    const parsedId = Number(latestMessage.id);
+    const updates = {
+      unreadCount: 0,
+      lastReadMessageId: Number.isNaN(parsedId) ? 0 : parsedId,
+      lastReadAt: new Date().toISOString(),
+    };
+
+    setConversationMembers((previous) =>
+      previous.map((member) =>
+        sameId(member.id, user.id) ? { ...member, ...updates } : member,
+      ),
+    );
+    markAsRead(updates);
+
+    void supabase
+      .rpc('mark_conversation_read', {
+        p_conversation_id: Number(conversationId),
+      })
       .then(({ error }) => {
-        if (error) console.error('Failed to update last_read_at:', error);
+        if (error) {
+          lastMarkedRef.current = null;
+          console.error('Failed to mark as read:', error);
+        }
       });
   }, [
     messages,
     conversationId,
     user,
     isAuthenticated,
-    membersRef,
     setConversationMembers,
+    markAsRead,
+    visibilityTick,
   ]);
 };
