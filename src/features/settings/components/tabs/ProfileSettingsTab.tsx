@@ -7,6 +7,10 @@ import { SettingsSection } from '../SettingsSection';
 import { useProfileSettingsForm } from '../../hooks/useProfileSettingsForm';
 import type { SettingsUser } from '../../services/settingsService';
 
+// Temporarily disabled until email changes are synchronized between
+// Supabase Auth and the users table.
+const EMAIL_CHANGES_ENABLED = false;
+
 type Props = {
   profile: UserT;
   fallbackEmail?: string | null;
@@ -104,7 +108,8 @@ export const ProfileSettingsTab = ({
             autoComplete='email'
             required
             error={form.errors.email}
-            disabled={form.isBusy}
+            disabled={!EMAIL_CHANGES_ENABLED || form.isBusy}
+            hint={EMAIL_CHANGES_ENABLED ? undefined : 'Temporarily unavailable.'}
             focusTone='teal'
           />
           <TextInput

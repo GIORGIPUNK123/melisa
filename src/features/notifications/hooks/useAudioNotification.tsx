@@ -4,6 +4,7 @@ import {
   type LibrarySoundName,
   type SoundOptions,
 } from 'react-sounds';
+import { usePreferencesStore } from '../../../store/usePreferencesStore';
 
 // Keep a stable reference: useSound's `play` depends on this object, so
 // recreating it on every render would make `playSound` unstable and cause
@@ -25,6 +26,15 @@ export const useAudioNotification = (soundName: LibrarySoundName) => {
   }, [checkPermission, play, stop]);
 
   const playSound = useCallback(async () => {
+    // One central gate covers every notification-sound consumer (chat
+    // messages and toasts) without changing their individual logic.
+    if (
+      soundName === 'notification/notification' &&
+      usePreferencesStore.getState().notificationSoundsMuted
+    ) {
+      return;
+    }
+
     const now = Date.now();
     if (now - lastPlayAtRef.current < 400) return;
     lastPlayAtRef.current = now;
@@ -34,7 +44,7 @@ export const useAudioNotification = (soundName: LibrarySoundName) => {
     } catch (error) {
       console.error('Failed to play notification sound:', error);
     }
-  }, [play]);
+  }, [play, soundName]);
 
   return { playSound, ensureEnabled };
 };

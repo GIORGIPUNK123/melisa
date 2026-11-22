@@ -10,6 +10,10 @@ import {
 } from '../services/settingsService';
 import type { ProfileFormValues } from '../types';
 
+// Backend email updates are disabled until both the auth email and the users
+// table can be changed together, so never send this field from the client.
+const EMAIL_UPDATES_ENABLED = false;
+
 const toFormValues = (
   profile: UserT,
   fallbackEmail?: string | null,
@@ -36,7 +40,7 @@ const buildPayload = (
 
   if (username !== currentUsername) payload.username = username;
   if (nickname !== currentNickname) payload.nickname = nickname;
-  if (email !== currentEmail) payload.email = email;
+  if (EMAIL_UPDATES_ENABLED && email !== currentEmail) payload.email = email;
   if (avatarUrl !== currentAvatarUrl) {
     payload.avatarUrl = avatarUrl || null;
   }
