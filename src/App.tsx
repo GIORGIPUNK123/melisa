@@ -12,12 +12,21 @@ import { FriendsPanel } from './pages/FriendsPanel';
 import { RequestsPanel } from './pages/RequestsPanel';
 import { NotificationsPanel } from './pages/NotificationsPanel';
 import { usePresenceStore } from './store/usePresenceStore';
+import { usePreferencesStore } from './store/usePreferencesStore';
+import { applyAppearance } from './shared/utils/appearance';
 
 export const App = () => {
   useInitAuth();
   useEffect(() => {
     document.title = APP_NAME;
   }, []);
+
+  const accent = usePreferencesStore((state) => state.accent);
+  const textSize = usePreferencesStore((state) => state.textSize);
+
+  useEffect(() => {
+    applyAppearance(accent, textSize);
+  }, [accent, textSize]);
 
   const onlineUserIds = usePresenceStore((state) => state.onlineUserIds);
 

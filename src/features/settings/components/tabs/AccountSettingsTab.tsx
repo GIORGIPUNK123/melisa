@@ -9,6 +9,9 @@ import { usePasswordSettingsForm } from '../../hooks/usePasswordSettingsForm';
 import { usePrivacySettingsForm } from '../../hooks/usePrivacySettingsForm';
 import type { SettingsUser } from '../../services/settingsService';
 
+// Temporarily hidden behind a disabled control until the flow is ready.
+const APPEAR_OFFLINE_ENABLED = false;
+
 const PasswordSettingsSection = () => {
   const form = usePasswordSettingsForm();
 
@@ -94,16 +97,20 @@ const PrivacySettingsSection = (props: {
             onCancel={() => form.reset()}
             submitLabel='Save privacy'
             isSubmitting={form.isSubmitting}
-            disabled={!form.isDirty || form.isBusy}
+            disabled={!APPEAR_OFFLINE_ENABLED || !form.isDirty || form.isBusy}
           />
         }
       >
         <ToggleRow
           title='Appear offline'
-          description='Hide your online presence from other users.'
+          description={
+            APPEAR_OFFLINE_ENABLED
+              ? 'Hide your online presence from other users.'
+              : 'Temporarily unavailable.'
+          }
           checked={form.values.appearOffline}
           onChange={(checked) => form.setFieldValue('appearOffline', checked)}
-          disabled={form.isBusy}
+          disabled={!APPEAR_OFFLINE_ENABLED || form.isBusy}
         />
 
         {form.formError && (

@@ -254,3 +254,91 @@ table {
 .refresh-spin {
   animation: refresh-spin 0.7s linear infinite;
 }
+
+/* Appearance preferences ---------------------------------------------- */
+
+html[data-accent='blue'] {
+  --color-primary: #6cb8ff;
+  --color-primary-strong: #4a9bec;
+  --color-primary-soft: rgba(108, 184, 255, 0.11);
+}
+
+html[data-accent='violet'] {
+  --color-primary: #b79cff;
+  --color-primary-strong: #9a7cf0;
+  --color-primary-soft: rgba(183, 156, 255, 0.11);
+}
+
+html[data-accent='rose'] {
+  --color-primary: #ff8fa8;
+  --color-primary-strong: #f26d8c;
+  --color-primary-soft: rgba(255, 143, 168, 0.11);
+}
+
+html {
+  --text-scale: 1;
+}
+
+html[data-text-size='small'] {
+  --text-scale: 0.9;
+}
+
+html[data-text-size='large'] {
+  --text-scale: 1.12;
+}
+
+/* Arbitrary pixel sizes are used across the app, so scale those explicitly
+   as well as the rem-based Tailwind text utilities. */
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[10px\] {
+  font-size: calc(10px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[11px\] {
+  font-size: calc(11px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[12px\] {
+  font-size: calc(12px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[13px\] {
+  font-size: calc(13px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[14px\] {
+  font-size: calc(14px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[15px\] {
+  font-size: calc(15px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[16px\] {
+  font-size: calc(16px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[17px\] {
+  font-size: calc(17px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[22px\] {
+  font-size: calc(22px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[26px\] {
+  font-size: calc(26px * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-\[28px\] {
+  font-size: calc(28px * var(--text-scale));
+}
+
+/* Tailwind's rem-based text utilities keep their normal base size here. */
+html:is([data-text-size='small'], [data-text-size='large']) .text-xs {
+  font-size: calc(0.75rem * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-sm {
+  font-size: calc(0.875rem * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-base {
+  font-size: calc(1rem * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-lg {
+  font-size: calc(1.125rem * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-xl {
+  font-size: calc(1.25rem * var(--text-scale));
+}
+html:is([data-text-size='small'], [data-text-size='large']) .text-2xl {
+  font-size: calc(1.5rem * var(--text-scale));
+}
